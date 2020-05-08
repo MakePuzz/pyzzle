@@ -13,15 +13,16 @@ Crossword Local Search by command line
  8. 出力ファイル名（-oまたは--outputオプションで指定. デフォルトは{title}.png）
 
 実行例：
-python get_puzzle.py dict/pokemon.txt -w 15 -h 15 -s 1 -e 15
+python main_cli.py ../dict/pokemon.txt 15 15 -s 1 -e 5
 """
 # In[]
-import os
+import os, sys
 import argparse
+
 import numpy as np
-from matplotlib.font_manager import FontProperties
 
 #os.chdir("/Users/taiga/Crossword-LocalSearch/Python")
+sys.path.append("../")
 from pyzzle import Puzzle, Dictionary, ObjectiveFunction, Optimizer
 
 # In[]
@@ -86,5 +87,5 @@ puzzle.solve(epoch=epoch)
 print(f"SimpleSolution: {puzzle.is_simple_sol()}")
 print(puzzle.cell)
 print(f"単語リスト：{puzzle.used_words[:puzzle.sol_size]}")
-puzzle.save_answer_image(f"fig/{output}_answer")
-puzzle.save_problem_image(f"fig/{output}_problem")
+puzzle.save_answer_image(f"fig/answer_{output}")
+puzzle.save_problem_image(f"fig/problem_{output}")

@@ -5,7 +5,6 @@ Crossword Local Search
 # In[]
 import os, sys
 import numpy as np
-from matplotlib.font_manager import FontProperties
 
 #os.chdir("/Users/taiga/Crossword-LocalSearch/Python")
 sys.path.append("../")

@@ -3,11 +3,12 @@
 Crossword Local Search
 """
 # In[]
-import os
+import os, sys
 import numpy as np
 from matplotlib.font_manager import FontProperties
 
 #os.chdir("/Users/taiga/Crossword-LocalSearch/Python")
+sys.path.append("../")
 from pyzzle import Puzzle, Dictionary, ObjectiveFunction, Optimizer
 
 # In[]
@@ -18,7 +19,6 @@ height = 15
 seed = 1
 with_weight = False
 
-fp = FontProperties(fname="../fonts/SourceHanCodeJP.ttc", size=14)
 np.random.seed(seed=seed)
 
 # In[]

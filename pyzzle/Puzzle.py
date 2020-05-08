@@ -229,7 +229,7 @@ class Puzzle:
                 return Judgement.US_USA_DOMINICA_DOMINICAN_PROBLEM
 
         # If Break through the all barrier, return True
-        return 0
+        return Judgement.THE_WORD_CAN_BE_PLACED
 
     def _add(self, ori, i, j, k):
         """

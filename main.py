@@ -7,7 +7,7 @@ import os
 import numpy as np
 from matplotlib.font_manager import FontProperties
 
-#os.chdir("/Users/taiga/Crossword-local_search/Python")
+#os.chdir("/Users/taiga/Crossword-LocalSearch/Python")
 from pyzzle import Puzzle, Dictionary, ObjectiveFunction, Optimizer
 
 # In[]

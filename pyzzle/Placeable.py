@@ -15,10 +15,10 @@ class Placeable:
             print(f"Imported Dictionary name: `{dic.name}`, size: {dic.size}")
             print(f"Placeable size : {self.size}")
 
-    def _compute(self, word, baseK=0):
+    def _compute(self, word, base_k=0):
         if type(word) is str:
             word = [word]
-        if self.size is 0 or baseK is not 0:
+        if self.size is 0 or base_k is not 0:
             ap = np.full((2, self.height, self.width, len(word)), np.nan, dtype="int")
             self.inv_p = np.append(self.inv_p, ap, axis=3)
         for ori in (0,1):
@@ -31,11 +31,11 @@ class Placeable:
                     j_max = self.width - len(w) + 1
                 for i in range(i_max):
                     for j in range(j_max):
-                        self.inv_p[ori,i,j,baseK+k] = len(self.ori)
+                        self.inv_p[ori,i,j,base_k+k] = len(self.ori)
                         self.ori.append(ori)
                         self.i.append(i)
                         self.j.append(j)
-                        self.k.append(baseK+k)
+                        self.k.append(base_k+k)
         self.size = len(self.k)
 
     def __len__(self):

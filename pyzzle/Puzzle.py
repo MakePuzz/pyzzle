@@ -15,7 +15,6 @@ from IPython.display import display, HTML
 from pyzzle.Placeable import Placeable
 from pyzzle.Dictionary import Dictionary
 
-
 from enum import Enum
 class Judgement(Enum):
     THE_WORD_CAN_BE_PLACED = 0
@@ -25,6 +24,10 @@ class Judgement(Enum):
     THE_SAME_WORD_IS_IN_USE = 4
     THE_NEIGHBOR_CELLS_ARE_FILLED_EXCEPT_AT_THE_INTERSECTION = 5
     US_USA_DOMINICA_DOMINICAN_PROBLEM = 6
+
+from matplotlib import rcParams
+rcParams['font.family'] = 'sans-serif'
+rcParams['font.sans-serif'] = ['Hiragino Maru Gothic Pro', 'Yu Gothic', 'Meirio', 'Takao', 'IPAexGothic', 'IPAPGothic', 'VL PGothic', 'Noto Sans CJK JP']
 
 
 class Puzzle:

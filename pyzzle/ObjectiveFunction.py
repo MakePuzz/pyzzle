@@ -6,47 +6,47 @@ from scipy import ndimage
 class ObjectiveFunction:
     def __init__(self, msg=True):
         self.flist = [
-            "totalWeight",
-            "solSize",
-            "crossCount",
-            "fillCount",
-            "maxConnectedEmpties"
+            "total_weight",
+            "sol_size",
+            "cross_count",
+            "fill_count",
+            "max_connected_empties"
         ]
-        self.registeredFuncs = []
+        self.registered_funcs = []
         if msg is True:
             print("ObjectiveFunction object has made.")
 
     def __len__(self):
-        return len(self.registeredFuncs)
+        return len(self.registered_funcs)
 
-    def getFuncs(self):
-        return self.registeredFuncs
+    def get_funcs(self):
+        return self.registered_funcs
 
-    def solSize(self, puzzle):
+    def sol_size(self, puzzle):
         """
         This method returns the number of words used in the solution
         """
-        return puzzle.solSize
+        return puzzle.sol_size
 
-    def crossCount(self, puzzle):
+    def cross_count(self, puzzle):
         """
         This method returns the number of crosses of a word
         """
         return np.sum(puzzle.cover == 2)
 
-    def fillCount(self, puzzle):
+    def fill_count(self, puzzle):
         """
         This method returns the number of character cells in the puzzle
         """
         return np.sum(puzzle.cover >= 1)
 
-    def totalWeight(self, puzzle):
+    def total_weight(self, puzzle):
         """
         This method returns the sum of the word weights used for the solution
         """
-        return puzzle.totalWeight
+        return puzzle.total_weight
 
-    def maxConnectedEmpties(self, puzzle):
+    def max_connected_empties(self, puzzle):
         """
         This method returns the maximum number of concatenations for unfilled squares
         """
@@ -57,27 +57,27 @@ class ObjectiveFunction:
         score = puzzle.width*puzzle.height - sizes.max()
         return score
 
-    def register(self, funcNames, msg=True):
+    def register(self, func_names, msg=True):
         """
         This method registers an objective function in an instance
         """
-        for funcName in funcNames:
-            if funcName not in self.flist:
-                raise RuntimeError(f"ObjectiveFunction class does not have '{funcName}' function")
+        for func_name in func_names:
+            if func_name not in self.flist:
+                raise RuntimeError(f"ObjectiveFunction class does not have '{func_name}' function")
             if msg is True:
-                print(f" - '{funcName}' function has registered.")
-        self.registeredFuncs = funcNames
+                print(f" - '{func_name}' function has registered.")
+        self.registered_funcs = func_names
         return
 
-    def getScore(self, puzzle, i=0, func=None, all=False):
+    def get_score(self, puzzle, i=0, func=None, all=False):
         """
         This method returns any objective function value
         """
         if all is True:
-            scores=np.zeros(len(self.registeredFuncs), dtype="int")
+            scores=np.zeros(len(self.registered_funcs), dtype="int")
             for n in range(scores.size):
-                scores[n] = eval(f"self.{self.registeredFuncs[n]}(puzzle)")
+                scores[n] = eval(f"self.{self.registered_funcs[n]}(puzzle)")
             return scores
         if func is None:
-            func = self.registeredFuncs[i]
+            func = self.registered_funcs[i]
         return eval(f"self.{func}(puzzle)")

@@ -1,8 +1,8 @@
 import os
 import collections
-import numpy as np
-import os, shutil
+import shutil
 
+import numpy as np
 
 class Dictionary:
     def __init__(self, fpath=None, msg=True):
@@ -11,8 +11,8 @@ class Dictionary:
         self.name = ''
         self.word = []
         self.weight = []
-        self.wLen = []
-        self.removedWords = []
+        self.w_len = []
+        self.removed_words = []
         if fpath is not None:
             self.name = os.path.basename(fpath)[:-4]
             self.read(fpath)
@@ -26,7 +26,7 @@ class Dictionary:
                 print(f" - top of dictionary : {self[0]}")
 
     def __getitem__(self, key):
-        return {'word': self.word[key], 'weight': self.weight[key], 'len': self.wLen[key]}
+        return {'word': self.word[key], 'weight': self.weight[key], 'len': self.w_len[key]}
 
     def __str__(self):
         return self.name
@@ -64,7 +64,7 @@ class Dictionary:
                     print(f"The word '{wo}' already exists")
                 self.word.append(wo)
                 self.weight.append(we)
-                self.wLen.append(len(wo))
+                self.w_len.append(len(wo))
                 self.size += 1
 
     def read(self, fpath):
@@ -72,43 +72,43 @@ class Dictionary:
             data = f.readlines()
 
         # Remove "\n"
-        def removeNewLineCode(word):
+        def removed_new_line_code(word):
             line = word.rstrip("\n").split(" ")
             if len(line) == 1:
                 line.append(0)
             line[1] = int(line[1])
             return line
 
-        dic_list = list(map(removeNewLineCode, data))
+        dic_list = list(map(removed_new_line_code, data))
         word = [d[0] for d in dic_list]
         weight = [d[1] for d in dic_list]
         self.add(word, weight)
 
-    def deleteUnusableWords(self, msg=True):
+    def delete_unusable_words(self, msg=True):
         """
         This method checks words in the dictionary and erases words that can not cross any other words.
         """
-        mergedWords = "".join(self.word)
-        counts = collections.Counter(mergedWords)
+        merged_words = "".join(self.word)
+        counts = collections.Counter(merged_words)
         for i, w in enumerate(self.word[:]):
-            charValue = 0
+            char_value = 0
             for char in set(w):
-                charValue += counts[char]
-            if charValue == len(w):
-                self.removedWords.append(w)
+                char_value += counts[char]
+            if char_value == len(w):
+                self.removed_words.append(w)
                 del self.word[i]
                 del self.weight[i]
-                del self.wLen[i]
+                del self.w_len[i]
                 self.size -= 1
                 if msg is True:
                     print(f"'{w}' can not cross with any other words")
 
-    def calcWeight(self, msg=True):
+    def calc_weight(self, msg=True):
         """
         Calculate word weights in the dictionary.
         """
-        mergedWords = "".join(self.word)
-        counts = collections.Counter(mergedWords)
+        merged_words = "".join(self.word)
+        counts = collections.Counter(merged_words)
 
         for i, w in enumerate(self.word):
             for char in w:

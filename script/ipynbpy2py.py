@@ -7,9 +7,9 @@ ipynbファイルから変換したpyファイルを, 指定したパッケー�
  4. __pycache__ディレクトリをgitignoreするかどうか（-niまたは--notignoreと書くとignoreをしない. デフォルトはignoreする.）
 
  実行例：
- python ipynbpy2py.py jupyter/CrosswordLocalSearch.py -n sample_package
- python ipynbpy2py.py jupyter/CrosswordLocalSearch.py -n sample_package -a jupyter/CrosswordExtension.py
- python ipynbpy2py.py jupyter/CrosswordLocalSearch.py -n sample_package -a jupyter/CrosswordExtension.py -a jupyter/CrosswordExtension_2.py
+ python ipynbpy2py.py jupyter/Crosswordlocal_search.py -n sample_package
+ python ipynbpy2py.py jupyter/Crosswordlocal_search.py -n sample_package -a jupyter/CrosswordExtension.py
+ python ipynbpy2py.py jupyter/Crosswordlocal_search.py -n sample_package -a jupyter/CrosswordExtension.py -a jupyter/CrosswordExtension_2.py
 """
 
 import os

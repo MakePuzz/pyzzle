@@ -3,12 +3,12 @@ import copy
 
 class Optimizer:
     def __init__(self, msg=True):
-        self.methodList = ["localSearch", "iteratedLocalSearch"]
+        self.method_list = ["local_search", "iteratedlocal_search"]
         self.method = ""
         if msg is True:
             print("Optimizer object has made.")
 
-    def getNeighborSolution(self, puzzle):
+    def get_neighbor_solution(self, puzzle):
         """
         This method gets the neighborhood solution
         """
@@ -19,10 +19,10 @@ class Optimizer:
         # Kick
         _puzzle.kick()
         # Add as much as possible
-        _puzzle.addToLimit()
+        _puzzle.add_to_limit()
         return _puzzle
 
-    def localSearch(self, puzzle, epoch, show=True, move=False):
+    def local_search(self, puzzle, epoch, show=True, move=False):
         """
         This method performs a local search
         """
@@ -34,58 +34,58 @@ class Optimizer:
         if show is True:
             print(">>> Interim solution")
             _puzzle.show(_puzzle.cell)
-        goalEpoch = _puzzle.epoch + epoch
+        goal_epoch = _puzzle.epoch + epoch
         for ep in range(epoch):
             _puzzle.epoch += 1
-            print(f">>> Epoch {_puzzle.epoch}/{goalEpoch}")
+            print(f">>> Epoch {_puzzle.epoch}/{goal_epoch}")
             # Get neighbor solution by drop->kick->add
-            newPuzzle = self.getNeighborSolution(_puzzle)
+            new_puzzle = self.get_neighbor_solution(_puzzle)
 
             # Repeat if the score is high
-            for funcNum in range(len(_puzzle.objFunc)):
-                prevScore = _puzzle.objFunc.getScore(_puzzle, funcNum)
-                newScore = newPuzzle.objFunc.getScore(newPuzzle, funcNum)
-                if newScore > prevScore:
-                    print(f"    - Improved: {_puzzle.objFunc.getScore(_puzzle, all=True)} --> {newPuzzle.objFunc.getScore(newPuzzle, all=True)}")
-                    _puzzle = copy.deepcopy(newPuzzle)
+            for func_num in range(len(_puzzle.obj_func)):
+                prev_score = _puzzle.obj_func.get_score(_puzzle, func_num)
+                new_score = new_puzzle.obj_func.get_score(new_puzzle, func_num)
+                if new_score > prev_score:
+                    print(f"    - Improved: {_puzzle.obj_func.get_score(_puzzle, all=True)} --> {new_puzzle.obj_func.get_score(new_puzzle, all=True)}")
+                    _puzzle = copy.deepcopy(new_puzzle)
                     _puzzle.logging()
                     if show is True:
                         _puzzle.show(_puzzle.cell)
                     break
-                if newScore < prevScore:
+                if new_score < prev_score:
                     _puzzle.logging()
-                    print(f"    - Stayed: {_puzzle.objFunc.getScore(_puzzle, all=True)}")
+                    print(f"    - Stayed: {_puzzle.obj_func.get_score(_puzzle, all=True)}")
                     break
             else:
-                _puzzle = copy.deepcopy(newPuzzle)
+                _puzzle = copy.deepcopy(new_puzzle)
                 _puzzle.logging()
-                print(f"    - Replaced(same score): {_puzzle.objFunc.getScore(_puzzle, all=True)} -> {newPuzzle.objFunc.getScore(newPuzzle, all=True)}")
+                print(f"    - Replaced(same score): {_puzzle.obj_func.get_score(_puzzle, all=True)} -> {new_puzzle.obj_func.get_score(new_puzzle, all=True)}")
                 if show is True:
                     _puzzle.show(_puzzle.cell)
         # Update previous puzzle
-        puzzle.totalWeight = copy.deepcopy(_puzzle.totalWeight)
+        puzzle.total_weight = copy.deepcopy(_puzzle.total_weight)
         puzzle.enable = copy.deepcopy(_puzzle.enable)
         puzzle.cell = copy.deepcopy(_puzzle.cell)
         puzzle.cover = copy.deepcopy(_puzzle.cover)
         puzzle.label = copy.deepcopy(_puzzle.label)
-        puzzle.usedWords = copy.deepcopy(_puzzle.usedWords)
-        puzzle.usedPlcIdx = copy.deepcopy(_puzzle.usedPlcIdx)
-        puzzle.solSize = copy.deepcopy(_puzzle.solSize)
+        puzzle.used_words = copy.deepcopy(_puzzle.used_words)
+        puzzle.used_plc_idx = copy.deepcopy(_puzzle.used_plc_idx)
+        puzzle.sol_size = copy.deepcopy(_puzzle.sol_size)
         puzzle.history = copy.deepcopy(_puzzle.history)
-        puzzle.baseHistory = copy.deepcopy(_puzzle.baseHistory)
+        puzzle.base_history = copy.deepcopy(_puzzle.base_history)
         puzzle.log = copy.deepcopy(_puzzle.log)
         puzzle.epoch = copy.deepcopy(_puzzle.epoch)
-        puzzle.firstSolved = copy.deepcopy(_puzzle.firstSolved)
-        puzzle.initSeed = copy.deepcopy(_puzzle.initSeed)
+        puzzle.first_solved = copy.deepcopy(_puzzle.first_solved)
+        puzzle.init_seed = copy.deepcopy(_puzzle.init_seed)
         puzzle.dic = copy.deepcopy(_puzzle.dic)
         puzzle.plc = copy.deepcopy(_puzzle.plc)
 
-    def setMethod(self, methodName, msg=True):
+    def set_method(self, method_name, msg=True):
         """
         This method sets the optimization method on the instance
         """
-        if methodName not in self.methodList:
-            raise ValueError(f"Optimizer doesn't have '{methodName}' method")
+        if method_name not in self.method_list:
+            raise ValueError(f"Optimizer doesn't have '{method_name}' method")
         if msg is True:
-            print(f" - '{methodName}' method has registered.")
-        self.method = methodName
+            print(f" - '{method_name}' method has registered.")
+        self.method = method_name

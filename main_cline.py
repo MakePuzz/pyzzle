@@ -21,7 +21,7 @@ import argparse
 import numpy as np
 from matplotlib.font_manager import FontProperties
 
-#os.chdir("/Users/taiga/Crossword-LocalSearch/Python")
+#os.chdir("/Users/taiga/Crossword-local_search/Python")
 from pyzzle import Puzzle, Dictionary, ObjectiveFunction, Optimizer
 
 # In[]
@@ -51,41 +51,40 @@ height = args.height
 seed = args.seed
 epoch = args.epoch
 title = args.title
-withWeight = args.weight
+with_weight = args.weight
 output = args.output
 
-fp = FontProperties(fname="../jupyter/fonts/SourceHanCodeJP.ttc", size=14)
 np.random.seed(seed=seed)
 
 # In[]
 # Make instances
 puzzle = Puzzle(width, height, msg=False)
 dic = Dictionary(fpath, msg=False)
-objFunc = ObjectiveFunction(msg=False)
+obj_func = ObjectiveFunction(msg=False)
 optimizer = Optimizer(msg=False)
 
 if title is None:
     title = f"{dic.name}_w{width}_h{height}_r{seed}_ep{epoch}"
-puzzle.puzzleTitle = title
+puzzle.puzzle_title = title
 if output is None:
     output = title + ".png"
 
 # In[]
-puzzle.importDict(dic, msg=False)
+puzzle.import_dict(dic, msg=False)
 # Register and set method and compile
-if withWeight is True:
-    objFunc.register(["totalWeight","solSize", "crossCount", "fillCount", "maxConnectedEmpties"], msg=False)
+if with_weight is True:
+    obj_func.register(["total_weight","sol_size", "cross_count", "fill_count", "max_connected_empties"], msg=False)
 else:
-    objFunc.register(["solSize", "crossCount", "fillCount", "maxConnectedEmpties"], msg=False)
-optimizer.setMethod("localSearch", msg=False)
-puzzle.compile(objFunc=objFunc, optimizer=optimizer, msg=False)
+    obj_func.register(["sol_size", "cross_count", "fill_count", "max_connected_empties"], msg=False)
+optimizer.set_method("local_search", msg=False)
+puzzle.compile(obj_func=obj_func, optimizer=optimizer, msg=False)
 
 # In[]
 # Solve
-puzzle.firstSolve()
+puzzle.first_solve()
 puzzle.solve(epoch=epoch)
-print(f"SimpleSolution: {puzzle.isSimpleSol()}")
+print(f"SimpleSolution: {puzzle.is_simple_sol()}")
 print(puzzle.cell)
-print(f"単語リスト：{puzzle.usedWords[:puzzle.solSize]}")
-puzzle.saveAnswerImage(f"fig/{output}_answer", fp=fp)
-puzzle.saveProblemImage(f"fig/{output}_problem", fp=fp)
+print(f"単語リスト：{puzzle.used_words[:puzzle.sol_size]}")
+puzzle.save_answer_image(f"fig/{output}_answer")
+puzzle.save_problem_image(f"fig/{output}_problem")

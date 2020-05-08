@@ -4,16 +4,27 @@ import datetime
 import itertools
 import math
 import shutil
+import pickle
 
 import numpy as np
 import pandas as pd
 from scipy import ndimage
 import matplotlib.pyplot as plt
 from IPython.display import display, HTML
-import pickle
 
 from pyzzle.Placeable import Placeable
 from pyzzle.Dictionary import Dictionary
+
+
+from enum import Enum
+class Judgement(Enum):
+    THE_WORD_CAN_BE_PLACED = 0
+    THE_PRECEDING_AND_SUCCEEDING_CELLS_ARE_ALREADY_FILLED = 1
+    AT_LEAST_ONE_PLACE_MUST_CROSS_OTHER_WORDS = 2
+    NOT_A_CORRECT_INTERSECTION = 3
+    THE_SAME_WORD_IS_IN_USE = 4
+    THE_NEIGHBOR_CELLS_ARE_FILLED_EXCEPT_AT_THE_INTERSECTION = 5
+    US_USA_DOMINICA_DOMINICAN_PROBLEM = 6
 
 
 class Puzzle:
@@ -28,31 +39,31 @@ class Puzzle:
         puzzle.add(0,3,0,'elevetor')
         puzzle.show()
         puzzle.saveProbremImage()
-        puzzle.saveAnswerImage()
+        puzzle.save_answer_image()
     """
 
     def __init__(self, width, height, title="Criss Cross", msg=True):
         self.width = width
         self.height = height
-        self.totalWeight = 0
+        self.total_weight = 0
         self.title = title
         self.cell = np.full(width * height, "", dtype="unicode").reshape(height, width)
         self.cover = np.zeros(width * height, dtype="int").reshape(height, width)
         self.label = np.zeros(width * height, dtype="int").reshape(height, width)
         self.enable = np.ones(width * height, dtype="bool").reshape(height, width)
-        self.usedWords = np.full(width * height, "", dtype=f"U{max(width, height)}")
-        self.usedPlcIdx = np.full(width * height, -1, dtype="int")
-        self.solSize = 0
+        self.used_words = np.full(width * height, "", dtype=f"U{max(width, height)}")
+        self.used_plc_idx = np.full(width * height, -1, dtype="int")
+        self.sol_size = 0
         self.history = []
-        self.baseHistory = []
+        self.base_history = []
         self.log = None
         self.epoch = 0
         self.nlabel = None
-        self.firstSolved = False
-        self.initSeed = None
+        self.first_solved = False
+        self.init_seed = None
         self.dic = Dictionary(msg=False)
         self.plc = Placeable(self.width, self.height, self.dic, msg=False)
-        self.objFunc = None
+        self.obj_func = None
         self.optimizer = None
         # self.fp = os.path.get_path()
         ## Message
@@ -78,23 +89,23 @@ class Puzzle:
         if all is True:
             self.dic = None
             self.plc = None
-            self.objFunc = None
+            self.obj_func = None
             self.optimizer = None
-        self.totalWeight = 0
+        self.total_weight = 0
         self.enable = np.ones(self.width * self.height, dtype="bool").reshape(self.height, self.width)
         self.cell = np.full(self.width * self.height, "", dtype="unicode").reshape(self.height, self.width)
         self.cover = np.zeros(self.width * self.height, dtype="int").reshape(self.height, self.width)
         self.label = np.zeros(self.width * self.height, dtype="int").reshape(self.height, self.width)
         self.enable = np.ones(self.width * self.height, dtype="bool").reshape(self.height, self.width)
-        self.usedWords = np.full(self.width * self.height, "", dtype=f"U{max(self.width, self.height)}")
-        self.usedPlcIdx = np.full(self.width * self.height, -1, dtype="int")
-        self.solSize = 0
-        self.baseHistory = []
+        self.used_words = np.full(self.width * self.height, "", dtype=f"U{max(self.width, self.height)}")
+        self.used_plc_idx = np.full(self.width * self.height, -1, dtype="int")
+        self.sol_size = 0
+        self.base_history = []
         self.history = []
         self.log = None
         self.epoch = 0
-        self.firstSolved = False
-        self.initSeed = None
+        self.first_solved = False
+        self.init_seed = None
 
     def in_ipynb(self):
         """
@@ -105,7 +116,7 @@ class Puzzle:
         except NameError:
             return False
 
-    def importDict(self, dictionary, msg=True):
+    def import_dict(self, dictionary, msg=True):
         """
         This method imports Dictionary to Puzzle
 
@@ -117,13 +128,13 @@ class Puzzle:
         self.dic = dictionary
         self.plc = Placeable(self.width, self.height, self.dic, msg=msg)
 
-    def isEnabledAdd(self, div, i, j, word, wLen):
+    def is_enabled_add(self, ori, i, j, word, w_len):
         """
         This method determines if a word can be placed
 
         Parameters
         ----------
-        div : int
+        ori : int
             Direction of the word (0:Vertical, 1:Horizontal)
         i : int
             Row number of the word
@@ -131,7 +142,7 @@ class Puzzle:
             Col number of the word
         word : str
             The word to be checked whether it can be added
-        wLen : int
+        w_len : int
             length of the word
 
         Returns
@@ -150,84 +161,84 @@ class Puzzle:
         5. The Neighbor cells are filled except at the intersection
         6. US/USA, DOMINICA/DOMINICAN problem
         """
-        if div == 0:
-            empties = self.cell[i:i + wLen, j] == ""
-        if div == 1:
-            empties = self.cell[i, j:j + wLen] == ""
+        if ori == 0:
+            empties = self.cell[i:i + w_len, j] == ""
+        if ori == 1:
+            empties = self.cell[i, j:j + w_len] == ""
 
         # If 0 words used, return True
-        if self.solSize is 0:
-            return 0
+        if self.sol_size is 0:
+            return Judgement.THE_WORD_CAN_BE_PLACED
 
         # If the preceding and succeeding cells are already filled
-        if div == 0:
+        if ori == 0:
             if i > 0 and self.cell[i - 1, j] != "":
-                return 1
-            if i + wLen < self.height and self.cell[i + wLen, j] != "":
-                return 1
-        if div == 1:
+                return Judgement.THE_PRECEDING_AND_SUCCEEDING_CELLS_ARE_ALREADY_FILLED
+            if i + w_len < self.height and self.cell[i + w_len, j] != "":
+                return Judgement.THE_PRECEDING_AND_SUCCEEDING_CELLS_ARE_ALREADY_FILLED
+        if ori == 1:
             if j > 0 and self.cell[i, j - 1] != "":
-                return 1
-            if j + wLen < self.width and self.cell[i, j + wLen] != "":
-                return 1
+                return Judgement.THE_PRECEDING_AND_SUCCEEDING_CELLS_ARE_ALREADY_FILLED
+            if j + w_len < self.width and self.cell[i, j + w_len] != "":
+                return Judgement.THE_PRECEDING_AND_SUCCEEDING_CELLS_ARE_ALREADY_FILLED
 
         # At least one place must cross other words
         if np.all(empties == True):
-            return 2
+            return Judgement.AT_LEAST_ONE_PLACE_MUST_CROSS_OTHER_WORDS
 
         # Judge whether correct intersection
         where = np.where(empties == False)[0]
-        if div == 0:
+        if ori == 0:
             jall = np.full(where.size, j, dtype="int")
             if np.any(self.cell[where + i, jall] != np.array(list(word))[where]):
-                return 3
-        if div == 1:
+                return Judgement.NOT_A_CORRECT_INTERSECTION
+        if ori == 1:
             iall = np.full(where.size, i, dtype="int")
             if np.any(self.cell[iall, where + j] != np.array(list(word))[where]):
-                return 3
+                return Judgement.NOT_A_CORRECT_INTERSECTION
 
         # If the same word is in use, return False
-        if word in self.usedWords:
-            return 4
+        if word in self.used_words:
+            return Judgement.THE_SAME_WORD_IS_IN_USE
 
         # If neighbor cells are filled except at the intersection, return False
         where = np.where(empties == True)[0]
-        if div == 0:
+        if ori == 0:
             jall = np.full(where.size, j, dtype="int")
             # Left side
             if j > 0 and np.any(self.cell[where + i, jall - 1] != ""):
-                return 5
+                return Judgement.THE_NEIGHBOR_CELLS_ARE_FILLED_EXCEPT_AT_THE_INTERSECTION
             # Right side
             if j < self.width - 1 and np.any(self.cell[where + i, jall + 1] != ""):
-                return 5
-        if div == 1:
+                return Judgement.THE_NEIGHBOR_CELLS_ARE_FILLED_EXCEPT_AT_THE_INTERSECTION
+        if ori == 1:
             iall = np.full(where.size, i, dtype="int")
             # Upper
             if i > 0 and np.any(self.cell[iall - 1, where + j] != ""):
-                return 5
+                return Judgement.THE_NEIGHBOR_CELLS_ARE_FILLED_EXCEPT_AT_THE_INTERSECTION
             # Lower
             if i < self.height - 1 and np.any(self.cell[iall + 1, where + j] != ""):
-                return 5
+                return Judgement.THE_NEIGHBOR_CELLS_ARE_FILLED_EXCEPT_AT_THE_INTERSECTION
 
         # US/USA, DOMINICA/DOMINICAN problem
-        if div == 0:
-            if np.any(self.enable[i:i + wLen, j] == False) or np.all(empties == False):
-                return 6
-        if div == 1:
-            if np.any(self.enable[i, j:j + wLen] == False) or np.all(empties == False):
-                return 6
+        if ori == 0:
+            if np.any(self.enable[i:i + w_len, j] == False) or np.all(empties == False):
+                return Judgement.US_USA_DOMINICA_DOMINICAN_PROBLEM
+        if ori == 1:
+            if np.any(self.enable[i, j:j + w_len] == False) or np.all(empties == False):
+                return Judgement.US_USA_DOMINICA_DOMINICAN_PROBLEM
 
         # If Break through the all barrier, return True
         return 0
 
-    def _add(self, div, i, j, k):
+    def _add(self, ori, i, j, k):
         """
         This internal method places a word at arbitrary positions.
         If it can not be arranged, nothing is done.
 
         Parameters
         ----------
-        div : int
+        ori : int
             Direction of the word (0:Vertical, 1:Horizontal)
         i : int
             Row number of the word
@@ -238,47 +249,47 @@ class Puzzle:
         """
         word = self.dic.word[k]
         weight = self.dic.weight[k]
-        wLen = self.dic.wLen[k]
+        w_len = self.dic.w_len[k]
 
         # Judge whether adding is enabled
-        code = self.isEnabledAdd(div, i, j, word, wLen)
-        if code is not 0:
+        code = self.is_enabled_add(ori, i, j, word, w_len)
+        if code is not Judgement.THE_WORD_CAN_BE_PLACED:
             return code
 
         # Put the word to puzzle
-        if div == 0:
-            self.cell[i:i + wLen, j] = list(word)[0:wLen]
-        if div == 1:
-            self.cell[i, j:j + wLen] = list(word)[0:wLen]
+        if ori == 0:
+            self.cell[i:i + w_len, j] = list(word)[0:w_len]
+        if ori == 1:
+            self.cell[i, j:j + w_len] = list(word)[0:w_len]
 
         # Set the prohibited cell before and after placed word
-        if div == 0:
+        if ori == 0:
             if i > 0:
                 self.enable[i - 1, j] = False
-            if i + wLen < self.height:
-                self.enable[i + wLen, j] = False
-        if div == 1:
+            if i + w_len < self.height:
+                self.enable[i + w_len, j] = False
+        if ori == 1:
             if j > 0:
                 self.enable[i, j - 1] = False
-            if j + wLen < self.width:
-                self.enable[i, j + wLen] = False
+            if j + w_len < self.width:
+                self.enable[i, j + w_len] = False
 
         # Update cover array
-        if div == 0:
-            self.cover[i:i + wLen, j] += 1
-        if div == 1:
-            self.cover[i, j:j + wLen] += 1
+        if ori == 0:
+            self.cover[i:i + w_len, j] += 1
+        if ori == 1:
+            self.cover[i, j:j + w_len] += 1
 
         # Update properties
-        wordIdx = self.dic.word.index(word)
-        self.usedPlcIdx[self.solSize] = self.plc.invP[div, i, j, wordIdx]
-        self.usedWords[self.solSize] = self.dic.word[k]
-        self.solSize += 1
-        self.totalWeight += weight
-        self.history.append((1, wordIdx, div, i, j))
+        word_idx = self.dic.word.index(word)
+        self.used_plc_idx[self.sol_size] = self.plc.inv_p[ori, i, j, word_idx]
+        self.used_words[self.sol_size] = self.dic.word[k]
+        self.sol_size += 1
+        self.total_weight += weight
+        self.history.append((1, word_idx, ori, i, j))
         return 0
 
-    def add(self, div, i, j, word, weight=0):
+    def add(self, ori, i, j, word, weight=0):
         if type(word) is int:
             k = word
         elif type(word) is str:
@@ -287,41 +298,41 @@ class Puzzle:
             k = self.dic.word.index(word)
         else:
             raise TypeError()
-        self._add(div, i, j, k)
+        self._add(ori, i, j, k)
 
-    def addToLimit(self):
+    def add_to_limit(self):
         """
         This method adds the words as much as possible
         """
         # Make a random index of plc
-        randomIndex = np.arange(self.plc.size)
-        np.random.shuffle(randomIndex)
+        random_index = np.arange(self.plc.size)
+        np.random.shuffle(random_index)
 
         # Add as much as possible
-        solSizeTmp = None
-        while self.solSize != solSizeTmp:
-            solSizeTmp = self.solSize
-            dropIdx = []
-            for i, r in enumerate(randomIndex):
-                code = self._add(self.plc.div[r], self.plc.i[r], self.plc.j[r], self.plc.k[r])
+        sol_size_tmp = None
+        while self.sol_size != sol_size_tmp:
+            sol_size_tmp = self.sol_size
+            drop_idx = []
+            for i, r in enumerate(random_index):
+                code = self._add(self.plc.ori[r], self.plc.i[r], self.plc.j[r], self.plc.k[r])
                 if code is not 2:
-                    dropIdx.append(i)
-            randomIndex = np.delete(randomIndex, dropIdx)
+                    drop_idx.append(i)
+            random_index = np.delete(random_index, drop_idx)
         return
 
-    def firstSolve(self):
+    def first_solve(self):
         """
         This method creates an initial solution
         """
-        # Check the firstSolved
-        if self.firstSolved:
-            raise RuntimeError("'firstSolve' method has already called")
+        # Check the first_solved
+        if self.first_solved:
+            raise RuntimeError("'first_solve' method has already called")
 
         # Save initial seed number
-        self.initSeed = np.random.get_state()[1][0]
+        self.init_seed = np.random.get_state()[1][0]
         # Add as much as possible
-        self.addToLimit()
-        self.firstSolved = True
+        self.add_to_limit()
+        self.first_solved = True
 
     def show(self, ndarray=None):
         """
@@ -354,7 +365,7 @@ class Puzzle:
                 dict(selector="caption", props=[("caption-side", "bottom")])
             ]
             df = pd.DataFrame(ndarray)
-            df = (df.style.set_table_styles(styles).set_caption(f"Puzzle({self.width},{self.height}), solSize:{self.solSize}, Dictionary:[{self.dic.fpath}]"))
+            df = (df.style.set_table_styles(styles).set_caption(f"Puzzle({self.width},{self.height}), sol_size:{self.sol_size}, Dictionary:[{self.dic.fpath}]"))
             display(df)
         else:
             ndarray = np.where(ndarray == "", "  ", ndarray)
@@ -364,21 +375,21 @@ class Puzzle:
         """
         This method logs the current objective function values
         """
-        if self.objFunc is None:
+        if self.obj_func is None:
             raise RuntimeError("Logging method must be executed after compilation method")
         if self.log is None:
-            self.log = pd.DataFrame(columns=self.objFunc.getFuncs())
+            self.log = pd.DataFrame(columns=self.obj_func.get_funcs())
             self.log.index.name = "epoch"
-        tmpSe = pd.Series(self.objFunc.getScore(self, all=True), index=self.objFunc.getFuncs())
-        self.log = self.log.append(tmpSe, ignore_index=True)
+        tmp_series = pd.Series(self.obj_func.get_score(self, all=True), index=self.obj_func.get_funcs())
+        self.log = self.log.append(tmp_series, ignore_index=True)
 
-    def _drop(self, div, i, j, k, isKick=False):
+    def _drop(self, ori, i, j, k, is_kick=False):
         """
         This internal method removes the specified word from the puzzle.
 
         Parametes
         ----------
-        div : int
+        ori : int
             Direction of the word (0:Vertical, 1:Horizontal)
         i : int
             Row number of the word
@@ -386,7 +397,7 @@ class Puzzle:
             Col number of the word
         k : int
             The number of the word registered in Placeable
-        isKick : bool default False
+        is_kick : bool default False
             If this dropping is in the kick process, it should be True.
             This information is used in making ``history``.
 
@@ -397,74 +408,74 @@ class Puzzle:
         or cause LAOS / US / USA problems.
         """
         # Get p, pidx
-        p = self.plc.invP[div, i, j, k]
-        pidx = np.where(self.usedPlcIdx == p)[0][0]
+        p = self.plc.inv_p[ori, i, j, k]
+        pidx = np.where(self.used_plc_idx == p)[0][0]
 
-        wLen = self.dic.wLen[k]
+        w_len = self.dic.w_len[k]
         weight = self.dic.weight[k]
         # Pull out a word
-        if div == 0:
-            self.cover[i:i + wLen, j] -= 1
-            where = np.where(self.cover[i:i + wLen, j] == 0)[0]
+        if ori == 0:
+            self.cover[i:i + w_len, j] -= 1
+            where = np.where(self.cover[i:i + w_len, j] == 0)[0]
             jall = np.full(where.size, j, dtype="int")
             self.cell[i + where, jall] = ""
-        if div == 1:
-            self.cover[i, j:j + wLen] -= 1
-            where = np.where(self.cover[i, j:j + wLen] == 0)[0]
+        if ori == 1:
+            self.cover[i, j:j + w_len] -= 1
+            where = np.where(self.cover[i, j:j + w_len] == 0)[0]
             iall = np.full(where.size, i, dtype="int")
             self.cell[iall, j + where] = ""
-        # Update usedWords, usedPlcIdx, solSize, totalWeight
-        self.usedWords = np.delete(self.usedWords, pidx)  # delete
-        self.usedWords = np.append(self.usedWords, "")  # append
-        self.usedPlcIdx = np.delete(self.usedPlcIdx, pidx)  # delete
-        self.usedPlcIdx = np.append(self.usedPlcIdx, -1)  # append
-        self.solSize -= 1
-        self.totalWeight -= weight
+        # Update used_words, used_plc_idx, sol_size, total_weight
+        self.used_words = np.delete(self.used_words, pidx)  # delete
+        self.used_words = np.append(self.used_words, "")  # append
+        self.used_plc_idx = np.delete(self.used_plc_idx, pidx)  # delete
+        self.used_plc_idx = np.append(self.used_plc_idx, -1)  # append
+        self.sol_size -= 1
+        self.total_weight -= weight
         # Insert data to history
-        code = 3 if isKick else 2
-        self.history.append((code, k, div, i, j))
+        code = 3 if is_kick else 2
+        self.history.append((code, k, ori, i, j))
         # Release prohibited cells
-        removeFlag = True
-        if div == 0:
+        remove_flag = True
+        if ori == 0:
             if i > 0:
                 if i > 2 and np.all(self.cell[[i - 3, i - 2], [j, j]] != ""):
-                    removeFlag = False
+                    remove_flag = False
                 if j > 2 and np.all(self.cell[[i - 1, i - 1], [j - 2, j - 1]] != ""):
-                    removeFlag = False
+                    remove_flag = False
                 if j < self.width - 2 and np.all(self.cell[[i - 1, i - 1], [j + 1, j + 2]] != ""):
-                    removeFlag = False
-                if removeFlag == True:
+                    remove_flag = False
+                if remove_flag == True:
                     self.enable[i - 1, j] = True
-            if i + wLen < self.height:
-                if i + wLen < self.height - 2 and np.all(self.cell[[i + wLen + 1, i + wLen + 2], [j, j]] != ""):
-                    removeFlag = False
-                if j > 2 and np.all(self.cell[[i + wLen, i + wLen], [j - 2, j - 1]] != ""):
-                    removeFlag = False
-                if j < self.width - 2 and np.all(self.cell[[i + wLen, i + wLen], [j + 1, j + 2]] != ""):
-                    removeFlag = False
-                if removeFlag == True:
-                    self.enable[i + wLen, j] = True
-        if div == 1:
+            if i + w_len < self.height:
+                if i + w_len < self.height - 2 and np.all(self.cell[[i + w_len + 1, i + w_len + 2], [j, j]] != ""):
+                    remove_flag = False
+                if j > 2 and np.all(self.cell[[i + w_len, i + w_len], [j - 2, j - 1]] != ""):
+                    remove_flag = False
+                if j < self.width - 2 and np.all(self.cell[[i + w_len, i + w_len], [j + 1, j + 2]] != ""):
+                    remove_flag = False
+                if remove_flag == True:
+                    self.enable[i + w_len, j] = True
+        if ori == 1:
             if j > 0:
                 if j > 2 and np.all(self.cell[[i, i], [j - 3, j - 2]] != ""):
-                    removeFlag = False
+                    remove_flag = False
                 if i > 2 and np.all(self.cell[[i - 2, i - 1], [j - 1, j - 1]] != ""):
-                    removeFlag = False
+                    remove_flag = False
                 if i < self.height - 2 and np.all(self.cell[[i + 1, i + 2], [j - 1, j - 1]] != ""):
-                    removeFlag = False
-                if removeFlag == True:
+                    remove_flag = False
+                if remove_flag == True:
                     self.enable[i, j - 1] = True
-            if j + wLen < self.width:
-                if j + wLen < self.width - 2 and np.all(self.cell[[i, i], [j + wLen + 1, j + wLen + 2]] != ""):
-                    removeFlag = False
-                if i > 2 and np.all(self.cell[[i - 2, i - 1], [j + wLen, j + wLen]] != ""):
-                    removeFlag = False
-                if i < self.height - 2 and np.all(self.cell[[i + 1, i + 2], [j + wLen, j + wLen]] != ""):
-                    removeFlag = False
-                if removeFlag == True:
-                    self.enable[i, j + wLen] = True
+            if j + w_len < self.width:
+                if j + w_len < self.width - 2 and np.all(self.cell[[i, i], [j + w_len + 1, j + w_len + 2]] != ""):
+                    remove_flag = False
+                if i > 2 and np.all(self.cell[[i - 2, i - 1], [j + w_len, j + w_len]] != ""):
+                    remove_flag = False
+                if i < self.height - 2 and np.all(self.cell[[i + 1, i + 2], [j + w_len, j + w_len]] != ""):
+                    remove_flag = False
+                if remove_flag == True:
+                    self.enable[i, j + w_len] = True
 
-    def drop(self, word=None, divij=None):
+    def drop(self, word=None, oriij=None):
         """
         This method removes the specified word from the puzzle.
 
@@ -472,7 +483,7 @@ class Puzzle:
         ----------
         word : int or str
             The word number or word in the puzlle to drop.
-        divij : tuple of int, optional
+        oriij : tuple of int, optional
             Tuple indicating a specific word to drop.
 
         Notes
@@ -481,8 +492,8 @@ class Puzzle:
         into consideration, which may break the connectivity of the puzzle
         or cause LAOS / US / USA problems.
         """
-        if word is None and divij is None:
-            raise ValueError("'word' or 'divij' must be specified")
+        if word is None and oriij is None:
+            raise ValueError("'word' or 'oriij' must be specified")
         if word is not None:
             if type(word) is int:
                 k = word
@@ -490,54 +501,54 @@ class Puzzle:
                 k = self.dic.word.index(word)
             else:
                 raise TypeError("'word' must be int or str")
-            for p in self.usedPlcIdx:
+            for p in self.used_plc_idx:
                 if self.plc.k[p] == k:
-                    div = self.plc.div[p]
+                    ori = self.plc.ori[p]
                     i = self.plc.i[p]
                     j = self.plc.j[p]
                     break
-        if divij is not None:
-            if type(divij) not in (list, tuple):
-                raise TypeError(f"divij must be list or tuple")
-            if len(divij) is not 3:
-                raise ValueError(f"Length of 'divij' must be 3, not {len(divij)}")
-            for p in self.usedPlcIdx:
-                _div = self.plc.div[p]
+        if oriij is not None:
+            if type(oriij) not in (list, tuple):
+                raise TypeError(f"oriij must be list or tuple")
+            if len(oriij) is not 3:
+                raise ValueError(f"Length of 'oriij' must be 3, not {len(oriij)}")
+            for p in self.used_plc_idx:
+                _ori = self.plc.ori[p]
                 _i = self.plc.i[p]
                 _j = self.plc.j[p]
-                if _div == divij[0] and _i == divij[1] and _j == divij[2]:
-                    k = puzzle.plc.k[p]
+                if _ori == oriij[0] and _i == oriij[1] and _j == oriij[2]:
+                    k = self.plc.k[p]
                     break
-        self._drop(divij[0], divij[1], divij[2], k)
+        self._drop(oriij[0], oriij[1], oriij[2], k)
 
     def collapse(self):
         """
         This method collapses connectivity of the puzzle.
         """
-        # If solSize = 0, return
-        if self.solSize == 0:
+        # If sol_size = 0, return
+        if self.sol_size == 0:
             return
 
-        # Make a random index of solSize
-        randomIndex = np.arange(self.solSize)
-        np.random.shuffle(randomIndex)
+        # Make a random index of sol_size
+        random_index = np.arange(self.sol_size)
+        np.random.shuffle(random_index)
 
         # Drop words until connectivity collapses
-        tmpUsedPlcIdx = copy.deepcopy(self.usedPlcIdx)
-        for r, p in enumerate(tmpUsedPlcIdx[randomIndex]):
-            # Get div, i, j, k, wLen
-            div = self.plc.div[p]
+        tmp_used_plc_idx = copy.deepcopy(self.used_plc_idx)
+        for r, p in enumerate(tmp_used_plc_idx[random_index]):
+            # Get ori, i, j, k, w_len
+            ori = self.plc.ori[p]
             i = self.plc.i[p]
             j = self.plc.j[p]
             k = self.plc.k[p]
-            wLen = self.dic.wLen[self.plc.k[p]]
+            w_len = self.dic.w_len[self.plc.k[p]]
             # If '2' is aligned in the cover array, the word can not be dropped
-            if div == 0:
-                if not np.any(np.diff(np.where(self.cover[i:i + wLen, j] == 2)[0]) == 1):
-                    self._drop(div, i, j, k)
-            if div == 1:
-                if not np.any(np.diff(np.where(self.cover[i, j:j + wLen] == 2)[0]) == 1):
-                    self._drop(div, i, j, k)
+            if ori == 0:
+                if not np.any(np.diff(np.where(self.cover[i:i + w_len, j] == 2)[0]) == 1):
+                    self._drop(ori, i, j, k)
+            if ori == 1:
+                if not np.any(np.diff(np.where(self.cover[i, j:j + w_len] == 2)[0]) == 1):
+                    self._drop(ori, i, j, k)
 
             self.label, self.nlabel = ndimage.label(self.cover)
             if self.nlabel >= 2:
@@ -547,42 +558,42 @@ class Puzzle:
         """
         This method kicks elements except largest CCL.
         """
-        # If solSize = 0, return
-        if self.solSize == 0:
+        # If sol_size = 0, return
+        if self.sol_size == 0:
             return
 
         mask = self.cover > 0
         self.label, self.nlabel = ndimage.label(mask)
         sizes = ndimage.sum(mask, self.label, range(self.nlabel + 1))
-        largestCCL = sizes.argmax()
+        largest_ccl = sizes.argmax()
 
         # Erase elements except CCL ('kick' in C-program)
-        for idx, p in enumerate(self.usedPlcIdx[:self.solSize]):
+        for idx, p in enumerate(self.used_plc_idx[:self.sol_size]):
             if p == -1:
                 continue
-            if self.label[self.plc.i[p], self.plc.j[p]] != largestCCL:
-                self._drop(self.plc.div[p], self.plc.i[p], self.plc.j[p], self.plc.k[p], isKick=True)
+            if self.label[self.plc.i[p], self.plc.j[p]] != largest_ccl:
+                self._drop(self.plc.ori[p], self.plc.i[p], self.plc.j[p], self.plc.k[p], is_kick=True)
 
-    def compile(self, objFunc, optimizer, msg=True):
+    def compile(self, obj_func, optimizer, msg=True):
         """
         This method compiles the objective function and
         optimization method into the Puzzle instance.
 
         Parameters
         ----------
-        objFunc : ObjectiveFunction
+        obj_func : ObjectiveFunction
             ObjectiveFunction object for compile to Puzzle
         optimizer : Optimizer
             Optimizer object for compile to Puzzle
         """
-        self.objFunc = objFunc
+        self.obj_func = obj_func
         self.optimizer = optimizer
 
         if msg is True:
             print("compile succeeded.")
             print(" --- objective functions:")
-            for funcNum in range(len(objFunc)):
-                print(f"  |-> {funcNum} {objFunc.registeredFuncs[funcNum]}")
+            for func_num in range(len(obj_func)):
+                print(f"  |-> {func_num} {obj_func.registered_funcs[func_num]}")
             print(f" --- optimizer: {optimizer.method}")
 
     def solve(self, epoch):
@@ -595,14 +606,14 @@ class Puzzle:
         epoch : int
             The number of epoch
         """
-        if self.firstSolved is False:
-            raise RuntimeError("'firstSolve' method has not called")
+        if self.first_solved is False:
+            raise RuntimeError("'first_solve' method has not called")
         if epoch is 0:
             raise ValueError("'epoch' must be lather than 0")
         exec(f"self.optimizer.{self.optimizer.method}(self, {epoch})")
         print(" --- done")
 
-    def showLog(self, title="Objective Function's time series", grid=True, **kwargs):
+    def show_log(self, title="Objective Function's time series", grid=True, figsize=None, **kwargs):
         """
         This method shows log of objective functions.
 
@@ -626,51 +637,51 @@ class Puzzle:
             raise RuntimeError("Puzzle has no log")
         return self.log.plot(subplots=True, title=title, grid=grid, figsize=figsize, **kwargs)
 
-    def isSimpleSol(self):
+    def is_simple_sol(self):
         """
         This method determines whether it is the simple solution
         """
-        rtnBool = True
+        rtn_bool = True
 
         # Get word1
-        for s, p in enumerate(self.usedPlcIdx[:self.solSize]):
+        for s, p in enumerate(self.used_plc_idx[:self.sol_size]):
             i = self.plc.i[p]
             j = self.plc.j[p]
-            word1 = self.usedWords[s]
-            if self.plc.div[p] == 0:
-                crossIdx1 = np.where(self.cover[i:i + len(word1), j] == 2)[0]
-            elif self.plc.div[p] == 1:
-                crossIdx1 = np.where(self.cover[i, j:j + len(word1)] == 2)[0]
+            word1 = self.used_words[s]
+            if self.plc.ori[p] == 0:
+                cross_idx1 = np.where(self.cover[i:i + len(word1), j] == 2)[0]
+            elif self.plc.ori[p] == 1:
+                cross_idx1 = np.where(self.cover[i, j:j + len(word1)] == 2)[0]
             # Get word2
-            for t, q in enumerate(self.usedPlcIdx[s + 1:self.solSize]):
+            for t, q in enumerate(self.used_plc_idx[s + 1:self.sol_size]):
                 i = self.plc.i[q]
                 j = self.plc.j[q]
-                word2 = self.usedWords[s + t + 1]
+                word2 = self.used_words[s + t + 1]
                 if len(word1) != len(word2):  # If word1 and word2 have different lengths, they can not be replaced
                     continue
-                if self.plc.div[q] == 0:
-                    crossIdx2 = np.where(self.cover[i:i + len(word2), j] == 2)[0]
-                if self.plc.div[q] == 1:
-                    crossIdx2 = np.where(self.cover[i, j:j + len(word2)] == 2)[0]
+                if self.plc.ori[q] == 0:
+                    cross_idx2 = np.where(self.cover[i:i + len(word2), j] == 2)[0]
+                if self.plc.ori[q] == 1:
+                    cross_idx2 = np.where(self.cover[i, j:j + len(word2)] == 2)[0]
                 replaceable = True
                 # Check cross part from word1
-                for w1idx in crossIdx1:
+                for w1idx in cross_idx1:
                     if word1[w1idx] != word2[w1idx]:
                         replaceable = False
                         break
                 # Check cross part from word2
                 if replaceable is True:
-                    for w2idx in crossIdx2:
+                    for w2idx in cross_idx2:
                         if word2[w2idx] != word1[w2idx]:
                             replaceable = False
                             break
                 # If word1 and word2 are replaceable, this puzzle doesn't have a simple solution -> return False
                 if replaceable is True:
                     print(f" - words '{word1}' and '{word2}' are replaceable")
-                    rtnBool = False
-        return rtnBool
+                    rtn_bool = False
+        return rtn_bool
 
-    def saveImage(self, data, fpath, list_label="[Word List]", dpi=100):
+    def save_image(self, data, fpath, list_label="[Word List]", dpi=100):
         """
         This method generates and returns a puzzle image with a word list
         """
@@ -691,7 +702,7 @@ class Puzzle:
         ax1.set_title(label="*** " + self.title + " ***", size=20)
 
         # Draw word list
-        words = [word for word in self.usedWords if word != ""]
+        words = [word for word in self.used_words if word != ""]
         if words == []:
             words = [""]
         words.sort()
@@ -711,69 +722,69 @@ class Puzzle:
         plt.savefig(fpath, dpi=dpi)
         plt.close()
 
-    def saveProblemImage(self, fpath="problem.png", list_label="[Word List]", dpi=100):
+    def save_problem_image(self, fpath="problem.png", list_label="[Word List]", dpi=300):
         """
         This method generates and returns a puzzle problem with a word list
         """
         data = np.full(self.width * self.height, "", dtype="unicode").reshape(self.height, self.width)
-        self.saveImage(data, fpath, list_label, dpi)
+        self.save_image(data, fpath, list_label, dpi)
 
-    def saveAnswerImage(self, fpath="answer.png", list_label="[Word List]", dpi=100):
+    def save_answer_image(self, fpath="answer.png", list_label="[Word List]", dpi=300):
         """
         This method generates and returns a puzzle answer with a word list.
         """
         data = self.cell
-        self.saveImage(data, fpath, list_label, dpi)
+        self.save_image(data, fpath, list_label, dpi)
 
     def jump(self, idx):
         tmp_puzzle = self.__class__(self.width, self.height, self.title, msg=False)
         tmp_puzzle.dic = copy.deepcopy(self.dic)
         tmp_puzzle.plc = Placeable(self.width, self.height, tmp_puzzle.dic, msg=False)
         tmp_puzzle.optimizer = copy.deepcopy(self.optimizer)
-        tmp_puzzle.objFunc = copy.deepcopy(self.objFunc)
-        tmp_puzzle.baseHistory = copy.deepcopy(self.baseHistory)
+        tmp_puzzle.obj_func = copy.deepcopy(self.obj_func)
+        tmp_puzzle.base_history = copy.deepcopy(self.base_history)
 
-        if set(self.history).issubset(self.baseHistory) is False:
+        if set(self.history).issubset(self.base_history) is False:
             if idx <= len(self.history):
-                tmp_puzzle.baseHistory = copy.deepcopy(self.history)
+                tmp_puzzle.base_history = copy.deepcopy(self.history)
             else:
                 raise RuntimeError('This puzzle is up to date')
 
-        for code, k, div, i, j in tmp_puzzle.baseHistory[:idx]:
+        for code, k, ori, i, j in tmp_puzzle.base_history[:idx]:
             if code == 1:
-                tmp_puzzle._add(div, i, j, k)
+                tmp_puzzle._add(ori, i, j, k)
             elif code == 2:
-                tmp_puzzle._drop(div, i, j, k, isKick=False)
+                tmp_puzzle._drop(ori, i, j, k, is_kick=False)
             elif code == 3:
-                tmp_puzzle._drop(div, i, j, k, isKick=True)
-        tmp_puzzle.firstSolved = True
+                tmp_puzzle._drop(ori, i, j, k, is_kick=True)
+        tmp_puzzle.first_solved = True
         return tmp_puzzle
 
-    def getPrev(self, n=1):
+    def get_prev(self, n=1):
         if len(self.history) - n < 0:
             return self.jump(0)
         return self.jump(len(self.history) - n)
 
-    def getNext(self, n=1):
-        if len(self.history) + n > len(self.baseHistory):
-            return self.getLatest()
+    def get_next(self, n=1):
+        if len(self.history) + n > len(self.base_history):
+            return self.get_latest()
         return self.jump(len(self.history) + n)
 
-    def getLatest(self):
-        return self.jump(len(self.baseHistory))
+    def get_latest(self):
+        return self.jump(len(self.base_history))
 
-    def toPickle(self, name=None, msg=True):
+    def to_pickle(self, name=None, msg=True):
         """
         This method saves Puzzle object as a binary file
         """
         now = datetime.datetime.today().strftime("%Y%m%d%H%M%S")
-        name = name or f"{now}_{self.dic.name}_{self.width}_{self.height}_{self.initSeed}_{self.epoch}.pickle"
+        name = name or f"{now}_{self.dic.name}_{self.width}_{self.height}_{self.init_seed}_{self.epoch}.pickle"
         with open(name, mode="wb") as f:
             pickle.dump(self, f)
         if msg is True:
             print(f"Puzzle has pickled to the path '{name}'")
 
-    def getRect(self):
+    def get_rect(self):
         rows = np.any(self.cover, axis=1)
         cols = np.any(self.cover, axis=0)
         rmin, rmax = np.where(rows)[0][[0, -1]]
@@ -781,7 +792,7 @@ class Puzzle:
         return rmin, rmax, cmin, cmax
 
     def move(self, direction, n=0, limit=False):
-        rmin, rmax, cmin, cmax = self.getRect()
+        rmin, rmax, cmin, cmax = self.get_rect()
         str2int = {'U': 1, 'D': 2, 'R': 3, 'L': 4}
         if direction in ('U', 'D', 'R', 'L', 'u', 'd', 'r', 'l'):
             direction = str2int[direction.upper()]
@@ -802,8 +813,8 @@ class Puzzle:
             self.cover = np.roll(self.cover, -n, axis=0)
             self.label = np.roll(self.label, -n, axis=0)
             self.enable = np.roll(self.enable, -n, axis=0)
-            for i, p in enumerate(self.usedPlcIdx[:self.solSize]):
-                self.usedPlcIdx[i] = self.plc.invP[self.plc.div[p], self.plc.i[p] - n, self.plc.j[p], self.plc.k[p]]
+            for i, p in enumerate(self.used_plc_idx[:self.sol_size]):
+                self.used_plc_idx[i] = self.plc.inv_p[self.plc.ori[p], self.plc.i[p] - n, self.plc.j[p], self.plc.k[p]]
         if direction is 2:
             if self.height - (rmax + 1) < n:
                 raise RuntimeError()
@@ -811,8 +822,8 @@ class Puzzle:
             self.cover = np.roll(self.cover, n, axis=0)
             self.label = np.roll(self.label, n, axis=0)
             self.enable = np.roll(self.enable, n, axis=0)
-            for i, p in enumerate(self.usedPlcIdx[:self.solSize]):
-                self.usedPlcIdx[i] = self.plc.invP[self.plc.div[p], self.plc.i[p] + n, self.plc.j[p], self.plc.k[p]]
+            for i, p in enumerate(self.used_plc_idx[:self.sol_size]):
+                self.used_plc_idx[i] = self.plc.inv_p[self.plc.ori[p], self.plc.i[p] + n, self.plc.j[p], self.plc.k[p]]
         if direction is 3:
             if cmin < n:
                 raise RuntimeError()
@@ -820,8 +831,8 @@ class Puzzle:
             self.cover = np.roll(self.cover, -n, axis=1)
             self.label = np.roll(self.label, -n, axis=1)
             self.enable = np.roll(self.enable, -n, axis=1)
-            for i, p in enumerate(self.usedPlcIdx[:self.solSize]):
-                self.usedPlcIdx[i] = self.plc.invP[self.plc.div[p], self.plc.i[p], self.plc.j[p] - n, self.plc.k[p]]
+            for i, p in enumerate(self.used_plc_idx[:self.sol_size]):
+                self.used_plc_idx[i] = self.plc.inv_p[self.plc.ori[p], self.plc.i[p], self.plc.j[p] - n, self.plc.k[p]]
         if direction is 4:
             if self.width - (cmax + 1) < n:
                 raise RuntimeError()
@@ -829,7 +840,7 @@ class Puzzle:
             self.cover = np.roll(self.cover, n, axis=1)
             self.label = np.roll(self.label, n, axis=1)
             self.enable = np.roll(self.enable, n, axis=1)
-            for i, p in enumerate(self.usedPlcIdx[:self.solSize]):
-                self.usedPlcIdx[i] = self.plc.invP[self.plc.div[p], self.plc.i[p], self.plc.j[p] + n, self.plc.k[p]]
+            for i, p in enumerate(self.used_plc_idx[:self.sol_size]):
+                self.used_plc_idx[i] = self.plc.inv_p[self.plc.ori[p], self.plc.i[p], self.plc.j[p] + n, self.plc.k[p]]
 
         self.history.append((4, direction, n))

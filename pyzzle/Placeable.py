@@ -6,8 +6,8 @@ class Placeable:
         self.size = 0
         self.width = width
         self.height = height
-        self.div, self.i, self.j, self.k = [], [], [], []
-        self.invP = np.full((2, self.height, self.width, 0), np.nan, dtype="int")
+        self.ori, self.i, self.j, self.k = [], [], [], []
+        self.inv_p = np.full((2, self.height, self.width, 0), np.nan, dtype="int")
 
         self._compute(dic.word)
 
@@ -20,19 +20,19 @@ class Placeable:
             word = [word]
         if self.size is 0 or baseK is not 0:
             ap = np.full((2, self.height, self.width, len(word)), np.nan, dtype="int")
-            self.invP = np.append(self.invP, ap, axis=3)
-        for div in (0,1):
+            self.inv_p = np.append(self.inv_p, ap, axis=3)
+        for ori in (0,1):
             for k,w in enumerate(word):
-                if div == 0:
-                    iMax = self.height - len(w) + 1
-                    jMax = self.width
-                elif div == 1:
-                    iMax = self.height
-                    jMax = self.width - len(w) + 1
-                for i in range(iMax):
-                    for j in range(jMax):
-                        self.invP[div,i,j,baseK+k] = len(self.div)
-                        self.div.append(div)
+                if ori == 0:
+                    i_max = self.height - len(w) + 1
+                    j_max = self.width
+                elif ori == 1:
+                    i_max = self.height
+                    j_max = self.width - len(w) + 1
+                for i in range(i_max):
+                    for j in range(j_max):
+                        self.inv_p[ori,i,j,baseK+k] = len(self.ori)
+                        self.ori.append(ori)
                         self.i.append(i)
                         self.j.append(j)
                         self.k.append(baseK+k)
@@ -43,6 +43,6 @@ class Placeable:
 
     def __getitem__(self, key):
         if type(key) in (int, np.int):
-            return {"div": self.div[key], "i": self.i[key], "j": self.j[key], "k": self.k[key]}
+            return {"ori": self.ori[key], "i": self.i[key], "j": self.j[key], "k": self.k[key]}
         if type(key) is str:
             return eval(f"self.{key}")

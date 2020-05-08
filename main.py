@@ -7,7 +7,7 @@ import os
 import numpy as np
 from matplotlib.font_manager import FontProperties
 
-#os.chdir("/Users/taiga/Crossword-LocalSearch/Python")
+#os.chdir("/Users/taiga/Crossword-local_search/Python")
 from pyzzle import Puzzle, Dictionary, ObjectiveFunction, Optimizer
 
 # In[]
@@ -16,7 +16,7 @@ fpath = "../dict/pokemon.txt"  # countries hokkaido animals kotowaza birds dinos
 width = 15
 height = 15
 seed = 1
-withweight = False
+with_weight = False
 
 fp = FontProperties(fname="../fonts/SourceHanCodeJP.ttc", size=14)
 np.random.seed(seed=seed)
@@ -25,21 +25,21 @@ np.random.seed(seed=seed)
 # Make instances
 puzzle = Puzzle(width, height)
 dic = Dictionary(fpath)
-objFunc = ObjectiveFunction()
+obj_func = ObjectiveFunction()
 optimizer = Optimizer()
 
 # In[]
-puzzle.importDict(dic)
+puzzle.import_dict(dic)
 # Register and set method and compile
-objFunc.register(["totalWeight", "solSize", "crossCount", "fillCount", "maxConnectedEmpties"])
-optimizer.setMethod("localSearch")
-puzzle.compile(objFunc=objFunc, optimizer=optimizer)
+obj_func.register(["total_weight", "sol_size", "cross_count", "fill_count", "max_connected_empties"])
+optimizer.set_method("local_search")
+puzzle.compile(obj_func=obj_func, optimizer=optimizer)
 
 # In[]
 # Solve
-puzzle.firstSolve()
+puzzle.first_solve()
 puzzle.solve(epoch=5)
-print(f"SimpleSolution: {puzzle.isSimpleSol()}")
+print(f"SimpleSolution: {puzzle.is_simple_sol()}")
 print(puzzle.cell)
-print(f"単語リスト：{puzzle.usedWords[:puzzle.solSize]}")
-puzzle.saveAnswerImage(f"fig/{dic.name}_w{width}_h{height}_r{seed}.png")
+print(f"単語リスト：{puzzle.used_words[:puzzle.sol_size]}")
+puzzle.save_answer_image(f"fig/{dic.name}_w{width}_h{height}_r{seed}.png")

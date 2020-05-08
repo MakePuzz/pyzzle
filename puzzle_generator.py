@@ -20,7 +20,7 @@ Crossword Local Search by command line
 
 importして使う場合：
     import puzzle_generator
-    ans, prob, simple = puzzle_generator.get(fpath, width, height, seed, epoch, title, withWeight, output)
+    ans, prob, simple = puzzle_generator.get(fpath, width, height, seed, epoch, title, with_weight, output)
 """
 # In[]
 import os
@@ -28,12 +28,12 @@ import argparse
 import numpy as np
 from matplotlib.font_manager import FontProperties
 
-#os.chdir("/Users/taiga/Crossword-LocalSearch/Python")
+#os.chdir("/Users/taiga/Crossword-local_search/Python")
 from pyzzle import Puzzle, Dictionary, ObjectiveFunction, Optimizer
 
 # In[]
 
-def get(fpath, width, height, seed, epoch, title, withWeight, output):
+def get(fpath, width, height, seed, epoch, title, with_weight, output):
     fp = FontProperties(fname="../jupyter/fonts/SourceHanCodeJP.ttc", size=14)
     np.random.seed(seed=seed)
 
@@ -41,34 +41,34 @@ def get(fpath, width, height, seed, epoch, title, withWeight, output):
     # Make instances
     puzzle = Puzzle(width, height, msg=False)
     dic = Dictionary(fpath, msg=False)
-    objFunc = ObjectiveFunction(msg=False)
+    obj_func = ObjectiveFunction(msg=False)
     optimizer = Optimizer(msg=False)
 
     if title is None:
         title = f"{dic.name}_w{width}_h{height}_r{seed}_ep{epoch}"
-    puzzle.puzzleTitle = title
+    puzzle.puzzle_title = title
     if output is None:
         output = title + ".png"
 
     # In[]
-    puzzle.importDict(dic, msg=False)
+    puzzle.import_dict(dic, msg=False)
     # Register and set method and compile
-    if withWeight is True:
-        objFunc.register(["totalWeight","solSize", "crossCount", "fillCount", "maxConnectedEmpties"], msg=False)
+    if with_weight is True:
+        obj_func.register(["total_weight","sol_size", "cross_count", "fill_count", "max_connected_empties"], msg=False)
     else:
-        objFunc.register(["solSize", "crossCount", "fillCount", "maxConnectedEmpties"], msg=False)
-    optimizer.setMethod("localSearch", msg=False)
-    puzzle.compile(objFunc=objFunc, optimizer=optimizer, msg=False)
+        obj_func.register(["sol_size", "cross_count", "fill_count", "max_connected_empties"], msg=False)
+    optimizer.set_method("local_search", msg=False)
+    puzzle.compile(obj_func=obj_func, optimizer=optimizer, msg=False)
 
     # In[]
     # Solve
-    puzzle.firstSolve()
+    puzzle.first_solve()
     puzzle.solve(epoch=epoch)
-    is_simple = puzzle.isSimpleSol()
+    is_simple = puzzle.is_simple_sol()
     pass_answer = f"fig/{output}_answer.png"
     pass_problem = f"fig/{output}_problem.png"
-    puzzle.saveAnswerImage(pass_answer, fp=fp)
-    puzzle.saveProblemImage(pass_problem, fp=fp)
+    puzzle.save_answer_image(pass_answer)
+    puzzle.save_problem_image(pass_problem)
     return pass_problem, pass_answer, is_simple
 
 if __name__ == '__main__':
@@ -98,6 +98,6 @@ if __name__ == '__main__':
     seed = args.seed
     epoch = args.epoch
     title = args.title
-    withWeight = args.weight
+    with_weight = args.weight
     output = args.output
-    print(get(fpath, width, height, seed, epoch, title, withWeight, output))
+    print(get(fpath, width, height, seed, epoch, title, with_weight, output))

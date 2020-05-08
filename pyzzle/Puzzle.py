@@ -1,21 +1,19 @@
-import os
 import copy
 import datetime
-import itertools
-import math
-import shutil
 import pickle
+from enum import Enum
 
+import math
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from IPython.display import display
 from scipy import ndimage
-import matplotlib.pyplot as plt
-from IPython.display import display, HTML
 
-from pyzzle.Placeable import Placeable
 from pyzzle.Dictionary import Dictionary
+from pyzzle.Placeable import Placeable
 
-from enum import Enum
+
 class Judgement(Enum):
     THE_WORD_CAN_BE_PLACED = 0
     THE_PRECEDING_AND_SUCCEEDING_CELLS_ARE_ALREADY_FILLED = 1

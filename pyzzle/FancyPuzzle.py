@@ -1,23 +1,15 @@
-import os
-import sys
 import copy
-import datetime
-import time
-import math
-import itertools
-import unicodedata
-import collections
-import pickle
-import shutil
+import sys
 
+import math
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from PIL import Image
-from IPython.display import display, HTML
-import matplotlib.pyplot as plt
+
+from pyzzle import Puzzle, Placeable
 
 sys.path.append('../python')
-from pyzzle import Puzzle, Dictionary, Placeable, ObjectiveFunction, Optimizer
+
 
 class FancyPuzzle(Puzzle):
     def __init__(self, mask, title="スケルトンパズル", msg=True):

@@ -2,6 +2,7 @@
 utils
 """
 
+
 def in_ipynb():
     """Are we in a jupyter notebook?"""
     try:

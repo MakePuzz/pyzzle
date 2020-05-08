@@ -1,8 +1,8 @@
-import os
 import collections
-import shutil
+import os
 
 import numpy as np
+
 
 class Dictionary:
     def __init__(self, fpath=None, msg=True):

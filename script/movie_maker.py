@@ -8,7 +8,6 @@
   Output: codecに対応した拡張子を持つ出力ファイル名
   fps: 出力する動画の1秒あたりのフレーム数
 """
-import sys
 import glob
 import argparse
 

@@ -32,12 +32,8 @@ from matplotlib.font_manager import FontProperties
 from pyzzle import Puzzle, Dictionary, ObjectiveFunction, Optimizer
 
 # In[]
-
 def get(fpath, width, height, seed, epoch, title, with_weight, output):
-    fp = FontProperties(fname="../jupyter/fonts/SourceHanCodeJP.ttc", size=14)
     np.random.seed(seed=seed)
-
-    # In[]
     # Make instances
     puzzle = Puzzle(width, height, msg=False)
     dic = Dictionary(fpath, msg=False)
@@ -50,7 +46,6 @@ def get(fpath, width, height, seed, epoch, title, with_weight, output):
     if output is None:
         output = title + ".png"
 
-    # In[]
     puzzle.import_dict(dic, msg=False)
     # Register and set method and compile
     if with_weight is True:
@@ -60,7 +55,6 @@ def get(fpath, width, height, seed, epoch, title, with_weight, output):
     optimizer.set_method("local_search", msg=False)
     puzzle.compile(obj_func=obj_func, optimizer=optimizer, msg=False)
 
-    # In[]
     # Solve
     puzzle.first_solve()
     puzzle.solve(epoch=epoch)

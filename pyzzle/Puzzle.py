@@ -557,6 +557,15 @@ class Puzzle:
             if self.nlabel >= 2:
                 break
 
+    def export_json(self, name=None, msg=True):
+        """
+        This method export Puzzle answer as json.
+        """
+        import codecs
+        print(self.used_plc_idx)
+        # hoge = codes.open([JSONfile], 'w', 'utf-8')
+        # json.dump([JSONfile], hoge, ensure_ascii=False)
+
     def kick(self):
         """
         This method kicks elements except largest CCL.

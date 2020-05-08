@@ -557,14 +557,22 @@ class Puzzle:
             if self.nlabel >= 2:
                 break
 
-    def export_json(self, name=None, msg=True):
+    def export_json(self, name="out.json", msg=True, indent=None):
         """
         This method export Puzzle answer as json.
         """
-        import codecs
-        print(self.used_plc_idx)
-        # hoge = codes.open([JSONfile], 'w', 'utf-8')
-        # json.dump([JSONfile], hoge, ensure_ascii=False)
+        import json
+        word_list = []
+        for p in self.used_plc_idx:
+            word_list.append({"word":self.dic.word[self.plc.k[p]], "ori":self.plc.ori[p], "i":self.plc.i[p], "j":self.plc.j[p]})
+            if p == -1:
+                break
+        try:
+            mask = self.mask
+        except:
+            mask = np.full(self.cell.shape, True)
+        with open(name, "w", encoding="utf-8") as f:
+            json.dump({"list":word_list, "mask":mask.tolist()}, f, sort_keys=True, indent=indent, ensure_ascii=False)
 
     def kick(self):
         """

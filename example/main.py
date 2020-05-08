@@ -8,7 +8,7 @@ import numpy as np
 
 #os.chdir("/Users/taiga/Crossword-LocalSearch/Python")
 sys.path.append("../")
-from pyzzle import Puzzle, Dictionary, ObjectiveFunction, Optimizer
+from pyzzle import Puzzle, FancyPuzzle, Dictionary, ObjectiveFunction, Optimizer
 
 # In[]
 # Set variables
@@ -21,8 +21,31 @@ with_weight = False
 np.random.seed(seed=seed)
 
 # In[]
-# Make instances
-puzzle = Puzzle(width, height)
+## Make instances
+### FuncyPuzzle
+mask = np.array([
+    [0,0,0,0,0,1,1,1,1,1,0,0,0,0,0],
+    [0,0,0,1,1,1,1,1,1,1,1,1,0,0,0],
+    [0,0,1,1,1,1,1,1,1,1,1,1,1,0,0],
+    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+    [1,1,1,1,1,1,0,0,0,1,1,1,1,1,1],
+    [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
+    [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
+    [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
+    [1,1,1,1,1,1,0,0,0,1,1,1,1,1,1],
+    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+    [0,0,1,1,1,1,1,1,1,1,1,1,1,0,0],
+    [0,0,0,1,1,1,1,1,1,1,1,1,0,0,0],
+    [0,0,0,0,0,1,1,1,1,1,0,0,0,0,0],
+], dtype="bool")
+puzzle = FancyPuzzle(mask, "ドーナツパズル")
+
+### Puzzle (normal)
+# puzzle = Puzzle(width, height)
+
+### Dictionary, ObjectiveFunction, Optimizer
 dic = Dictionary(fpath)
 obj_func = ObjectiveFunction()
 optimizer = Optimizer()
@@ -37,8 +60,14 @@ puzzle.compile(obj_func=obj_func, optimizer=optimizer)
 # In[]
 # Solve
 puzzle.first_solve()
-puzzle.solve(epoch=5)
-print(f"SimpleSolution: {puzzle.is_simple_sol()}")
+
+# In[]
+puzzle.solve(epoch=2)
+
+# In[]
+print(f"Simple solution: {puzzle.is_simple_sol()}")
 print(puzzle.cell)
 print(f"単語リスト：{puzzle.used_words[:puzzle.sol_size]}")
 puzzle.save_answer_image(f"fig/{dic.name}_w{width}_h{height}_r{seed}.png")
+
+puzzle.export_json(f"json/{dic.name}_w{width}_h{height}_r{seed}.json")

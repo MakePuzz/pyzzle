@@ -27,7 +27,7 @@ from pyzzle import Puzzle, Dictionary, ObjectiveFunction, Optimizer
 
 # In[]
 parser = argparse.ArgumentParser(description="make a puzzle with given parameters")
-parser.add_argument("fpath", type=str,
+parser.add_argument("dict_path", type=str,
                     help="file path of a dictionary")
 parser.add_argument("width", type=int,
                     help="width of the puzzle")
@@ -46,7 +46,7 @@ parser.add_argument("-o", "--output", type=str,
 args = parser.parse_args()
 
 # settings
-fpath = args.fpath # countries hokkaido animals kotowaza birds dinosaurs fishes sports pokemon typhoon cats s_and_p100
+dict_path = args.dict_path # countries hokkaido animals kotowaza birds dinosaurs fishes sports pokemon typhoon cats s_and_p100
 width = args.width
 height = args.height
 seed = args.seed
@@ -60,7 +60,7 @@ np.random.seed(seed=seed)
 # In[]
 # Make instances
 puzzle = Puzzle(width, height)
-dic = Dictionary(fpath)
+dic = Dictionary(dict_path)
 obj_func = ObjectiveFunction()
 optimizer = Optimizer()
 

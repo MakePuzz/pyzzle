@@ -11,7 +11,7 @@ from pyzzle import Puzzle, FancyPuzzle, Dictionary, ObjectiveFunction, Optimizer
 
 # In[]
 # Set variables
-fpath = "../dict/pokemon.txt"  # countries hokkaido animals kotowaza birds dinosaurs fishes sports
+dict_path = "../dict/pokemon.txt"  # countries hokkaido animals kotowaza birds dinosaurs fishes sports
 width = 15
 height = 15
 with_weight = False
@@ -45,7 +45,7 @@ puzzle = FancyPuzzle(mask, "ドーナツパズル")
 # puzzle = Puzzle(width, height)
 
 ### Dictionary, ObjectiveFunction, Optimizer
-dic = Dictionary(fpath)
+dic = Dictionary(dict_path)
 obj_func = ObjectiveFunction()
 optimizer = Optimizer()
 

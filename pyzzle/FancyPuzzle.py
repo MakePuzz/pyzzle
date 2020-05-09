@@ -80,7 +80,7 @@ class FancyPuzzle(Puzzle):
         utils.show_2Darray(self.cell, self.mask)
     
     def jump(self, idx):
-        tmp_puzzle = self.__class__(self.width, self.height, self.mask, self.title)
+        tmp_puzzle = self.__class__(self.mask, self.title)
         tmp_puzzle.dic = copy.deepcopy(self.dic)
         tmp_puzzle.plc = Placeable(self.width, self.height, tmp_puzzle.dic)
         tmp_puzzle.optimizer = copy.deepcopy(self.optimizer)

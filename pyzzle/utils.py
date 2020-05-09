@@ -11,15 +11,19 @@ def in_ipynb():
         return False
 
 
-def show_2Darray(ndarray):
+def show_2Darray(ndarray, mask=None):
     """
     Display the puzzle.
 
     Parameters
     ----------
-    ndarray : ndarray, optional
-        Numpy.ndarray for display.
+    ndarray : ndarray
+        Numpy.ndarray for display
+    mask : ndarray, optional
+        Numpy.ndarray for mask
     """
+    if mask is not None:
+        ndarray[mask == False] = "■"
     if in_ipynb() is True:
         styles = [
             dict(selector="th", props=[("font-size", "90%"),

@@ -111,7 +111,7 @@ class Puzzle:
         return self.title
 
     @property
-    def is_unique_sol(self):
+    def is_unique(self):
         """
         This method deter_mines whether it is the unique solution
         """
@@ -153,6 +153,37 @@ class Puzzle:
                     print(f" - words '{word1}' and '{word2}' are replaceable")
                     rtn_bool = False
         return rtn_bool
+
+    @property
+    def difficulty(self):
+        """
+        Returns the difficulty of the puzzle.
+
+        Returns
+        -------
+        difficulty : float
+            Difficulty based on word lengths.
+        """
+        if self.sol_size == 0:
+            return 0
+        # 単語の長さ別にリスト内の単語を分類
+        # 各長さの単語数をカウント{長さ2:1個，長さ3:3個，長さ4:2個}
+        w_len_count = {}
+        for used_word in self.used_words:
+            w_len = len(used_word)
+            if w_len == 0:
+                break
+            if w_len not in w_len_count.keys():
+                w_len_count[w_len] = 1
+            else:
+                w_len_count[w_len] += 1
+        # カウント値の平均を全単語数で割った値は[1/単語数]に近いほど簡単で，[1]に近いほど難しい。
+        w_len_count_mean = np.mean(list(w_len_count.values()))
+        count_mean = w_len_count_mean/self.sol_size
+        # 0から1で難易度を表現するために正規化する
+        difficulty = (count_mean - 1/self.sol_size)/(1 - 1/self.sol_size)
+        return difficulty
+        
 
     def reinit(self, all=False):
         """
@@ -833,7 +864,7 @@ class Puzzle:
 
         Parameters
         ----------
-        n : int
+        n : int, default 1
             The number of previous logs to go back to.
 
         Returns
@@ -847,16 +878,38 @@ class Puzzle:
         return previous_puzzle
 
     def get_next(self, n=1):
+        """
+        Returns to the next log state for the specified number of times.
+
+        Parameters
+        ----------
+        n : int, default 1
+            The number of logs to proceed after.
+
+        Returns
+        -------
+        next_puzzle : Puzzle
+            Next Puzzle
+        """
         if len(self.history) + n > len(self.base_history):
             return self.get_latest()
-        return self.jump(len(self.history) + n)
+        next_puzzle = self.jump(len(self.history) + n)
+        return next_puzzle
 
     def get_latest(self):
+        """
+        Return a puzzle with the state of the latest log.
+
+        Retruns
+        -------
+        latest_puzzle : Puzzle
+            Latest puzzle
+        """
         return self.jump(len(self.base_history))
 
     def to_pickle(self, name=None):
         """
-        This method saves Puzzle object as a binary file
+        Save Puzzle object as Pickle
         """
         now = datetime.datetime.today().strftime("%Y%m%d%H%M%S")
         name = name or f"{now}_{self.dic.name}_{self.width}_{self.height}_{self.init_seed}_{self.epoch}.pickle"
@@ -864,6 +917,20 @@ class Puzzle:
             pickle.dump(self, f)
 
     def get_rect(self):
+        """
+        Return a rectangular region that encloses a words
+        
+        Returns
+        -------
+        r_min : int
+           Minimum number of rows
+        r_max : int
+           Maximum number of rows
+        c_min : int
+           Minimum number of cols
+        c_min : int
+           Maximum number of cols
+        """
         rows = np.any(self.cover, axis=1)
         cols = np.any(self.cover, axis=0)
         r_min, r_max = np.where(rows)[0][[0, -1]]
@@ -871,6 +938,23 @@ class Puzzle:
         return r_min, r_max, c_min, c_max
 
     def move(self, direction, n=0, limit=False):
+        """
+        Move the word-enclosing-region in the specified direction for the specified number of times.
+
+        Parameters
+        ----------
+        direction : int or str
+            The direction in which to move the word group.
+            The correspondence between each int or str and the direction is as follows:
+                1 or "U" : upward
+                2 or "D" : downward
+                3 or "R" : right
+                4 or "L" : left
+        n : int
+            Number of times to move
+        limit : bool, default False
+            If True, move as much as possible in the specified direction.
+        """
         r_min, r_max, c_min, c_max = self.get_rect()
         str2int = {'U': 1, 'D': 2, 'R': 3, 'L': 4}
         if direction in ('U', 'D', 'R', 'L', 'u', 'd', 'r', 'l'):
@@ -881,45 +965,44 @@ class Puzzle:
             reverse = {'1': 2, '2': 1, '3': 4, '4': 3}
             direction = reverse[str(direction)]
             n = -n
+
+        n2limit = {1: r_min, 2: self.height - (r_max + 1), 3: c_min, 4: self.width - (c_max + 1)}
+
         if limit is True:
-            n2limit = {1: r_min, 2: self.height - (r_max + 1), 3: c_min, 4: self.width - (c_max + 1)}
             n = n2limit[direction]
 
         if direction is 1:
             if r_min < n:
-                raise RuntimeError()
-            self.cell = np.roll(self.cell, -n, axis=0)
-            self.cover = np.roll(self.cover, -n, axis=0)
-            self.label = np.roll(self.label, -n, axis=0)
-            self.enable = np.roll(self.enable, -n, axis=0)
-            for i, p in enumerate(self.used_plc_idx[:self.sol_size]):
-                self.used_plc_idx[i] = self.plc.inv_p[self.plc.ori[p], self.plc.i[p] - n, self.plc.j[p], self.plc.k[p]]
+                n = n2limit[direction]
+            num = -n
+            axis = 0
+            di = num
+            dj = 0
         if direction is 2:
             if self.height - (r_max + 1) < n:
-                raise RuntimeError()
-            self.cell = np.roll(self.cell, n, axis=0)
-            self.cover = np.roll(self.cover, n, axis=0)
-            self.label = np.roll(self.label, n, axis=0)
-            self.enable = np.roll(self.enable, n, axis=0)
-            for i, p in enumerate(self.used_plc_idx[:self.sol_size]):
-                self.used_plc_idx[i] = self.plc.inv_p[self.plc.ori[p], self.plc.i[p] + n, self.plc.j[p], self.plc.k[p]]
+                n = n2limit[direction]
+            num = n
+            axis = 0
+            di = num
+            dj = 0
         if direction is 3:
             if c_min < n:
-                raise RuntimeError()
-            self.cell = np.roll(self.cell, -n, axis=1)
-            self.cover = np.roll(self.cover, -n, axis=1)
-            self.label = np.roll(self.label, -n, axis=1)
-            self.enable = np.roll(self.enable, -n, axis=1)
-            for i, p in enumerate(self.used_plc_idx[:self.sol_size]):
-                self.used_plc_idx[i] = self.plc.inv_p[self.plc.ori[p], self.plc.i[p], self.plc.j[p] - n, self.plc.k[p]]
+                n = n2limit[direction]
+            num = -n
+            axis = 1
+            di = 0
+            dj = num
         if direction is 4:
             if self.width - (c_max + 1) < n:
-                raise RuntimeError()
-            self.cell = np.roll(self.cell, n, axis=1)
-            self.cover = np.roll(self.cover, n, axis=1)
-            self.label = np.roll(self.label, n, axis=1)
-            self.enable = np.roll(self.enable, n, axis=1)
-            for i, p in enumerate(self.used_plc_idx[:self.sol_size]):
-                self.used_plc_idx[i] = self.plc.inv_p[self.plc.ori[p], self.plc.i[p], self.plc.j[p] + n, self.plc.k[p]]
-
+                n = n2limit[direction]
+            num = n
+            axis = 1
+            di = 0
+            dj = num
+        self.cell = np.roll(self.cell, num, axis=axis)
+        self.cover = np.roll(self.cover, num, axis=axis)
+        self.label = np.roll(self.label, num, axis=axis)
+        self.enable = np.roll(self.enable, num, axis=axis)
+        for i, p in enumerate(self.used_plc_idx[:self.sol_size]):
+            self.used_plc_idx[i] = self.plc.inv_p[self.plc.ori[p], self.plc.i[p] + di, self.plc.j[p] + dj, self.plc.k[p]]
         self.history.append((4, direction, n))

@@ -6,7 +6,6 @@ Crossword Local Search
 import os, sys
 import numpy as np
 
-#os.chdir("/Users/taiga/Crossword-LocalSearch/Python")
 sys.path.append("../")
 from pyzzle import Puzzle, FancyPuzzle, Dictionary, ObjectiveFunction, Optimizer
 
@@ -53,21 +52,35 @@ optimizer = Optimizer()
 # In[]
 puzzle.import_dict(dic)
 # Register and set method and compile
-obj_func.register(["total_weight", "sol_size", "cross_count", "fill_count", "max_connected_empties"])
+obj_func.register(
+    ["total_weight",
+    "sol_size", 
+    "cross_count", 
+    "fill_count", 
+    "max_connected_empties", 
+    "difficulty"]
+    )
 optimizer.set_method("local_search")
 puzzle.compile(obj_func=obj_func, optimizer=optimizer)
 
 # In[]
-# Solve
 puzzle.first_solve()
 
 # In[]
-puzzle.solve(epoch=2)
+puzzle.solve(epoch=10)
+print(f"unique solution: {puzzle.is_unique}")
 
 # In[]
-print(f"unique solution: {puzzle.is_unique}")
 print(puzzle.cell)
 print(f"単語リスト：{puzzle.used_words[:puzzle.sol_size]}")
-puzzle.save_answer_image(f"fig/{dic.name}_w{width}_h{height}_r{seed}.png")
+oname = f"{dic.name}_w{width}_h{height}_r{seed}.png"
+puzzle.save_answer_image(f"fig/answer_{oname}")
+puzzle.save_problem_image(f"fig/problem_{oname}")
+print(f"Save as '{oname}'")
 
 puzzle.export_json(f"json/{dic.name}_w{width}_h{height}_r{seed}.json")
+
+# In[]
+puzzle.show_log()
+
+# In[]

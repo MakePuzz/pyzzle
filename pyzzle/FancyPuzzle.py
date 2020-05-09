@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from pyzzle import Puzzle, Placeable
+from pyzzle import Puzzle, Placeable, utils
 
 sys.path.append('../python')
 
@@ -75,6 +75,9 @@ class FancyPuzzle(Puzzle):
         plt.tight_layout()
         plt.savefig(fpath, dpi=dpi)
         plt.close()
+    
+    def show(self):
+        utils.show_2Darray(self.cell, self.mask)
     
     def jump(self, idx):
         tmp_puzzle = self.__class__(self.width, self.height, self.mask, self.title)

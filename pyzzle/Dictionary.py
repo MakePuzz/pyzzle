@@ -35,7 +35,6 @@ class Dictionary:
         return self.size
 
     def getK(self, word):
-
         return np.where(self.word == word)[0][0]
 
     def include(self, word):
@@ -50,7 +49,7 @@ class Dictionary:
             self.read(fpath)
         if word is not None:
             if type(word) is str:
-                    word = [word]
+                word = [word]
             if weight is None:
                 weight = [0]*len(word)
             else:
@@ -58,14 +57,14 @@ class Dictionary:
                     weight = [weight]
                 if len(word) != len(weight):
                     raise ValueError(f"'word' and 'weight' must be same size")
-
             for wo, we in zip(word, weight):
-                if self.include(wo) and msg is True:
-                    print(f"The word '{wo}' already exists")
-                self.word.append(wo)
-                self.weight.append(we)
-                self.w_len.append(len(wo))
-                self.size += 1
+                if self.include(wo) is True: # replace the weight
+                    self.weight[self.word.index(wo)] = we
+                else:
+                    self.word.append(wo)
+                    self.weight.append(we)
+                    self.w_len.append(len(wo))
+                    self.size += 1
 
     def read(self, fpath):
         with open(fpath, 'r', encoding='utf-8') as f:

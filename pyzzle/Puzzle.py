@@ -797,34 +797,49 @@ class Puzzle:
         Parameters
         ----------
         idx : int
-            index of log.
+            Index of log
+
+        Returns
+        -------
+        jumped_puzzle : Puzzle
+            Jumped Puzzle
         """
-        tmp_puzzle = self.__class__(self.width, self.height, self.title)
-        tmp_puzzle.dic = copy.deepcopy(self.dic)
-        tmp_puzzle.plc = Placeable(self.width, self.height, tmp_puzzle.dic)
-        tmp_puzzle.optimizer = copy.deepcopy(self.optimizer)
-        tmp_puzzle.obj_func = copy.deepcopy(self.obj_func)
-        tmp_puzzle.base_history = copy.deepcopy(self.base_history)
+        jumped_puzzle = self.__class__(self.width, self.height, self.title)
+        jumped_puzzle.dic = copy.deepcopy(self.dic)
+        jumped_puzzle.plc = Placeable(self.width, self.height, jumped_puzzle.dic)
+        jumped_puzzle.optimizer = copy.deepcopy(self.optimizer)
+        jumped_puzzle.obj_func = copy.deepcopy(self.obj_func)
+        jumped_puzzle.base_history = copy.deepcopy(self.base_history)
 
         if set(self.history).issubset(self.base_history) is False:
             if idx <= len(self.history):
-                tmp_puzzle.base_history = copy.deepcopy(self.history)
+                jumped_puzzle.base_history = copy.deepcopy(self.history)
             else:
                 raise RuntimeError('This puzzle is up to date')
 
-        for code, k, ori, i, j in tmp_puzzle.base_history[:idx]:
+        for code, k, ori, i, j in jumped_puzzle.base_history[:idx]:
             if code == 1:
-                tmp_puzzle._add(ori, i, j, k)
+                jumped_puzzle._add(ori, i, j, k)
             elif code == 2:
-                tmp_puzzle._drop(ori, i, j, k, is_kick=False)
+                jumped_puzzle._drop(ori, i, j, k, is_kick=False)
             elif code == 3:
-                tmp_puzzle._drop(ori, i, j, k, is_kick=True)
-        tmp_puzzle.first_solved = True
-        return tmp_puzzle
+                jumped_puzzle._drop(ori, i, j, k, is_kick=True)
+        jumped_puzzle.first_solved = True
+        return jumped_puzzle
 
     def get_prev(self, n=1):
         """
-        
+        Returns to the previous log state for the specified number of times.
+
+        Parameters
+        ----------
+        n : int
+            The number of previous logs to go back to.
+
+        Returns
+        -------
+        previous_puzzle : Puzzle
+            Previous Puzzle
         """
         if len(self.history) - n < 0:
             return self.jump(0)
@@ -833,7 +848,8 @@ class Puzzle:
     def get_next(self, n=1):
         if len(self.history) + n > len(self.base_history):
             return self.get_latest()
-        return self.jump(len(self.history) + n)
+        previous_puzzle = self.jump(len(self.history) + n)
+        return previous_puzzle
 
     def get_latest(self):
         return self.jump(len(self.base_history))

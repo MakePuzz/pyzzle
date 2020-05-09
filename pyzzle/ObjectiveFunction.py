@@ -11,7 +11,7 @@ class ObjectiveFunction:
             "fill_count",
             "max_connected_empties",
             "difficulty",
-            "facility"
+            "ease"
         ]
         self.registered_funcs = []
 
@@ -66,7 +66,7 @@ class ObjectiveFunction:
         return puzzle.difficulty
 
     @staticmethod
-    def facility(puzzle):
+    def ease(puzzle):
         return 1 - puzzle.difficulty
 
     def register(self, func_names):

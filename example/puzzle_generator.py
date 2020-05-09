@@ -20,7 +20,7 @@ Crossword Local Search by command line
 
 importして使う場合：
     import puzzle_generator
-    ans, prob, simple = puzzle_generator.get(fpath, width, height, seed, epoch, title, with_weight, output)
+    ans, prob, unique = puzzle_generator.get(fpath, width, height, seed, epoch, title, with_weight, output)
 """
 # In[]
 import os
@@ -58,19 +58,19 @@ def get(fpath, width, height, seed, epoch, title, with_weight, output):
     # Solve
     puzzle.first_solve()
     puzzle.solve(epoch=epoch)
-    is_simple = puzzle.is_simple_sol()
+    is_unique = puzzle.is_unique
     pass_answer = f"fig/{output}_answer.png"
     pass_problem = f"fig/{output}_problem.png"
     puzzle.save_answer_image(pass_answer)
     puzzle.save_problem_image(pass_problem)
-    return pass_problem, pass_answer, is_simple
+    return pass_problem, pass_answer, is_unique
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="make a puzzle with given parameters")
     parser.add_argument("fpath", type=str,
                         help="file path of a dictionary")
     parser.add_argument("width", type=int,
-                        help="witdh of the puzzle")
+                        help="width of the puzzle")
     parser.add_argument("height", type=int,
                         help="height of the puzzle")
     parser.add_argument("-s", "--seed", type=int, default=66666,

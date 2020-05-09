@@ -18,9 +18,9 @@ class FancyPuzzle(Puzzle):
         width = mask.shape[1]
         super().__init__(width, height, title, msg)
 
-    def is_enabled_add(self, div, i, j, word, w_len):
+    def is_placeable(self, div, i, j, word, w_len):
         """
-        This method determines if a word can be placed
+        This method deter_mines if a word can be placed
         """
         if div == 0:
             if np.any(self.mask[i:i+w_len, j] == False):
@@ -29,7 +29,7 @@ class FancyPuzzle(Puzzle):
             if np.any(self.mask[i, j:j+w_len] == False):
                 return 7
     
-        return super().is_enabled_add(div, i, j, word, w_len)
+        return super().is_placeable(div, i, j, word, w_len)
 
     def save_image(self, data, fpath, list_label="[Word List]", dpi=100):
         """

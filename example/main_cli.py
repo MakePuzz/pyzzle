@@ -30,7 +30,7 @@ parser = argparse.ArgumentParser(description="make a puzzle with given parameter
 parser.add_argument("fpath", type=str,
                     help="file path of a dictionary")
 parser.add_argument("width", type=int,
-                    help="witdh of the puzzle")
+                    help="width of the puzzle")
 parser.add_argument("height", type=int,
                     help="height of the puzzle")
 parser.add_argument("-s", "--seed", type=int, default=66666,
@@ -84,7 +84,7 @@ puzzle.compile(obj_func=obj_func, optimizer=optimizer, msg=False)
 # Solve
 puzzle.first_solve()
 puzzle.solve(epoch=epoch)
-print(f"Simple solution: {puzzle.is_simple_sol()}")
+print(f"unique solution: {puzzle.is_unique}")
 print(puzzle.cell)
 print(f"単語リスト：{puzzle.used_words[:puzzle.sol_size]}")
 puzzle.save_answer_image(f"fig/answer_{output}")

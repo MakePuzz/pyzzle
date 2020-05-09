@@ -65,7 +65,7 @@ puzzle.first_solve()
 puzzle.solve(epoch=2)
 
 # In[]
-print(f"Simple solution: {puzzle.is_simple_sol()}")
+print(f"unique solution: {puzzle.is_unique}")
 print(puzzle.cell)
 print(f"単語リスト：{puzzle.used_words[:puzzle.sol_size]}")
 puzzle.save_answer_image(f"fig/{dic.name}_w{width}_h{height}_r{seed}.png")

@@ -16,7 +16,7 @@ class FancyPuzzle(Puzzle):
         self.mask = mask
         height = mask.shape[0]
         width = mask.shape[1]
-        super().__init__(width, height, title, msg)
+        super().__init__(width, height, title)
 
     def is_placeable(self, div, i, j, word, w_len):
         """

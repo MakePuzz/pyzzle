@@ -461,9 +461,9 @@ class Puzzle:
         into consideration, which may break the connectivity of the puzzle
         or cause LAOS / US / USA problems.
         """
-        # Get p, pidx
+        # Get p, p_idx
         p = self.plc.inv_p[ori, i, j, k]
-        pidx = np.where(self.used_plc_idx == p)[0][0]
+        p_idx = np.where(self.used_plc_idx == p)[0][0]
 
         w_len = self.dic.w_len[k]
         weight = self.dic.weight[k]
@@ -479,9 +479,9 @@ class Puzzle:
             i_all = np.full(where.size, i, dtype="int")
             self.cell[i_all, j + where] = ""
         # Update used_words, used_plc_idx, sol_size, total_weight
-        self.used_words = np.delete(self.used_words, pidx)  # delete
+        self.used_words = np.delete(self.used_words, p_idx)  # delete
         self.used_words = np.append(self.used_words, "")  # append
-        self.used_plc_idx = np.delete(self.used_plc_idx, pidx)  # delete
+        self.used_plc_idx = np.delete(self.used_plc_idx, p_idx)  # delete
         self.used_plc_idx = np.append(self.used_plc_idx, -1)  # append
         self.sol_size -= 1
         self.total_weight -= weight

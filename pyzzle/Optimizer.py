@@ -3,10 +3,11 @@ import copy
 
 class Optimizer:
     def __init__(self):
-        self.method_list = ["local_search", "iteratedlocal_search"]
+        self.method_list = ["local_search", "iterated_local_search"]
         self.method = ""
 
-    def get_neighbor_solution(self, puzzle):
+    @staticmethod
+    def get_neighbor_solution(puzzle):
         """
         This method gets the neighborhood solution
         """

@@ -3,7 +3,7 @@ from scipy import ndimage
 
 
 class ObjectiveFunction:
-    def __init__(self, msg=True):
+    def __init__(self):
         self.flist = [
             "total_weight",
             "sol_size",
@@ -12,8 +12,6 @@ class ObjectiveFunction:
             "max_connected_empties"
         ]
         self.registered_funcs = []
-        if msg is True:
-            print("ObjectiveFunction object has made.")
 
     def __len__(self):
         return len(self.registered_funcs)
@@ -21,38 +19,43 @@ class ObjectiveFunction:
     def get_funcs(self):
         return self.registered_funcs
 
-    def sol_size(self, puzzle):
+    @staticmethod
+    def sol_size(puzzle):
         """
         This method returns the number of words used in the solution
         """
         return puzzle.sol_size
 
-    def cross_count(self, puzzle):
+    @staticmethod
+    def cross_count(puzzle):
         """
         This method returns the number of crosses of a word
         """
         return np.sum(puzzle.cover == 2)
 
-    def fill_count(self, puzzle):
+    @staticmethod
+    def fill_count(puzzle):
         """
         This method returns the number of character cells in the puzzle
         """
         return np.sum(puzzle.cover >= 1)
 
-    def total_weight(self, puzzle):
+    @staticmethod
+    def total_weight(puzzle):
         """
         This method returns the sum of the word weights used for the solution
         """
         return puzzle.total_weight
 
-    def max_connected_empties(self, puzzle):
+    @staticmethod
+    def max_connected_empties(puzzle):
         """
         This method returns the maximum number of concatenations for unfilled squares
         """
         reverse_cover = puzzle.cover < 1
-        zero_label, nlbl = ndimage.label(reverse_cover)
+        zero_label, n_label = ndimage.label(reverse_cover)
         mask = zero_label > 0
-        sizes = ndimage.sum(mask, zero_label, range(nlbl+1))
+        sizes = ndimage.sum(mask, zero_label, range(n_label+1))
         score = puzzle.width*puzzle.height - sizes.max()
         return score
 
@@ -73,7 +76,7 @@ class ObjectiveFunction:
         This method returns any objective function value
         """
         if all is True:
-            scores=np.zeros(len(self.registered_funcs), dtype="int")
+            scores = np.zeros(len(self.registered_funcs), dtype="int")
             for n in range(scores.size):
                 scores[n] = eval(f"self.{self.registered_funcs[n]}(puzzle)")
             return scores

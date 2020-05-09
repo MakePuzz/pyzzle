@@ -766,7 +766,7 @@ class Puzzle:
         ax2.axis("off")
         fig.set_facecolor('#EEEEEE')
         # Draw puzzle
-        ax1_table = ax1.table(cellText=df.values, cellColors=colors, cellLoc="center", bbox=[0, 0, 1, 1])
+        ax1_table = ax1.table(cellText=df.values, cellColours=colors, cellLoc="center", bbox=[0, 0, 1, 1])
         ax1_table.auto_set_font_size(False)
         ax1_table.set_fontsize(18)
         ax1.set_title(label="*** " + self.title + " ***", size=20)

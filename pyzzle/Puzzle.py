@@ -68,7 +68,7 @@ class Puzzle:
         puzzle.export_json("out.json")
     """
 
-    def __init__(self, width, height, title="Criss Cross", msg=True):
+    def __init__(self, width, height, title="Criss Cross"):
         """
         Initialize the puzzle object.
         
@@ -80,8 +80,6 @@ class Puzzle:
             Height of the puzzle.
         title : str, default "Criss Cross"
             Title of the puzzle.
-        msg : bool, default True
-            If True, log to standard output.
         """
         self.width = width
         self.height = height
@@ -101,8 +99,8 @@ class Puzzle:
         self.nlabel = None
         self.first_solved = False
         self.init_seed = None
-        self.dic = Dictionary(msg=False)
-        self.plc = Placeable(self.width, self.height, self.dic, msg=False)
+        self.dic = Dictionary()
+        self.plc = Placeable(self.width, self.height, self.dic)
         self.obj_func = None
         self.optimizer = None
 
@@ -550,6 +548,8 @@ class Puzzle:
         """
         if word is None and ori_i_j is None:
             raise ValueError("'word' or 'ori_i_j' must be specified")
+        if word is not None and ori_i_j is not None:
+            raise ValueError("Both 'word' and 'ori_i_j' must not be specified at the same time.")
         if word is not None:
             if type(word) is int:
                 k = word
@@ -559,9 +559,7 @@ class Puzzle:
                 raise TypeError("'word' must be int or str")
             for p in self.used_plc_idx:
                 if self.plc.k[p] == k:
-                    ori = self.plc.ori[p]
-                    i = self.plc.i[p]
-                    j = self.plc.j[p]
+                    ori, i, j = self.plc.ori[p], self.plc.i[p], self.plc.j[p]
                     break
         if ori_i_j is not None:
             if type(ori_i_j) not in (list, tuple):
@@ -569,13 +567,12 @@ class Puzzle:
             if len(ori_i_j) is not 3:
                 raise ValueError(f"Length of 'ori_i_j' must be 3, not {len(ori_i_j)}")
             for p in self.used_plc_idx:
-                _ori = self.plc.ori[p]
-                _i = self.plc.i[p]
-                _j = self.plc.j[p]
+                _ori, _i, _j = self.plc.ori[p], self.plc.i[p], self.plc.j[p]
                 if _ori == ori_i_j[0] and _i == ori_i_j[1] and _j == ori_i_j[2]:
+                    ori, i, j = _ori, _i, _j
                     k = self.plc.k[p]
                     break
-        self._drop(ori_i_j[0], ori_i_j[1], ori_i_j[2], k)
+        self._drop(ori, i, j, k)
 
     def collapse(self):
         """
@@ -795,11 +792,11 @@ class Puzzle:
 
     def jump(self, idx):
         """
-
+        
         """
-        tmp_puzzle = self.__class__(self.width, self.height, self.title, msg=False)
+        tmp_puzzle = self.__class__(self.width, self.height, self.title)
         tmp_puzzle.dic = copy.deepcopy(self.dic)
-        tmp_puzzle.plc = Placeable(self.width, self.height, tmp_puzzle.dic, msg=False)
+        tmp_puzzle.plc = Placeable(self.width, self.height, tmp_puzzle.dic)
         tmp_puzzle.optimizer = copy.deepcopy(self.optimizer)
         tmp_puzzle.obj_func = copy.deepcopy(self.obj_func)
         tmp_puzzle.base_history = copy.deepcopy(self.base_history)
@@ -833,7 +830,7 @@ class Puzzle:
     def get_latest(self):
         return self.jump(len(self.base_history))
 
-    def to_pickle(self, name=None, msg=True):
+    def to_pickle(self, name=None):
         """
         This method saves Puzzle object as a binary file
         """
@@ -841,8 +838,6 @@ class Puzzle:
         name = name or f"{now}_{self.dic.name}_{self.width}_{self.height}_{self.init_seed}_{self.epoch}.pickle"
         with open(name, mode="wb") as f:
             pickle.dump(self, f)
-        if msg is True:
-            print(f"Puzzle has pickled to the path '{name}'")
 
     def get_rect(self):
         rows = np.any(self.cover, axis=1)

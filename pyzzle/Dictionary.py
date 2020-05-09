@@ -5,7 +5,7 @@ import numpy as np
 
 
 class Dictionary:
-    def __init__(self, fpath=None, msg=True):
+    def __init__(self, fpath=None):
         self.fpath = fpath
         self.size = 0
         self.name = ''
@@ -16,14 +16,6 @@ class Dictionary:
         if fpath is not None:
             self.name = os.path.basename(fpath)[:-4]
             self.read(fpath)
-
-        # Message
-        if msg is True:
-            print("Dictionary object has made.")
-            print(f" - file path         : {self.fpath}")
-            print(f" - dictionary size   : {self.size}")
-            if self.size > 0:
-                print(f" - top of dictionary : {self[0]}")
 
     def __getitem__(self, key):
         return {'word': self.word[key], 'weight': self.weight[key], 'len': self.w_len[key]}
@@ -40,7 +32,7 @@ class Dictionary:
     def include(self, word):
         return word in self.word
 
-    def add(self, word=None, weight=None, fpath=None, msg=True):
+    def add(self, word=None, weight=None, fpath=None):
         if (word,fpath) == (None,None):
             raise ValueError("'word' or 'fpath' must be specified")
         if word is not None and fpath is not None:
@@ -83,7 +75,7 @@ class Dictionary:
         weight = [d[1] for d in dic_list]
         self.add(word, weight)
 
-    def delete_unusable_words(self, msg=True):
+    def delete_unusable_words(self):
         """
         This method checks words in the dictionary and erases words that can not cross any other words.
         """
@@ -99,10 +91,8 @@ class Dictionary:
                 del self.weight[i]
                 del self.w_len[i]
                 self.size -= 1
-                if msg is True:
-                    print(f"'{w}' can not cross with any other words")
 
-    def calc_weight(self, msg=True):
+    def calc_weight(self):
         """
         Calculate word weights in the dictionary.
         """
@@ -112,11 +102,3 @@ class Dictionary:
         for i, w in enumerate(self.word):
             for char in w:
                 self.weight[i] += counts[char]
-
-        if msg is True:
-            print("All weights are calculated.")
-            print("TOP 5 characters:")
-            print(counts.most_common()[:5])
-            idx = sorted(range(self.size), key=lambda k: self.weight[k], reverse=True)[:5]
-            print("TOP 5 words:")
-            print(np.array(self.word)[idx])

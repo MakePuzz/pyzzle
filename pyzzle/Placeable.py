@@ -2,7 +2,7 @@ import numpy as np
 
 
 class Placeable:
-    def __init__(self, width, height, dic, msg=True):
+    def __init__(self, width, height, dic):
         self.size = 0
         self.width = width
         self.height = height
@@ -10,10 +10,6 @@ class Placeable:
         self.inv_p = np.full((2, self.height, self.width, 0), np.nan, dtype="int")
 
         self._compute(dic.word)
-
-        if msg is True:
-            print(f"Imported Dictionary name: `{dic.name}`, size: {dic.size}")
-            print(f"Placeable size : {self.size}")
 
     def _compute(self, word, base_k=0):
         if type(word) is str:

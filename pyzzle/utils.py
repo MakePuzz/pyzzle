@@ -1,9 +1,7 @@
-"""
-utils
-"""
 import numpy as np
 import pandas as pd
 from IPython.display import display
+
 
 def in_ipynb():
     """Are we in a jupyter notebook?"""
@@ -40,7 +38,6 @@ def show_2Darray(ndarray):
             dict(selector="caption", props=[("caption-side", "bottom")])
         ]
         df = pd.DataFrame(ndarray)
-        df = (df.style.set_table_styles(styles).set_caption(f"Puzzle({self.width},{self.height}), sol_size:{self.sol_size}, Dictionary:[{self.dic.fpath}]"))
         display(df)
     else:
         ndarray = np.where(ndarray == "", "  ", ndarray)

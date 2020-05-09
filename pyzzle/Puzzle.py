@@ -838,18 +838,18 @@ class Puzzle:
 
         Returns
         -------
-        previous_puzzle : Puzzle
+        jumped_puzzle : Puzzle
             Previous Puzzle
         """
         if len(self.history) - n < 0:
             return self.jump(0)
-        return self.jump(len(self.history) - n)
+        previous_puzzle = self.jump(len(self.history) + n)
+        return previous_puzzle
 
     def get_next(self, n=1):
         if len(self.history) + n > len(self.base_history):
             return self.get_latest()
-        previous_puzzle = self.jump(len(self.history) + n)
-        return previous_puzzle
+        return self.jump(len(self.history) + n)
 
     def get_latest(self):
         return self.jump(len(self.base_history))

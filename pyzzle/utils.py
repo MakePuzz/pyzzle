@@ -10,6 +10,7 @@ def in_ipynb():
     except NameError:
         return False
 
+
 def show_2Darray(ndarray):
     """
     Display the puzzle.

@@ -3,7 +3,7 @@
 Crossword Local Search
 """
 # In[]
-import os, sys
+import sys
 import numpy as np
 
 sys.path.append("../")
@@ -14,9 +14,9 @@ from pyzzle import Puzzle, FancyPuzzle, Dictionary, ObjectiveFunction, Optimizer
 fpath = "../dict/pokemon.txt"  # countries hokkaido animals kotowaza birds dinosaurs fishes sports
 width = 15
 height = 15
-seed = 1
 with_weight = False
 
+seed = 1
 np.random.seed(seed=seed)
 
 # In[]

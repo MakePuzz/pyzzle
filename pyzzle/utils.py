@@ -38,6 +38,7 @@ def show_2Darray(ndarray):
             dict(selector="caption", props=[("caption-side", "bottom")])
         ]
         df = pd.DataFrame(ndarray)
+        df = (df.style.set_table_styles(styles))
         display(df)
     else:
         ndarray = np.where(ndarray == "", "  ", ndarray)

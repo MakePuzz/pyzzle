@@ -470,7 +470,7 @@ class Puzzle:
 
     def _drop(self, ori, i, j, k, is_kick=False):
         """
-        This internal method removes the specified word from the puzzle.
+        Remove the specified word from the puzzle.
 
         Parameters
         ----------
@@ -766,7 +766,7 @@ class Puzzle:
         ax2.axis("off")
         fig.set_facecolor('#EEEEEE')
         # Draw puzzle
-        ax1_table = ax1.table(cellText=df.values, cellColumnours=colors, cellLoc="center", bbox=[0, 0, 1, 1])
+        ax1_table = ax1.table(cellText=df.values, cellColors=colors, cellLoc="center", bbox=[0, 0, 1, 1])
         ax1_table.auto_set_font_size(False)
         ax1_table.set_fontsize(18)
         ax1.set_title(label="*** " + self.title + " ***", size=20)
@@ -781,7 +781,7 @@ class Puzzle:
         padnum = cols * rows - len(words)
         words += [''] * padnum
         words = np.array(words).reshape(cols, rows).T
-        ax2_table = ax2.table(cellText=words, cellColumnours=None, cellLoc="left", edges="open", bbox=[0, 0, 1, 1])
+        ax2_table = ax2.table(cellText=words, cellColours=None, cellLoc="left", edges="open", bbox=[0, 0, 1, 1])
         ax2.set_title(label=list_label, size=20)
         ax2_table.auto_set_font_size(False)
         ax2_table.set_fontsize(18)

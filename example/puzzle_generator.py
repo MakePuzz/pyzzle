@@ -35,10 +35,10 @@ from pyzzle import Puzzle, Dictionary, ObjectiveFunction, Optimizer
 def get(fpath, width, height, seed, epoch, title, with_weight, output):
     np.random.seed(seed=seed)
     # Make instances
-    puzzle = Puzzle(width, height, msg=False)
-    dic = Dictionary(fpath, msg=False)
-    obj_func = ObjectiveFunction(msg=False)
-    optimizer = Optimizer(msg=False)
+    puzzle = Puzzle(width, height)
+    dic = Dictionary(fpath)
+    obj_func = ObjectiveFunction()
+    optimizer = Optimizer()
 
     if title is None:
         title = f"{dic.name}_w{width}_h{height}_r{seed}_ep{epoch}"
@@ -46,14 +46,14 @@ def get(fpath, width, height, seed, epoch, title, with_weight, output):
     if output is None:
         output = title + ".png"
 
-    puzzle.import_dict(dic, msg=False)
+    puzzle.import_dict(dic)
     # Register and set method and compile
     if with_weight is True:
-        obj_func.register(["total_weight","sol_size", "cross_count", "fill_count", "max_connected_empties"], msg=False)
+        obj_func.register(["total_weight","sol_size", "cross_count", "fill_count", "max_connected_empties"])
     else:
-        obj_func.register(["sol_size", "cross_count", "fill_count", "max_connected_empties"], msg=False)
-    optimizer.set_method("local_search", msg=False)
-    puzzle.compile(obj_func=obj_func, optimizer=optimizer, msg=False)
+        obj_func.register(["sol_size", "cross_count", "fill_count", "max_connected_empties"])
+    optimizer.set_method("local_search")
+    puzzle.compile(obj_func=obj_func, optimizer=optimizer)
 
     # Solve
     puzzle.first_solve()

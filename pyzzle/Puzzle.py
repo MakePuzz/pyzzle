@@ -792,7 +792,12 @@ class Puzzle:
 
     def jump(self, idx):
         """
-        
+        Jump to the specified log state.
+
+        Parameters
+        ----------
+        idx : int
+            index of log.
         """
         tmp_puzzle = self.__class__(self.width, self.height, self.title)
         tmp_puzzle.dic = copy.deepcopy(self.dic)
@@ -818,6 +823,9 @@ class Puzzle:
         return tmp_puzzle
 
     def get_prev(self, n=1):
+        """
+        
+        """
         if len(self.history) - n < 0:
             return self.jump(0)
         return self.jump(len(self.history) - n)

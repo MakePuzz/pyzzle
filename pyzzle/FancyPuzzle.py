@@ -12,7 +12,7 @@ sys.path.append('../python')
 
 
 class FancyPuzzle(Puzzle):
-    def __init__(self, mask, title="スケルトンパズル", msg=True):
+    def __init__(self, mask, title="スケルトンパズル"):
         self.mask = mask
         height = mask.shape[0]
         width = mask.shape[1]
@@ -77,9 +77,9 @@ class FancyPuzzle(Puzzle):
         plt.close()
     
     def jump(self, idx):
-        tmp_puzzle = self.__class__(self.width, self.height, self.mask, self.title, msg=False)
+        tmp_puzzle = self.__class__(self.width, self.height, self.mask, self.title)
         tmp_puzzle.dic = copy.deepcopy(self.dic)
-        tmp_puzzle.plc = Placeable(self.width, self.height, tmp_puzzle.dic, msg=False)
+        tmp_puzzle.plc = Placeable(self.width, self.height, tmp_puzzle.dic)
         tmp_puzzle.optimizer = copy.deepcopy(self.optimizer)
         tmp_puzzle.obj_func = copy.deepcopy(self.obj_func)
         tmp_puzzle.base_history = copy.deepcopy(self.base_history)

@@ -2,11 +2,9 @@ import copy
 
 
 class Optimizer:
-    def __init__(self, msg=True):
+    def __init__(self):
         self.method_list = ["local_search", "iteratedlocal_search"]
         self.method = ""
-        if msg is True:
-            print("Optimizer object has made.")
 
     def get_neighbor_solution(self, puzzle):
         """
@@ -80,12 +78,10 @@ class Optimizer:
         puzzle.dic = copy.deepcopy(_puzzle.dic)
         puzzle.plc = copy.deepcopy(_puzzle.plc)
 
-    def set_method(self, method_name, msg=True):
+    def set_method(self, method_name):
         """
         This method sets the optimization method on the instance
         """
         if method_name not in self.method_list:
             raise ValueError(f"Optimizer doesn't have '{method_name}' method")
-        if msg is True:
-            print(f" - '{method_name}' method has registered.")
         self.method = method_name

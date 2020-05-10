@@ -8,9 +8,9 @@ Crossword Local Search by command line
  3. パズルの縦幅
  4. シード値（-sまたは--seedオプションで指定. デフォルトは66666）
  5. エポック数（-eまたは--epochオプションで指定. デフォルトは10）
- 6. パズルのタイトル（-tまたは--titleオプションで指定. デフォルトは{辞書名}_w{width}_h{height}_r{seed}_ep{epoch}）
+ 6. パズルのタイトル（-n,または--nameオプションで指定. デフォルトは{辞書名}_w{width}_h{height}_r{seed}_ep{epoch}）
  7. 重みを考慮するかどうか（-wまたは--weightオプションでフラグとして指定. デフォルトはFalse）
- 8. 出力ファイル名（-oまたは--outputオプションで指定. デフォルトは{title}.png）
+ 8. 出力ファイル名（-oまたは--outputオプションで指定. デフォルトは{name}.png）
 
 実行例：
 python main_cli.py ../dict/pokemon.txt 15 15 -s 1 -e 5
@@ -37,8 +37,8 @@ parser.add_argument("-s", "--seed", type=int, default=66666,
                     help="random seed value, default=66666")
 parser.add_argument("-e", "--epoch", type=int, default=10,
                     help="epoch number of local search, default=10")
-parser.add_argument("-t", "--title", type=str,
-                    help="title of the puzzle")
+parser.add_argument("-t", "--name", type=str,
+                    help="name of the puzzle")
 parser.add_argument("-w", "--weight", action="store_true",
                     help="flag of consider the weight, default=False")
 parser.add_argument("-o", "--output", type=str,
@@ -51,7 +51,7 @@ width = args.width
 height = args.height
 seed = args.seed
 epoch = args.epoch
-title = args.title
+name = args.name
 with_weight = args.weight
 output = args.output
 
@@ -64,11 +64,11 @@ dic = Dictionary(dict_path)
 obj_func = ObjectiveFunction()
 optimizer = Optimizer()
 
-if title is None:
-    title = f"{dic.name}_w{width}_h{height}_r{seed}_ep{epoch}"
-puzzle.puzzle_title = title
+if name is None:
+    name = f"{dic.name}_w{width}_h{height}_r{seed}_ep{epoch}"
+puzzle.puzzle_name = name
 if output is None:
-    output = title + ".png"
+    output = name + ".png"
 
 # In[]
 puzzle.import_dict(dic)

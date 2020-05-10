@@ -12,11 +12,11 @@ sys.path.append('../python')
 
 
 class FancyPuzzle(Puzzle):
-    def __init__(self, mask, title="スケルトンパズル"):
+    def __init__(self, mask, name="スケルトンパズル"):
         self.mask = mask
         height = mask.shape[0]
         width = mask.shape[1]
-        super().__init__(width, height, title)
+        super().__init__(width, height, name)
 
     def is_placeable(self, div, i, j, word, w_len):
         """
@@ -48,7 +48,7 @@ class FancyPuzzle(Puzzle):
         
         # Draw puzzle
         ax1_table = ax1.table(cellText=df.values, cellColours=colors, cellLoc="center", bbox=[0, 0, 1, 1], fontsize=20)
-        ax1.set_title(label=f"*** {self.title} ***", size=20)
+        ax1.set_title(label=f"*** {self.name} ***", size=20)
         
         # delete unmasked cells
         mask = np.where(self.mask == False)
@@ -80,7 +80,7 @@ class FancyPuzzle(Puzzle):
         utils.show_2Darray(self.cell, self.mask)
     
     def jump(self, idx):
-        tmp_puzzle = self.__class__(self.mask, self.title)
+        tmp_puzzle = self.__class__(self.mask, self.name)
         tmp_puzzle.dic = copy.deepcopy(self.dic)
         tmp_puzzle.plc = Placeable(self.width, self.height, tmp_puzzle.dic)
         tmp_puzzle.optimizer = copy.deepcopy(self.optimizer)

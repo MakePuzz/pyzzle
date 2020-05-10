@@ -68,7 +68,7 @@ class Puzzle:
         puzzle.export_json("out.json")
     """
 
-    def __init__(self, width, height, title="Criss Cross"):
+    def __init__(self, width, height, name="Criss Cross"):
         """
         Initialize the puzzle object.
         
@@ -78,13 +78,13 @@ class Puzzle:
             Width of the puzzle.
         height : int
             Height of the puzzle.
-        title : str, default "Criss Cross"
+        name : str, default "Criss Cross"
             Title of the puzzle.
         """
         self.width = width
         self.height = height
         self.weight = 0
-        self.title = title
+        self.name = name
         self.cell = np.full(width * height, "", dtype="unicode").reshape(height, width)
         self.cover = np.zeros(width * height, dtype="int").reshape(height, width)
         self.label = np.zeros(width * height, dtype="int").reshape(height, width)
@@ -98,7 +98,7 @@ class Puzzle:
         self.epoch = 0
         self.nlabel = None
         self.first_solved = False
-        self.init_seed = None
+        self.seed = None
         self.dic = Dictionary()
         self.plc = Placeable(self.width, self.height, self.dic)
         self.obj_func = None
@@ -106,9 +106,9 @@ class Puzzle:
 
     def __str__(self):
         """
-        Retrun the puzzle's title.
+        Retrun the puzzle's name.
         """
-        return self.title
+        return self.name
 
     @property
     def is_unique(self):
@@ -213,7 +213,7 @@ class Puzzle:
         self.log = None
         self.epoch = 0
         self.first_solved = False
-        self.init_seed = None
+        self.seed = None
 
     def import_dict(self, dic):
         """
@@ -445,7 +445,7 @@ class Puzzle:
         if self.first_solved:
             raise RuntimeError("'first_solve' method has already called")
         # Save initial seed number
-        self.init_seed = np.random.get_state()[1][0]
+        self.seed = np.random.get_state()[1][0]
         # Add as much as possible
         self.add_to_limit()
         self.first_solved = True
@@ -661,7 +661,7 @@ class Puzzle:
         except:
             mask = np.full(self.cell.shape, True)
         with open(name, "w", encoding="utf-8") as f:
-            json.dump({"list":word_list, "mask":mask.tolist()}, f, sort_keys=True, indent=indent, ensure_ascii=False)
+            json.dump({"list":word_list, "mask":mask.tolist(), "name":self.name, "width":self.width, "height":self.height, "nwords":self.nwords, "dict_name":self.dic.name, "seed":int(self.seed), "epoch":self.epoch}, f, sort_keys=True, indent=indent, ensure_ascii=False)
 
     def kick(self):
         """
@@ -717,14 +717,14 @@ class Puzzle:
             raise ValueError("'epoch' must be lather than 0")
         exec(f"self.optimizer.{self.optimizer.method}(self, {epoch})")
 
-    def show_log(self, title="Objective Function's epoch series", grid=True, figsize=None, **kwargs):
+    def show_log(self, name="Objective Function's epoch series", grid=True, figsize=None, **kwargs):
         """
         Show the epoch series for each objective function.
 
         Parameters
         ----------
-        title : str default "Objective Function's epoch series"
-            title of figure
+        name : str default "Objective Function's epoch series"
+            name of figure
         grid : bool default True
             grid on/off
 
@@ -739,7 +739,7 @@ class Puzzle:
         """
         if self.log is None:
             raise RuntimeError("Puzzle has no log")
-        return self.log.plot(subplots=True, title=title, grid=grid, figsize=figsize, **kwargs)
+        return self.log.plot(subplots=True, title=name, grid=grid, figsize=figsize, **kwargs)
 
     def save_image(self, data, fpath, list_label="[Word List]", dpi=300):
         """
@@ -769,7 +769,7 @@ class Puzzle:
         ax1_table = ax1.table(cellText=df.values, cellColours=colors, cellLoc="center", bbox=[0, 0, 1, 1])
         ax1_table.auto_set_font_size(False)
         ax1_table.set_fontsize(18)
-        ax1.set_title(label="*** " + self.title + " ***", size=20)
+        ax1.set_title(label="*** " + self.name + " ***", size=20)
         # Draw word list
         words = [word for word in self.used_words if word != ""]
         if words == []:
@@ -835,7 +835,7 @@ class Puzzle:
         jumped_puzzle : Puzzle
             Jumped Puzzle
         """
-        jumped_puzzle = self.__class__(self.width, self.height, self.title)
+        jumped_puzzle = self.__class__(self.width, self.height, self.name)
         jumped_puzzle.dic = copy.deepcopy(self.dic)
         jumped_puzzle.plc = Placeable(self.width, self.height, jumped_puzzle.dic)
         jumped_puzzle.optimizer = copy.deepcopy(self.optimizer)
@@ -912,7 +912,7 @@ class Puzzle:
         Save Puzzle object as Pickle
         """
         now = datetime.datetime.today().strftime("%Y%m%d%H%M%S")
-        name = name or f"{now}_{self.dic.name}_{self.width}_{self.height}_{self.init_seed}_{self.epoch}.pickle"
+        name = name or f"{now}_{self.dic.name}_{self.width}_{self.height}_{self.seed}_{self.epoch}.pickle"
         with open(name, mode="wb") as f:
             pickle.dump(self, f)
 

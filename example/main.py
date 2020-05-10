@@ -64,7 +64,7 @@ puzzle.compile(obj_func=obj_func, optimizer=optimizer)
 puzzle.first_solve()
 
 # In[]
-puzzle.solve(epoch=10)
+puzzle.solve(epoch=3)
 print(f"unique solution: {puzzle.is_unique}")
 
 # In[]

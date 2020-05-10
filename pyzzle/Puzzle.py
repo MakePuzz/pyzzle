@@ -577,9 +577,9 @@ class Puzzle:
         into consideration, which may break the connectivity of the puzzle
         or cause LAOS / US / USA problems.
         """
-        if word is None and ori_i_j is None:
+        if word is ori_i_j is None:
             raise ValueError("'word' or 'ori_i_j' must be specified")
-        if word is not None and ori_i_j is not None:
+        if word is ori_i_j is not None:
             raise ValueError("Both 'word' and 'ori_i_j' must not be specified at the same time.")
         if word is not None:
             if type(word) is int:

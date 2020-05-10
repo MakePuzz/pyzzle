@@ -1,7 +1,4 @@
 # coding: utf-8
-"""
-Crossword Local Search
-"""
 # In[]
 import sys
 import numpy as np

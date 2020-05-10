@@ -53,8 +53,8 @@ optimizer = Optimizer()
 puzzle.import_dict(dic)
 # Register and set method and compile
 obj_func.register(
-    ["total_weight",
-    "sol_size", 
+    ["weight",
+    "nwords", 
     "cross_count", 
     "fill_count", 
     "max_connected_empties", 
@@ -72,7 +72,7 @@ print(f"unique solution: {puzzle.is_unique}")
 
 # In[]
 print(puzzle.cell)
-print(f"単語リスト：{puzzle.used_words[:puzzle.sol_size]}")
+print(f"単語リスト：{puzzle.used_words[:puzzle.nwords]}")
 oname = f"{dic.name}_w{width}_h{height}_r{seed}.png"
 puzzle.save_answer_image(f"fig/answer_{oname}")
 puzzle.save_problem_image(f"fig/problem_{oname}")

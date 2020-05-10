@@ -49,9 +49,9 @@ def get(fpath, width, height, seed, epoch, title, with_weight, output):
     puzzle.import_dict(dic)
     # Register and set method and compile
     if with_weight is True:
-        obj_func.register(["total_weight","sol_size", "cross_count", "fill_count", "max_connected_empties"])
+        obj_func.register(["weight","nwords", "cross_count", "fill_count", "max_connected_empties"])
     else:
-        obj_func.register(["sol_size", "cross_count", "fill_count", "max_connected_empties"])
+        obj_func.register(["nwords", "cross_count", "fill_count", "max_connected_empties"])
     optimizer.set_method("local_search")
     puzzle.compile(obj_func=obj_func, optimizer=optimizer)
 

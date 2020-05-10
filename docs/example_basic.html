@@ -13278,11 +13278,11 @@ div#notebook {
 </thead>
 <tbody>
 <tr>
-<td><code>total_weight</code></td>
+<td><code>weight</code></td>
 <td>重みの合計</td>
 </tr>
 <tr>
-<td><code>sol_size</code></td>
+<td><code>nwords</code></td>
 <td>パズルに使われた語数</td>
 </tr>
 <tr>
@@ -13314,7 +13314,7 @@ div#notebook {
 <code>register</code>メソッドの引数には， 使用する目的関数名のリストを渡します。</p>
 <p><code>pyzzle</code>ではパズルの改善時に使用する目的関数に優先順位を付けることができます。<br>
 <code>ObjectiveFunction</code>インスタンスに目的関数を登録する際, 上位にある目的関数ほど優先的に比較が行われます。<br>
-例えば， 下の実装では<code>total_weight</code>が最優先され， 次に<code>sol_size</code>が優先されます。</p>
+例えば， 下の実装では<code>weight</code>が最優先され， 次に<code>nwords</code>が優先されます。</p>
 
 </div>
 </div>
@@ -13325,8 +13325,8 @@ div#notebook {
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">obj_func</span><span class="o">.</span><span class="n">register</span><span class="p">(</span>
-    <span class="p">[</span><span class="s2">&quot;total_weight&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;sol_size&quot;</span><span class="p">,</span> 
+    <span class="p">[</span><span class="s2">&quot;weight&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nwords&quot;</span><span class="p">,</span> 
     <span class="s2">&quot;cross_count&quot;</span><span class="p">,</span> 
     <span class="s2">&quot;fill_count&quot;</span><span class="p">,</span> 
     <span class="s2">&quot;max_connected_empties&quot;</span><span class="p">,</span> 

@@ -74,9 +74,9 @@ if output is None:
 puzzle.import_dict(dic)
 # Register and set method and compile
 if with_weight is True:
-    obj_func.register(["total_weight","sol_size", "cross_count", "fill_count", "max_connected_empties"])
+    obj_func.register(["weight","nwords", "cross_count", "fill_count", "max_connected_empties"])
 else:
-    obj_func.register(["sol_size", "cross_count", "fill_count", "max_connected_empties"])
+    obj_func.register(["nwords", "cross_count", "fill_count", "max_connected_empties"])
 optimizer.set_method("local_search")
 puzzle.compile(obj_func=obj_func, optimizer=optimizer)
 
@@ -86,7 +86,7 @@ puzzle.first_solve()
 puzzle.solve(epoch=epoch)
 print(f"unique solution: {puzzle.is_unique}")
 print(puzzle.cell)
-print(f"単語リスト：{puzzle.used_words[:puzzle.sol_size]}")
+print(f"単語リスト：{puzzle.used_words[:puzzle.nwords]}")
 puzzle.save_answer_image(f"fig/answer_{output}")
 puzzle.save_problem_image(f"fig/problem_{output}")
 puzzle.export_json(f"json/{dic.name}_w{width}_h{height}_r{seed}.json")

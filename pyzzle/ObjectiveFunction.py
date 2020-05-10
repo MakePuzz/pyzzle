@@ -5,8 +5,8 @@ from scipy import ndimage
 class ObjectiveFunction:
     def __init__(self):
         self.flist = [
-            "total_weight",
-            "sol_size",
+            "weight",
+            "nwords",
             "cross_count",
             "fill_count",
             "max_connected_empties",
@@ -22,11 +22,11 @@ class ObjectiveFunction:
         return self.registered_funcs
 
     @staticmethod
-    def sol_size(puzzle):
+    def nwords(puzzle):
         """
         This method returns the number of words used in the solution.
         """
-        return puzzle.sol_size
+        return puzzle.nwords
 
     @staticmethod
     def cross_count(puzzle):
@@ -43,11 +43,11 @@ class ObjectiveFunction:
         return np.sum(puzzle.cover >= 1)
 
     @staticmethod
-    def total_weight(puzzle):
+    def weight(puzzle):
         """
         This method returns the sum of the word weights used for the solution.
         """
-        return puzzle.total_weight
+        return puzzle.weight
 
     @staticmethod
     def max_connected_empties(puzzle):

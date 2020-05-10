@@ -62,14 +62,14 @@ class Optimizer:
                 if show is True:
                     _puzzle.show()
         # Update previous puzzle
-        puzzle.total_weight = copy.deepcopy(_puzzle.total_weight)
+        puzzle.weight = copy.deepcopy(_puzzle.weight)
         puzzle.enable = copy.deepcopy(_puzzle.enable)
         puzzle.cell = copy.deepcopy(_puzzle.cell)
         puzzle.cover = copy.deepcopy(_puzzle.cover)
         puzzle.label = copy.deepcopy(_puzzle.label)
         puzzle.used_words = copy.deepcopy(_puzzle.used_words)
         puzzle.used_plc_idx = copy.deepcopy(_puzzle.used_plc_idx)
-        puzzle.sol_size = copy.deepcopy(_puzzle.sol_size)
+        puzzle.nwords = copy.deepcopy(_puzzle.nwords)
         puzzle.history = copy.deepcopy(_puzzle.history)
         puzzle.base_history = copy.deepcopy(_puzzle.base_history)
         puzzle.log = copy.deepcopy(_puzzle.log)

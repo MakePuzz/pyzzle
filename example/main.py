@@ -5,17 +5,14 @@ import numpy as np
 
 sys.path.append("../")
 from pyzzle import Puzzle, FancyPuzzle, Dictionary, ObjectiveFunction, Optimizer
-
 # In[]
 # Set variables
-dict_path = "../dict/pokemon.txt"  # countries hokkaido animals kotowaza birds dinosaurs fishes sports
 width = 15
 height = 15
 with_weight = False
 
 seed = 1
 np.random.seed(seed=seed)
-
 # In[]
 ## Make instances
 ### FuncyPuzzle
@@ -42,7 +39,7 @@ puzzle = FancyPuzzle(mask, "ドーナツパズル")
 # puzzle = Puzzle(width, height)
 
 ### Dictionary, ObjectiveFunction, Optimizer
-dic = Dictionary(dict_path)
+dic = Dictionary.dataset.pokemon
 obj_func = ObjectiveFunction()
 optimizer = Optimizer()
 
@@ -79,5 +76,3 @@ puzzle.export_json(f"json/{dic.name}_w{width}_h{height}_r{seed}.json")
 
 # In[]
 puzzle.show_log()
-
-# In[]

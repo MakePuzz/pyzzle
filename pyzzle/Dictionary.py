@@ -1,21 +1,35 @@
-import collections
 import os
+import glob
+import pathlib
+import collections
 
 import numpy as np
 
 
 class Dictionary:
-    def __init__(self, fpath=None):
-        self.fpath = fpath
+
+    class Dataset:
+        dict_dir = "../dict"
+        dict_list = list(map(lambda x: pathlib.PurePath(x).stem, glob.glob(f"{dict_dir}/*.txt")))           
+
+        def __getattr__(self, name):
+            if name not in (self.dict_list):
+                raise AttributeError(f"{name} must be an element of the 'dict_list'")
+            return Dictionary(f"{self.dict_dir}/{name}.txt")
+
+    dataset = Dataset()
+
+    def __init__(self, dict_path=None):
+        self.dict_path = dict_path
         self.size = 0
         self.name = ''
         self.word = []
         self.weight = []
         self.w_len = []
         self.removed_words = []
-        if fpath is not None:
-            self.name = os.path.basename(fpath)[:-4]
-            self.read(fpath)
+        if dict_path is not None:
+            self.name = os.path.basename(dict_path)[:-4]
+            self.read(dict_path)
 
     def __getitem__(self, key):
         return {'word': self.word[key], 'weight': self.weight[key], 'len': self.w_len[key]}
@@ -32,13 +46,13 @@ class Dictionary:
     def include(self, word):
         return word in self.word
 
-    def add(self, word=None, weight=None, fpath=None):
-        if (word,fpath) == (None,None):
-            raise ValueError("'word' or 'fpath' must be specified")
-        if word is not None and fpath is not None:
-            raise ValueError("'word' or 'fpath' must be specified")
-        if fpath is not None:
-            self.read(fpath)
+    def add(self, word=None, weight=None, dict_path=None):
+        if (word,dict_path) == (None,None):
+            raise ValueError("'word' or 'dict_path' must be specified")
+        if word is dict_path is not None:
+            raise ValueError("'word' or 'dict_path' must be specified")
+        if dict_path is not None:
+            self.read(dict_path)
         if word is not None:
             if type(word) is str:
                 word = [word]
@@ -58,8 +72,8 @@ class Dictionary:
                     self.w_len.append(len(wo))
                     self.size += 1
 
-    def read(self, fpath):
-        with open(fpath, 'r', encoding='utf-8') as f:
+    def read(self, dict_path):
+        with open(dict_path, 'r', encoding='utf-8') as f:
             data = f.readlines()
 
         # Remove "\n"

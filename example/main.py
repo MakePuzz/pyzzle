@@ -4,36 +4,19 @@ import sys
 import numpy as np
 
 sys.path.append("../")
-from pyzzle import Puzzle, FancyPuzzle, Dictionary, ObjectiveFunction, Optimizer
+from pyzzle import Puzzle, FancyPuzzle, Dictionary, ObjectiveFunction, Optimizer, Mask
 # In[]
 # Set variables
 width = 15
 height = 15
 with_weight = False
 
-seed = 1
+seed = 5
 np.random.seed(seed=seed)
 # In[]
 ## Make instances
 ### FuncyPuzzle
-mask = np.array([
-    [0,0,0,0,0,1,1,1,1,1,0,0,0,0,0],
-    [0,0,0,1,1,1,1,1,1,1,1,1,0,0,0],
-    [0,0,1,1,1,1,1,1,1,1,1,1,1,0,0],
-    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
-    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
-    [1,1,1,1,1,1,0,0,0,1,1,1,1,1,1],
-    [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
-    [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
-    [1,1,1,1,1,0,0,0,0,0,1,1,1,1,1],
-    [1,1,1,1,1,1,0,0,0,1,1,1,1,1,1],
-    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
-    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
-    [0,0,1,1,1,1,1,1,1,1,1,1,1,0,0],
-    [0,0,0,1,1,1,1,1,1,1,1,1,0,0,0],
-    [0,0,0,0,0,1,1,1,1,1,0,0,0,0,0],
-], dtype="bool")
-puzzle = FancyPuzzle(mask, "ドーナツパズル")
+puzzle = FancyPuzzle(Mask.donut_m, "Donut Puzzle")
 
 ### Puzzle (normal)
 # puzzle = Puzzle(width, height)
@@ -47,12 +30,15 @@ optimizer = Optimizer()
 puzzle.import_dict(dic)
 # Register and set method and compile
 obj_func.register(
-    ["weight",
-    "nwords", 
-    "cross_count", 
-    "fill_count", 
-    "max_connected_empties", 
-    "difficulty"]
+        [
+            "circulation",
+            "weight",
+            "nwords", 
+            "cross_count", 
+            "fill_count", 
+            "max_connected_empties", 
+            "difficulty"
+        ]
     )
 optimizer.set_method("local_search")
 puzzle.compile(obj_func=obj_func, optimizer=optimizer)
@@ -61,7 +47,7 @@ puzzle.compile(obj_func=obj_func, optimizer=optimizer)
 puzzle.first_solve()
 
 # In[]
-puzzle.solve(epoch=3)
+puzzle.solve(epoch=50)
 print(f"unique solution: {puzzle.is_unique}")
 
 # In[]

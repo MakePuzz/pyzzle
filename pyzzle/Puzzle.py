@@ -12,24 +12,11 @@ from matplotlib import rcParams
 
 from pyzzle.Placeable import Placeable
 from pyzzle.Dictionary import Dictionary
+from pyzzle.Judgement import Judgement
 from pyzzle import utils
 
 rcParams['font.family'] = 'sans-serif'
 rcParams['font.sans-serif'] = ['Hiragino Maru Gothic Pro', 'Yu Gothic', 'Meiryo', 'Takao', 'IPAexGothic', 'IPAPGothic', 'VL PGothic', 'Noto Sans CJK JP']
-
-
-class Judgement(Enum):
-    """
-    Enumeration of the possible placement of the word to be placed on the board.
-    """
-    THE_WORD_CAN_BE_PLACED = 0
-    THE_PRECEDING_AND_SUCCEEDING_CELLS_ARE_ALREADY_FILLED = 1
-    AT_LEAST_ONE_PLACE_MUST_CROSS_OTHER_WORDS = 2
-    NOT_A_CORRECT_INTERSECTION = 3
-    THE_SAME_WORD_IS_IN_USE = 4
-    THE_NEIGHBOR_CELLS_ARE_FILLED_EXCEPT_AT_THE_INTERSECTION = 5
-    US_USA_DOMINICA_DOMINICAN_PROBLEM = 6
-
 
 class Puzzle:
     """
@@ -183,7 +170,10 @@ class Puzzle:
         # 0から1で難易度を表現するために正規化する
         difficulty = (count_mean - 1/self.nwords)/(1 - 1/self.nwords)
         return difficulty
-        
+
+    @property
+    def circulation(self):
+        return 0
 
     def reinit(self, all=False):
         """
@@ -259,6 +249,7 @@ class Puzzle:
         4. The same word is in use
         5. The Neighbor cells are filled except at the intersection
         6. US/USA, DOMINICA/DOMINICAN problem
+        7. The word overlap with the mask (FancyPuzzle only)
         """
         if ori == 0:
             empties = self.cell[i:i + w_len, j] == ""

@@ -58,7 +58,7 @@ class FancyPuzzle(Puzzle):
         _, nlabel = ndimage.label(mask == False)
         return nlabel-1 == self.circulation
 
-    def is_placeable(self, div, i, j, word, w_len):
+    def is_placeable(self, ori, i, j, word, w_len):
         """
         Returns the word placeability.
 
@@ -92,14 +92,14 @@ class FancyPuzzle(Puzzle):
         6. US/USA, DOMINICA/DOMINICAN problem
         7. The word overlap with the mask
         """
-        if div == 0:
+        if ori == 0:
             if np.any(self.mask[i:i+w_len, j] == False):
                 return Judgement.THE_WORD_OVERLAP_WITH_THE_MASK
-        if div == 1:
+        if ori == 1:
             if np.any(self.mask[i, j:j+w_len] == False):
                 return Judgement.THE_WORD_OVERLAP_WITH_THE_MASK
     
-        return super().is_placeable(div, i, j, word, w_len)
+        return super().is_placeable(ori, i, j, word, w_len)
 
     def save_image(self, data, fpath, list_label="[Word List]", dpi=300):
         """
@@ -187,11 +187,11 @@ class FancyPuzzle(Puzzle):
             else:
                 raise RuntimeError('This puzzle is up to date')
 
-        for code, k, div, i, j in tmp_puzzle.base_history[:idx]:
+        for code, k, ori, i, j in tmp_puzzle.base_history[:idx]:
             if code == 1:
-                tmp_puzzle._add(div, i, j, k)
+                tmp_puzzle._add(ori, i, j, k)
             elif code in (2,3):
-                tmp_puzzle._drop(div, i, j, k)
+                tmp_puzzle._drop(ori, i, j, k)
         tmp_puzzle.init_sol = True
         return tmp_puzzle
 

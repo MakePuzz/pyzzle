@@ -405,7 +405,7 @@ class Puzzle:
             k = self.dic.word.index(word)
         else:
             raise TypeError("word must be int or str.")
-        self._add(ori, i, j, k)
+        return self._add(ori, i, j, k)
 
     def add_to_limit(self):
         """

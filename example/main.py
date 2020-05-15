@@ -16,13 +16,13 @@ np.random.seed(seed=seed)
 # In[]
 ## Make instances
 ### FuncyPuzzle
-puzzle = FancyPuzzle(Mask.donut_m, "Donut Puzzle")
+puzzle = FancyPuzzle(Mask.donut_s, "Donut Puzzle")
 
 ### Puzzle (normal)
 # puzzle = Puzzle(width, height)
 
 ### Dictionary, ObjectiveFunction, Optimizer
-dic = Dictionary.dataset.pokemon
+dic = Dictionary.dataset.logo
 obj_func = ObjectiveFunction()
 optimizer = Optimizer()
 
@@ -47,18 +47,20 @@ puzzle.compile(obj_func=obj_func, optimizer=optimizer)
 puzzle.first_solve()
 
 # In[]
-puzzle.solve(epoch=50)
+puzzle.solve(epoch=500)
 print(f"unique solution: {puzzle.is_unique}")
 
 # In[]
 print(puzzle.cell)
 print(f"単語リスト：{puzzle.used_words[:puzzle.nwords]}")
-oname = f"{dic.name}_w{width}_h{height}_r{seed}.png"
+oname = f"{dic.name}_w{puzzle.width}_h{puzzle.height}_ep{puzzle.epoch}_seed{puzzle.seed}.png"
 puzzle.save_answer_image(f"fig/answer_{oname}")
 puzzle.save_problem_image(f"fig/problem_{oname}")
-print(f"Save as '{oname}'")
-
-puzzle.export_json(f"json/{dic.name}_w{width}_h{height}_r{seed}.json")
+puzzle.export_json(f"json/{oname[:-4]}.json")
+puzzle.to_pickle(f"pickle/{oname[:-4]}.pickle")
 
 # In[]
 puzzle.show_log()
+plt.savefig(f"fig/log_{puzzle.epoch}ep.png")
+
+# %%

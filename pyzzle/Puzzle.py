@@ -510,7 +510,7 @@ class Puzzle:
         # Insert data to history
         code = 3 if is_kick else 2
         self.history.append((code, k, ori, i, j))
-        # Release prohibited cells
+        # Update enable cells
         remove_flag = True
         if ori == 0:
             if i > 0:

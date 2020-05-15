@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 import pandas as pd
 from IPython.display import display
@@ -22,8 +24,9 @@ def show_2Darray(ndarray, mask=None):
     mask : ndarray, optional
         Numpy.ndarray for mask
     """
+    array = copy.deepcopy(ndarray)
     if mask is not None:
-        ndarray[mask == False] = "■"
+        array[mask == False] = "■"
     if in_ipynb() is True:
         styles = [
             dict(selector="th", props=[("font-size", "90%"),
@@ -42,9 +45,9 @@ def show_2Darray(ndarray, mask=None):
                                         ("height", "30px")]),
             dict(selector="caption", props=[("caption-side", "bottom")])
         ]
-        df = pd.DataFrame(ndarray)
+        df = pd.DataFrame(array)
         df = (df.style.set_table_styles(styles))
         display(df)
     else:
-        ndarray = np.where(ndarray == "", "  ", ndarray)
-        print(ndarray)
+        array = np.where(array == "", "  ", array)
+        print(array)

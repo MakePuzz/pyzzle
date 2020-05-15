@@ -730,6 +730,8 @@ class Puzzle:
         """
         if self.log is None:
             raise RuntimeError("Puzzle has no log")
+        if figsize is None:
+            figsize = [len(self.obj_func), len(self.obj_func)]
         return self.log.plot(subplots=True, title=name, grid=grid, figsize=figsize, **kwargs)
 
     def save_image(self, data, fpath, list_label="[Word List]", dpi=300):
@@ -865,7 +867,7 @@ class Puzzle:
         """
         if len(self.history) - n < 0:
             return self.jump(0)
-        previous_puzzle = self.jump(len(self.history) + n)
+        previous_puzzle = self.jump(len(self.history) - n)
         return previous_puzzle
 
     def get_next(self, n=1):

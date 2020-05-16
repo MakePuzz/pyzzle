@@ -42,3 +42,6 @@ class Placeable:
             return {"ori": self.ori[key], "i": self.i[key], "j": self.j[key], "k": self.k[key]}
         if type(key) is str:
             return eval(f"self.{key}")
+
+    def __str__(self):
+        return f"ori:{self.ori}, i:{self.i}, j:{self.j}, k:{self.k}"

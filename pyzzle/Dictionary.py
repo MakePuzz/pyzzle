@@ -19,17 +19,19 @@ class Dictionary:
 
     dataset = Dataset()
 
-    def __init__(self, dict_path=None):
-        self.dict_path = dict_path
+    def __init__(self, dict_specifier=None):
+        self.dict_specifier = dict_specifier
         self.size = 0
         self.name = ''
         self.word = []
         self.weight = []
         self.w_len = []
         self.removed_words = []
-        if dict_path is not None:
-            self.name = os.path.basename(dict_path)[:-4]
-            self.read(dict_path)
+        if type(dict_specifier) in (list, np.ndarray):
+            self.add(dict_specifier)
+        if type(dict_specifier) is str:
+            self.name = os.path.basename(dict_specifier)[:-4]
+            self.read(dict_specifier)
 
     def __getitem__(self, key):
         return {'word': self.word[key], 'weight': self.weight[key], 'len': self.w_len[key]}
@@ -46,13 +48,13 @@ class Dictionary:
     def include(self, word):
         return word in self.word
 
-    def add(self, word=None, weight=None, dict_path=None):
-        if (word,dict_path) == (None,None):
-            raise ValueError("'word' or 'dict_path' must be specified")
-        if word is dict_path is not None:
-            raise ValueError("'word' or 'dict_path' must be specified")
-        if dict_path is not None:
-            self.read(dict_path)
+    def add(self, word=None, weight=None, dict_specifier=None):
+        if (word,dict_specifier) == (None,None):
+            raise ValueError("'word' or 'dict_specifier' must be specified")
+        if word is dict_specifier is not None:
+            raise ValueError("'word' or 'dict_specifier' must be specified")
+        if dict_specifier is not None:
+            self.read(dict_specifier)
         if word is not None:
             if type(word) is str:
                 word = [word]
@@ -72,8 +74,8 @@ class Dictionary:
                     self.w_len.append(len(wo))
                     self.size += 1
 
-    def read(self, dict_path):
-        with open(dict_path, 'r', encoding='utf-8') as f:
+    def read(self, dict_specifier):
+        with open(dict_specifier, 'r', encoding='utf-8') as f:
             data = f.readlines()
 
         # Remove "\n"

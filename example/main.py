@@ -60,6 +60,7 @@ puzzle.export_json(f"json/{oname[:-4]}.json")
 puzzle.to_pickle(f"pickle/{oname[:-4]}.pickle")
 
 # In[]
+import matplotlib.pyplot as plt
 puzzle.show_log()
 plt.savefig(f"fig/log_{puzzle.epoch}ep.png")
 

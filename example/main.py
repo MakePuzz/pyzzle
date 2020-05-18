@@ -47,7 +47,7 @@ puzzle.compile(obj_func=obj_func, optimizer=optimizer)
 puzzle.first_solve()
 
 # In[]
-puzzle.solve(epoch=500)
+puzzle.solve(epoch=5)
 print(f"unique solution: {puzzle.is_unique}")
 
 # In[]
@@ -57,7 +57,7 @@ oname = f"{dic.name}_w{puzzle.width}_h{puzzle.height}_ep{puzzle.epoch}_seed{puzz
 puzzle.save_answer_image(f"fig/answer_{oname}")
 puzzle.save_problem_image(f"fig/problem_{oname}")
 puzzle.export_json(f"json/{oname[:-4]}.json")
-puzzle.to_pickle(f"pickle/{oname[:-4]}.pickle")
+# puzzle.to_pickle(f"pickle/{oname[:-4]}.pickle")
 
 # In[]
 import matplotlib.pyplot as plt

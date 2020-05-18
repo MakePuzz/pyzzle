@@ -644,9 +644,9 @@ class Puzzle:
         import json
         word_list = []
         for p in self.used_plc_idx:
-            word_list.append({"word":self.dic.word[self.plc.k[p]], "ori":self.plc.ori[p], "i":self.plc.i[p], "j":self.plc.j[p]})
             if p == -1:
                 break
+            word_list.append({"word":self.dic.word[self.plc.k[p]], "ori":self.plc.ori[p], "i":self.plc.i[p], "j":self.plc.j[p]})
         try:
             mask = self.mask
         except:

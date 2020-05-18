@@ -257,7 +257,7 @@ class Puzzle:
             empties = self.cell[i, j:j + w_len] == ""
 
         # If 0 words used, return True
-        if self.nwords is 0:
+        if self.nwords == 0:
             return Judgement.THE_WORD_CAN_BE_PLACED
 
         # If the preceding and succeeding cells are already filled
@@ -734,85 +734,38 @@ class Puzzle:
             figsize = [len(self.obj_func), len(self.obj_func)]
         return self.log.plot(subplots=True, title=name, grid=grid, figsize=figsize, **kwargs)
 
-    def save_image(self, data, fpath, list_label="[Word List]", dpi=300):
-        """
-        Generate a puzzle image with word lists.
-        
-        Parameters
-        ----------
-        data : ndarray
-            2D array for imaging
-        fpath : str
-            Output file path
-        list_label : str, default "[Word List]" 
-            Title label for word lists
-        dpi : int, default 300
-            Dot-per-inch
-        """
-        # Generate puzzle image
-        colors = np.where(self.cover < 1, "#000000", "#FFFFFF")
-        df = pd.DataFrame(data)
-        fig = plt.figure(figsize=(16, 8), dpi=dpi)
-        ax1 = fig.add_subplot(121)  # puzzle
-        ax2 = fig.add_subplot(122)  # word list
-        ax1.axis("off")
-        ax2.axis("off")
-        fig.set_facecolor('#EEEEEE')
-        # Draw puzzle
-        ax1_table = ax1.table(cellText=df.values, cellColours=colors, cellLoc="center", bbox=[0, 0, 1, 1])
-        ax1_table.auto_set_font_size(False)
-        ax1_table.set_fontsize(18)
-        ax1.set_title(label="*** " + self.name + " ***", size=20)
-        # Draw word list
-        words = [word for word in self.used_words if word != ""]
-        if words == []:
-            words = [""]
-        words.sort()
-        words = sorted(words, key=len)
-        rows = self.height
-        cols = math.ceil(len(words) / rows)
-        padnum = cols * rows - len(words)
-        words += [''] * padnum
-        words = np.array(words).reshape(cols, rows).T
-        ax2_table = ax2.table(cellText=words, cellColours=None, cellLoc="left", edges="open", bbox=[0, 0, 1, 1])
-        ax2.set_title(label=list_label, size=20)
-        ax2_table.auto_set_font_size(False)
-        ax2_table.set_fontsize(18)
-        plt.tight_layout()
-        plt.savefig(fpath, dpi=dpi)
-        plt.close()
-
-    def save_problem_image(self, fpath="problem.png", list_label="[Word List]", dpi=300):
+    def save_problem_image(self, fname, list_label="word list", dpi=300):
         """
         Generate a puzzle problem image with word lists.
         
         Parameters
         ----------
-        fpath : str, default "problem.png"
-            Output file path
+        fname : str, default "problem.png"
+            File name for output
         list_label : str, default "[Word List]" 
             Title label for word lists
         dpi : int, default 300
             Dot-per-inch
         """
-        data = np.full(self.width * self.height, "", dtype="unicode").reshape(self.height, self.width)
-        self.save_image(data, fpath, list_label, dpi)
+        empty_cell = np.full(self.cell.shape, "", dtype="unicode")
+        word_list = self.used_words[self.used_words != ""]
+        utils.save_image(fname, empty_cell, word_list, list_label, title=self.name, dpi=dpi)
 
-    def save_answer_image(self, fpath="answer.png", list_label="[Word List]", dpi=300):
+    def save_answer_image(self, fname, list_label="word list", dpi=300):
         """
         Generate a puzzle answer image with word lists.
         
         Parameters
         ----------
-        fpath : str, default "problem.png"
-            Output file path
+        fname : str, default "problem.png"
+            File name for output
         list_label : str, default "[Word List]" 
             Title label for word lists
         dpi : int, default 300
             Dot-per-inch
         """
-        data = self.cell
-        self.save_image(data, fpath, list_label, dpi)
+        word_list = self.used_words[self.used_words != ""]
+        utils.save_image(fname, self.cell, word_list, list_label, title=self.name, dpi=dpi)
 
     def jump(self, idx):
         """

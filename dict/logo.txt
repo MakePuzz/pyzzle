@@ -25,7 +25,7 @@ neat 2
 tight 2
 radical 2
 lovely 2
-pretty2
+pretty 2
 sylphlike 2
 dramatic 2
 elegant 5
@@ -38,7 +38,7 @@ artistic 5
 tasteful 2
 quaint 2
 poetic 2
-delicate2
+delicate 2
 exquisite 2
 bijou 2
 sophisticated 2

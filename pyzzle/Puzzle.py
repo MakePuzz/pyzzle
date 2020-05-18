@@ -749,7 +749,7 @@ class Puzzle:
         """
         empty_cell = np.full(self.cell.shape, "", dtype="unicode")
         word_list = self.used_words[self.used_words != ""]
-        utils.save_image(fname, empty_cell, word_list, list_label, title=self.name, dpi=dpi)
+        utils.save_image(fname, empty_cell, word_list, title=self.name, label=list_label, dpi=dpi)
 
     def save_answer_image(self, fname, list_label="word list", dpi=300):
         """
@@ -765,7 +765,7 @@ class Puzzle:
             Dot-per-inch
         """
         word_list = self.used_words[self.used_words != ""]
-        utils.save_image(fname, self.cell, word_list, list_label, title=self.name, dpi=dpi)
+        utils.save_image(fname, self.cell, word_list, title=self.name, label=list_label, dpi=dpi)
 
     def jump(self, idx):
         """

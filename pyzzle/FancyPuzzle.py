@@ -101,62 +101,6 @@ class FancyPuzzle(Puzzle):
     
         return super().is_placeable(ori, i, j, word, w_len)
 
-    def save_image(self, data, fpath, list_label="[Word List]", dpi=300):
-        """
-        Generate a puzzle image with word lists.
-        
-        Parameters
-        ----------
-        data : ndarray
-            2D array for imaging
-        fpath : str
-            Output file path
-        list_label : str, default "[Word List]" 
-            Title label for word lists
-        dpi : int, default 300
-            Dot-per-inch
-        """
-        # Generate puzzle image
-        colors = np.where(self.cover<1, "#000000", "#FFFFFF")
-        df = pd.DataFrame(data)
-
-        fig=plt.figure(figsize=(16, 8), dpi=dpi)
-        ax1=fig.add_subplot(121) # puzzle
-        ax2=fig.add_subplot(122) # word list
-        ax1.axis("off")
-        ax2.axis("off")
-        fig.set_facecolor('#EEEEEE')
-        
-        # Draw puzzle
-        ax1_table = ax1.table(cellText=df.values, cellColours=colors, cellLoc="center", bbox=[0, 0, 1, 1], fontsize=20)
-        ax1.set_title(label=f"*** {self.name} ***", size=20)
-        
-        # delete unmasked cells
-        mask = np.where(self.mask == False)
-        for i, j in list(zip(mask[0], mask[1])):
-            del ax1_table._cells[i, j]
-
-        # Draw word list
-        words = [word for word in self.used_words if word != ""]
-        if words == []:
-            words = [""]
-        words.sort()
-        words = sorted(words, key=len)
-
-        rows = self.height
-        cols = math.ceil(len(words)/rows)
-        padnum = cols*rows - len(words)
-        words += ['']*padnum
-        words = np.array(words).reshape(cols, rows).T
-
-        ax2_table = ax2.table(cellText=words, cellColours=None, cellLoc="left", edges="open", bbox=[0, 0, 1, 1])
-        ax2.set_title(label=list_label, size=20)
-        for _, cell in ax2_table.get_celld().items():
-            cell.set_text_props(size=18)
-        plt.tight_layout()
-        plt.savefig(fpath, dpi=dpi)
-        plt.close()
-    
     def show(self):
         utils.show_2Darray(self.cell, self.mask)
     
@@ -194,6 +138,39 @@ class FancyPuzzle(Puzzle):
                 tmp_puzzle._drop(ori, i, j, k)
         tmp_puzzle.init_sol = True
         return tmp_puzzle
+
+    def save_problem_image(self, fname, list_label="word list", dpi=300):
+        """
+        Generate a puzzle problem image with word lists.
+        
+        Parameters
+        ----------
+        fname : str, default "problem.png"
+            File name for output
+        list_label : str, default "[Word List]" 
+            Title label for word lists
+        dpi : int, default 300
+            Dot-per-inch
+        """
+        empty_cell = np.full(self.cell.shape, "", dtype="unicode")
+        word_list = self.used_words[self.used_words != ""]
+        utils.save_image(fname, empty_cell, word_list, mask=self.mask, title=self.name, label=list_label, dpi=dpi)
+
+    def save_answer_image(self, fname, list_label="word list", dpi=300):
+        """
+        Generate a puzzle answer image with word lists.
+        
+        Parameters
+        ----------
+        fname : str, default "problem.png"
+            File name for output
+        list_label : str, default "[Word List]" 
+            Title label for word lists
+        dpi : int, default 300
+            Dot-per-inch
+        """
+        word_list = self.used_words[self.used_words != ""]
+        utils.save_image(fname, self.cell, word_list, mask=self.mask, title=self.name, label=list_label, dpi=dpi)
 
     def move(self, direction, n=0, limit=False):
         """

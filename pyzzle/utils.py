@@ -162,7 +162,7 @@ def save_image(fpath, cell, word_list, mask=None, title="", label="word list", d
     # Draw word list
     if word_list == []:
         word_list = ['']
-    word_list.sort(key=len)
+    word_list = sorted(word_list, key=len)
     rows = cell.shape[0]
     cols = np.ceil(len(word_list) / rows).astype("int")
     padnum = cols * rows - len(word_list)

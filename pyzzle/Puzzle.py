@@ -586,7 +586,7 @@ class Puzzle:
         if ori_i_j is not None:
             if type(ori_i_j) not in (list, tuple):
                 raise TypeError(f"ori_i_j must be list or tuple")
-            if len(ori_i_j) is not 3:
+            if len(ori_i_j) != 3:
                 raise ValueError(f"Length of 'ori_i_j' must be 3, not {len(ori_i_j)}")
             for p in self.used_plc_idx:
                 _ori, _i, _j = self.plc.ori[p], self.plc.i[p], self.plc.j[p]
@@ -891,7 +891,7 @@ class Puzzle:
         ----------
         direction : int or str
             The direction in which to move the word group.
-            The correspondence between each int or str and the direction is as follows:
+            The correspondence between each int or str and the direction == as follows:
                 1 or "U" : upward
                 2 or "D" : downward
                 3 or "R" : right
@@ -917,28 +917,28 @@ class Puzzle:
         if limit is True:
             n = n2limit[direction]
 
-        if direction is 1:
+        if direction == 1:
             if r_min < n:
                 n = n2limit[direction]
             num = -n
             axis = 0
             di = num
             dj = 0
-        if direction is 2:
+        if direction == 2:
             if self.height - (r_max + 1) < n:
                 n = n2limit[direction]
             num = n
             axis = 0
             di = num
             dj = 0
-        if direction is 3:
+        if direction == 3:
             if c_min < n:
                 n = n2limit[direction]
             num = -n
             axis = 1
             di = 0
             dj = num
-        if direction is 4:
+        if direction == 4:
             if self.width - (c_max + 1) < n:
                 n = n2limit[direction]
             num = n

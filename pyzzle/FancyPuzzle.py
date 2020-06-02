@@ -180,7 +180,7 @@ class FancyPuzzle(Puzzle):
         ----------
         direction : int or str
             The direction in which to move the word group.
-            The correspondence between each int or str and the direction is as follows:
+            The correspondence between each int or str and the direction == as follows:
                 1 or "U" : upward
                 2 or "D" : downward
                 3 or "R" : right

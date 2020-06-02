@@ -26,7 +26,7 @@ class Optimizer:
         This method performs a local search
         """
         # Logging
-        if puzzle.epoch is 0:
+        if puzzle.epoch == 0:
             puzzle.logging()
         # Copy
         _puzzle = copy.deepcopy(puzzle)

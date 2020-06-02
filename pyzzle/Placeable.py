@@ -14,7 +14,7 @@ class Placeable:
     def _compute(self, word, base_k=0):
         if type(word) is str:
             word = [word]
-        if self.size is 0 or base_k is not 0:
+        if self.size == 0 or base_k != 0:
             ap = np.full((2, self.height, self.width, len(word)), np.nan, dtype="int")
             self.inv_p = np.append(self.inv_p, ap, axis=3)
         for ori in (0,1):

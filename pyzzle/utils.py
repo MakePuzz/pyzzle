@@ -4,8 +4,6 @@ import json
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from IPython.display import display
-
 
 def in_ipynb():
     """Are we in a jupyter notebook?"""
@@ -30,6 +28,7 @@ def show_2Darray(cell, mask=None):
     if mask is not None:
         array[mask == False] = "■"
     if in_ipynb() is True:
+        from IPython.display import display
         styles = [
             dict(selector="th", props=[("font-size", "90%"),
                                         ("text-align", "center"),

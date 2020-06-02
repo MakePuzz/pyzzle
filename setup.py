@@ -28,7 +28,7 @@ setup(
     name="pyzzle",
     version=version,
     url='https://github.com/puzzle-japan/pyzzle',
-    author='tsukada-cs and Saikoro2007',
+    author='The puzzle-japan Team',
     author_email='puzzle.hokkaido@gmail.com',
     maintainer='tsukada-cs and Saikoro2007',
     maintainer_email='puzzle.hokkaido@gmail.com',
@@ -37,6 +37,7 @@ setup(
     packages=find_packages(),
     install_requires=_requires_from_file('requirements.txt'),
     license="MIT",
+    python_requires='>=3.6',
     classifiers=[
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',

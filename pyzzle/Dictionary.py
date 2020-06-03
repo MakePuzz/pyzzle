@@ -37,6 +37,7 @@ class Dictionary:
             self.add(word, weight)
         if name is not None:
             self.name = name
+        self._i = 0
 
     def __getitem__(self, key):
         return {'word': self.word[key], 'weight': self.weight[key], 'len': self.w_len[key]}
@@ -59,6 +60,17 @@ class Dictionary:
         if isinstance(other, dict):
             new_dict.add(word = other["word"], weight = other["weight"])
         return new_dict
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._i == self.size:
+            self._i = 0
+            raise StopIteration()
+        word, weight = self.word[self._i], self.weight[self._i]
+        self._i += 1
+        return word, weight
     
     def getK(self, word):
         return np.where(self.word == word)[0][0]

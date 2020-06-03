@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class Mask:
+class Mask(np.ndarray):
     donut_s = np.array([
         [0,0,0,0,0,1,1,1,1,1,0,0,0,0,0],
         [0,0,0,1,1,1,1,1,1,1,1,1,0,0,0],

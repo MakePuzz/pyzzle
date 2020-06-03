@@ -55,7 +55,7 @@ class Dictionary:
     def __add__(self, other):
         new_dict = copy.deepcopy(self)
         if isinstance(other, Dictionary):
-            for wo, we in zip(other.word, other.weight):
+            for wo, we in other:
                 new_dict.add(word = wo, weight = we)
         if isinstance(other, str):
             new_dict.add(word = other, weight = 0)

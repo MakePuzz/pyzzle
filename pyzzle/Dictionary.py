@@ -1,4 +1,5 @@
 import os
+import copy
 import glob
 import pathlib
 import collections
@@ -19,7 +20,7 @@ class Dictionary:
 
     dataset = Dataset()
 
-    def __init__(self, dict_specifier=None):
+    def __init__(self, dict_specifier=None, word=None, weight=None, name=None):
         self.dict_specifier = dict_specifier
         self.size = 0
         self.name = ''
@@ -27,21 +28,38 @@ class Dictionary:
         self.weight = []
         self.w_len = []
         self.removed_words = []
-        if type(dict_specifier) in (list, np.ndarray):
+        if isinstance(dict_specifier, (list, np.ndarray)):
             self.add(dict_specifier)
-        if type(dict_specifier) is str:
+        if isinstance(dict_specifier, str):
             self.name = os.path.basename(dict_specifier)[:-4]
             self.read(dict_specifier)
+        if word is not None:
+            self.add(word, weight)
+        if name is not None:
+            self.name = name
 
     def __getitem__(self, key):
         return {'word': self.word[key], 'weight': self.weight[key], 'len': self.w_len[key]}
 
     def __str__(self):
-        return self.name
+        return str({"name":self.name, "words":self.word})
 
     def __len__(self):
         return self.size
 
+    def __add__(self, other):
+        new_dict = copy.deepcopy(self)
+        if isinstance(other, Dictionary):
+            for wo, we in zip(other.word, other.weight):
+                new_dict.add(word = wo, weight = we)
+        if isinstance(other, str):
+            new_dict.add(word = other, weight = 0)
+        if isinstance(other, (tuple, list)):
+            new_dict.add(word = other[0], weight = other[1])
+        if isinstance(other, dict):
+            new_dict.add(word = other["word"], weight = other["weight"])
+        return new_dict
+    
     def getK(self, word):
         return np.where(self.word == word)[0][0]
 
@@ -56,12 +74,12 @@ class Dictionary:
         if dict_specifier is not None:
             self.read(dict_specifier)
         if word is not None:
-            if type(word) is str:
+            if isinstance(word, str):
                 word = [word]
             if weight is None:
                 weight = [0]*len(word)
             else:
-                if type(weight) is int:
+                if isinstance(weight, int):
                     weight = [weight]
                 if len(word) != len(weight):
                     raise ValueError(f"'word' and 'weight' must be same size")

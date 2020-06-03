@@ -3,10 +3,10 @@ import unittest
 
 import numpy as np
 
-sys.path.append("../")
 from pyzzle import Puzzle, Dictionary
 
-class TestPuzzleMethods(unittest.TestCase):
+class TestPuzzle(unittest.TestCase):
+    """Test the Puzzle class."""
 
     def test_add(self):
         puzzle = Puzzle(5,5)

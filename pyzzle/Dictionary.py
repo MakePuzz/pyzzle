@@ -20,14 +20,13 @@ class Dictionary:
 
     dataset = Dataset()
 
-    def __init__(self, dict_specifier=None, word=None, weight=None, name=None):
+    def __init__(self, dict_specifier=None, word=None, weight=None, name=''):
         self.dict_specifier = dict_specifier
-        self.size = 0
-        self.name = ''
+        self.name = name
         self.word = []
         self.weight = []
-        self.w_len = []
         self.removed_words = []
+        self._i = 0
         if isinstance(dict_specifier, (list, np.ndarray)):
             self.add(dict_specifier)
         if isinstance(dict_specifier, str):
@@ -35,9 +34,14 @@ class Dictionary:
             self.read(dict_specifier)
         if word is not None:
             self.add(word, weight)
-        if name is not None:
-            self.name = name
-        self._i = 0
+
+    @property
+    def size(self):
+        return len(self.word)
+
+    @property
+    def w_len(self):
+        return list(map(len, self.word))
 
     def __getitem__(self, key):
         return {'word': self.word[key], 'weight': self.weight[key], 'len': self.w_len[key]}
@@ -101,8 +105,6 @@ class Dictionary:
                 else:
                     self.word.append(wo)
                     self.weight.append(we)
-                    self.w_len.append(len(wo))
-                    self.size += 1
 
     def read(self, dict_specifier):
         with open(dict_specifier, 'r', encoding='utf-8') as f:
@@ -135,8 +137,6 @@ class Dictionary:
                 self.removed_words.append(w)
                 del self.word[i]
                 del self.weight[i]
-                del self.w_len[i]
-                self.size -= 1
 
     def calc_weight(self):
         """

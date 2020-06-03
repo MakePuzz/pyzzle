@@ -3,7 +3,7 @@ import copy
 
 class Optimizer:
     def __init__(self):
-        self.method_list = ["local_search", "iterated_local_search"]
+        self.method_list = ["local_search"]
         self.method = ""
 
     @staticmethod

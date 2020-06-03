@@ -42,7 +42,7 @@ class Dictionary:
         return {'word': self.word[key], 'weight': self.weight[key], 'len': self.w_len[key]}
 
     def __str__(self):
-        return str({"name":self.name, "words":self.word})
+        return str({"name": self.name, "words": self.word, "weight": self.weight})
 
     def __len__(self):
         return self.size

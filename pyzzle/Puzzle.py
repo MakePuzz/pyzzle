@@ -251,10 +251,6 @@ class Puzzle:
         6. US/USA, DOMINICA/DOMINICAN problem
         7. The word overlap with the mask (FancyPuzzle only)
         """
-        if ori == 0:
-            empties = self.cell[i:i + w_len, j] == ""
-        if ori == 1:
-            empties = self.cell[i, j:j + w_len] == ""
 
         # If 0 words used, return True
         if self.nwords == 0:
@@ -273,6 +269,10 @@ class Puzzle:
                 return Judgement.THE_PRECEDING_AND_SUCCEEDING_CELLS_ARE_ALREADY_FILLED
 
         # At least one place must cross other words
+        if ori == 0:
+            empties = self.cell[i:i + w_len, j] == ""
+        if ori == 1:
+            empties = self.cell[i, j:j + w_len] == ""
         if np.all(empties == True):
             return Judgement.AT_LEAST_ONE_PLACE_MUST_CROSS_OTHER_WORDS
 

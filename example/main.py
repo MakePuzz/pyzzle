@@ -23,13 +23,10 @@ puzzle = FancyPuzzle(Mask.donut_s, "Donut Puzzle")
 
 ### Dictionary, ObjectiveFunction, Optimizer
 dic = Dictionary.dataset.logo
-obj_func = ObjectiveFunction()
-
-# In[]
 puzzle.import_dict(dic)
-# Register and set method and compile
-obj_func.register(
-        [
+# In[]
+
+obj_func = [
             "circulation",
             "weight",
             "nwords", 
@@ -38,14 +35,12 @@ obj_func.register(
             "max_connected_empties", 
             "difficulty"
         ]
-    )
-puzzle.compile(obj_func=obj_func)
 
 # In[]
 puzzle.first_solve()
 
 # In[]
-puzzle.solve(epoch=5, optimizer="local_search")
+puzzle.solve(epoch=5, optimizer="local_search", of=obj_func)
 print(f"unique solution: {puzzle.is_unique}")
 
 # In[]

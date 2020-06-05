@@ -3,7 +3,7 @@ from scipy import ndimage
 
 
 class ObjectiveFunction:
-    def __init__(self):
+    def __init__(self, objective_function=["nwords"]):
         self.flist = [
             "weight",
             "nwords",
@@ -14,7 +14,9 @@ class ObjectiveFunction:
             "ease",
             "circulation",
         ]
-        self.registered_funcs = []
+        if not isinstance(objective_function, (list, tuple, set)):
+            raise TypeError("'nwords' must be list or tuple or set")
+        self.register(objective_function)
 
     def __len__(self):
         return len(self.registered_funcs)

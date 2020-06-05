@@ -13,6 +13,7 @@ from matplotlib import rcParams
 from pyzzle.Placeable import Placeable
 from pyzzle.Dictionary import Dictionary
 from pyzzle.Optimizer import Optimizer
+from pyzzle.ObjectiveFunction import ObjectiveFunction
 from pyzzle.Judgement import Judgement
 from pyzzle import utils
 
@@ -690,7 +691,7 @@ class Puzzle:
             for func_num in range(len(obj_func)):
                 print(f"  |-> {func_num} {obj_func.registered_funcs[func_num]}")
 
-    def solve(self, epoch, optimizer="local_search"):
+    def solve(self, epoch, optimizer="local_search", objective_function=None, of=None):
         """
         This method repeats the solution improvement by the specified number of epoch.
 
@@ -700,6 +701,8 @@ class Puzzle:
             The number of epoch
         optimizer : str or Optimizer
             Optimizer
+        objective_function or of : list or ObjectiveFunction
+            ObjectiveFunction
         """
         if self.first_solved is False:
             raise RuntimeError("'first_solve' method shoukd be called earlier")
@@ -709,6 +712,14 @@ class Puzzle:
             self.optimizer = Optimizer(optimizer)
         if isinstance(optimizer, Optimizer):
             self.optimizer = optimizer
+        if objective_function is of is not None:
+            raise ValueError("'objective_function' and 'of' must not both be specified")
+        if objective_function is None:
+            objective_function = of
+        if isinstance(objective_function, (list,tuple,set)):
+            self.obj_func = ObjectiveFunction(objective_function)
+        if isinstance(objective_function, ObjectiveFunction):
+            self.obj_func = objective_function
         if self.optimizer.method == "local_search":
             exec(f"self.optimizer.{self.optimizer.method}(self, {epoch})")
 

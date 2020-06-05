@@ -12,6 +12,7 @@ from matplotlib import rcParams
 
 from pyzzle.Placeable import Placeable
 from pyzzle.Dictionary import Dictionary
+from pyzzle.Optimizer import Optimizer
 from pyzzle.Judgement import Judgement
 from pyzzle import utils
 
@@ -672,7 +673,7 @@ class Puzzle:
             if self.label[self.plc.i[p], self.plc.j[p]] != largest_ccl:
                 self._drop(self.plc.ori[p], self.plc.i[p], self.plc.j[p], self.plc.k[p], is_kick=True)
 
-    def compile(self, obj_func, optimizer, debug=False):
+    def compile(self, obj_func, debug=False):
         """
         Compile the objective function and optimization method into the Puzzle instance.
 
@@ -680,20 +681,16 @@ class Puzzle:
         ----------
         obj_func : ObjectiveFunction
             ObjectiveFunction object for compile to Puzzle
-        optimizer : Optimizer
-            Optimizer object for compile to Puzzle
         """
         self.obj_func = obj_func
-        self.optimizer = optimizer
 
         if debug is True:
             print(">>> Compile succeeded.")
             print(" --- objective functions:")
             for func_num in range(len(obj_func)):
                 print(f"  |-> {func_num} {obj_func.registered_funcs[func_num]}")
-            print(f" --- optimizer: {optimizer.method}")
 
-    def solve(self, epoch):
+    def solve(self, epoch, optimizer="local_search"):
         """
         This method repeats the solution improvement by the specified number of epoch.
 
@@ -701,12 +698,19 @@ class Puzzle:
         ----------
         epoch : int
             The number of epoch
+        optimizer : str or Optimizer
+            Optimizer
         """
         if self.first_solved is False:
-            raise RuntimeError("'first_solve' method has not called")
+            raise RuntimeError("'first_solve' method shoukd be called earlier")
         if epoch <= 0:
             raise ValueError("'epoch' must be lather than 0")
-        exec(f"self.optimizer.{self.optimizer.method}(self, {epoch})")
+        if isinstance(optimizer, str):
+            self.optimizer = Optimizer(optimizer)
+        if isinstance(optimizer, Optimizer):
+            self.optimizer = optimizer
+        if self.optimizer.method == "local_search":
+            exec(f"self.optimizer.{self.optimizer.method}(self, {epoch})")
 
     def show_log(self, name="Objective Function's epoch series", grid=True, figsize=None, **kwargs):
         """
@@ -903,7 +907,7 @@ class Puzzle:
         """
         r_min, r_max, c_min, c_max = self.get_rect()
         str2int = {'U': 1, 'D': 2, 'R': 3, 'L': 4}
-        if direction in ('U', 'D', 'R', 'L', 'u', 'd', 'r', 'l'):
+        if direction.upper() in ('U', 'D', 'R', 'L'):
             direction = str2int[direction.upper()]
         if direction not in (1, 2, 3, 4):
             raise ValueError()

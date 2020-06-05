@@ -24,7 +24,6 @@ puzzle = FancyPuzzle(Mask.donut_s, "Donut Puzzle")
 ### Dictionary, ObjectiveFunction, Optimizer
 dic = Dictionary.dataset.logo
 obj_func = ObjectiveFunction()
-optimizer = Optimizer()
 
 # In[]
 puzzle.import_dict(dic)
@@ -40,14 +39,13 @@ obj_func.register(
             "difficulty"
         ]
     )
-optimizer.set_method("local_search")
-puzzle.compile(obj_func=obj_func, optimizer=optimizer)
+puzzle.compile(obj_func=obj_func)
 
 # In[]
 puzzle.first_solve()
 
 # In[]
-puzzle.solve(epoch=5)
+puzzle.solve(epoch=5, optimizer="local_search")
 print(f"unique solution: {puzzle.is_unique}")
 
 # In[]
@@ -63,5 +61,8 @@ puzzle.export_json(f"json/{oname[:-4]}.json")
 import matplotlib.pyplot as plt
 puzzle.show_log()
 plt.savefig(f"fig/log_{puzzle.epoch}ep.png")
+
+# %%
+puzzle.show()
 
 # %%

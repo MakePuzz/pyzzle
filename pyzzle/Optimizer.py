@@ -2,9 +2,9 @@ import copy
 
 
 class Optimizer:
-    def __init__(self):
+    def __init__(self, method="local_search"):
         self.method_list = ["local_search"]
-        self.method = ""
+        self.set_method(method)
 
     @staticmethod
     def get_neighbor_solution(puzzle):

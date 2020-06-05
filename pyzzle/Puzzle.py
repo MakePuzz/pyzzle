@@ -952,3 +952,51 @@ class Puzzle:
         for i, p in enumerate(self.used_plc_idx[:self.nwords]):
             self.used_plc_idx[i] = self.plc.inv_p[self.plc.ori[p], self.plc.i[p] + di, self.plc.j[p] + dj, self.plc.k[p]]
         self.history.append((4, direction, n))
+
+    def get_used_words_and_enable(self):
+        """
+        Returns
+        -------
+        used_words : list
+        enable : np.ndarray
+        """
+        jj, ii = np.meshgrid(np.arange(self.width), np.arange(self.height))
+        # 縦
+        head0 = (self.cell[ii[0,:], jj[0,:]] != "") * (self.cell[ii[0,:]+1, jj[0,:]] != "")
+        body0 = (self.cell[ii[1:-1,:]-1, jj[1:-1,:]] == "") * (self.cell[ii[1:-1,:], jj[1:-1,:]] != "") * (self.cell[ii[1:-1,:]+1, jj[1:-1,:]] != "")
+        start0 = np.vstack([head0, body0])
+
+        # 横
+        head1 = (self.cell[ii[:,0], jj[:,0]] != "") * (self.cell[ii[:,0], jj[:,0]+1] != "")
+        body1 = (self.cell[ii[:,1:-1], jj[:,1:-1]-1] == "") * (self.cell[ii[:,1:-1], jj[:,1:-1]] != "") * (self.cell[ii[:,1:-1], jj[:,1:-1]+1] != "")
+        start1 = np.hstack([head1.reshape(self.height,1), body1])
+
+        indices = {"vertical":np.where(start0), "horizontal":np.where(start1)}
+
+        used_words = []
+        enable = np.ones(self.cell.shape).astype(bool)
+        for i, j in zip(indices["vertical"][0], indices["vertical"][1]):
+            # used_words
+            try:
+                imax = i + np.where(self.cell[i:, j]=='')[0][0]
+            except:
+                imax = self.height
+            used_words.append(''.join(self.cell[i:imax,j]))
+            # enable
+            if i != 0:
+                enable[i-1,j] = False
+            if imax != self.height:
+                enable[imax,j] = False
+            
+        for i, j in zip(indices["horizontal"][0], indices["horizontal"][1]):
+            # used_words
+            try:
+                jmax = j + np.where(self.cell[i, j:]=='')[0][0]
+            except:
+                jmax = self.width
+            used_words.append(''.join(self.cell[i,j:jmax]))
+            # enable
+            if j != 0:
+                enable[i,j-1] = False
+            if jmax != self.height:
+                enable[i,jmax] = False

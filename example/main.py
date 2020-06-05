@@ -4,7 +4,7 @@ import sys
 import numpy as np
 
 sys.path.append("../")
-from pyzzle import Puzzle, FancyPuzzle, Dictionary, ObjectiveFunction, Optimizer, Mask
+from pyzzle import Puzzle, FancyPuzzle, Dictionary, Mask
 # In[]
 # Set variables
 width = 15
@@ -21,11 +21,10 @@ puzzle = FancyPuzzle(Mask.donut_s, "Donut Puzzle")
 ### Puzzle (normal)
 # puzzle = Puzzle(width, height)
 
-### Dictionary, ObjectiveFunction, Optimizer
+### Dictionary
 dic = Dictionary.dataset.logo
 puzzle.import_dict(dic)
 # In[]
-
 obj_func = [
             "circulation",
             "weight",
@@ -35,7 +34,6 @@ obj_func = [
             "max_connected_empties", 
             "difficulty"
         ]
-
 # In[]
 puzzle.first_solve()
 

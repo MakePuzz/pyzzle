@@ -41,16 +41,10 @@ class Puzzle:
         dic = Dictionary("path_to_dict")
         puzzle.import_dict(dic)
 
-        obj_func = ObjectiveFunction()
-        obj_func.register(["weight", "nwords", "cross_count", "fill_count", "max_connected_empties"])
-
-        optimizer = Optimizer()
-        optimizer.set_method("local_search")
-
-        puzzle.compile(obj_func=obj_func, optimizer=optimizer)
-
         puzzle.first_solve()
-        puzzle.solve(epoch=2)
+
+        obj_func = ["weight", "nwords", "cross_count", "fill_count", "max_connected_empties"]
+        puzzle.solve(epoch=5, optimizer="local_search", objective_function=obj_func)
 
         puzzle.save_problem_image("problem.png")
         puzzle.save_answer_image("answer.png")
@@ -673,23 +667,6 @@ class Puzzle:
                 continue
             if self.label[self.plc.i[p], self.plc.j[p]] != largest_ccl:
                 self._drop(self.plc.ori[p], self.plc.i[p], self.plc.j[p], self.plc.k[p], is_kick=True)
-
-    def compile(self, obj_func, debug=False):
-        """
-        Compile the objective function and optimization method into the Puzzle instance.
-
-        Parameters
-        ----------
-        obj_func : ObjectiveFunction
-            ObjectiveFunction object for compile to Puzzle
-        """
-        self.obj_func = obj_func
-
-        if debug is True:
-            print(">>> Compile succeeded.")
-            print(" --- objective functions:")
-            for func_num in range(len(obj_func)):
-                print(f"  |-> {func_num} {obj_func.registered_funcs[func_num]}")
 
     def solve(self, epoch, optimizer="local_search", objective_function=None, of=None):
         """

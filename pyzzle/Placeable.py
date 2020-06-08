@@ -7,20 +7,20 @@ class Placeable:
         self.width = width
         self.height = height
         self.ori, self.i, self.j, self.k = [], [], [], []
-        self.inv_p = np.full((2, self.height, self.width, 0), np.nan, dtype="int")
+        self.inv_p = np.full(
+            (2, self.height, self.width, 0), np.nan, dtype="int")
 
-        self._compute(dic.word, mask)
+        self._compute(dic.word, mask=mask)
 
     def _compute(self, word, mask=None, base_k=0):
-        if mask is not None:
-            mask = np.array(mask)
         if type(word) is str:
             word = [word]
         if self.size == 0 or base_k != 0:
-            ap = np.full((2, self.height, self.width, len(word)), np.nan, dtype="int")
+            ap = np.full((2, self.height, self.width, len(word)),
+                         np.nan, dtype="int")
             self.inv_p = np.append(self.inv_p, ap, axis=3)
-        for ori in (0,1):
-            for k,w in enumerate(word):
+        for ori in (0, 1):
+            for k, w in enumerate(word):
                 w_len = len(w)
                 if ori == 0:
                     i_max = self.height - w_len + 1
@@ -35,7 +35,7 @@ class Placeable:
                                 continue
                             if ori == 1 and np.any(mask[i, j:j+w_len] == True):
                                 continue
-                        self.inv_p[ori,i,j,base_k+k] = len(self.ori)
+                        self.inv_p[ori, i, j, base_k+k] = len(self.ori)
                         self.ori.append(ori)
                         self.i.append(i)
                         self.j.append(j)

@@ -202,7 +202,7 @@ class Puzzle:
             return 0
         circulation = 0
         for ilabel in range(2, nlabel+1):
-            if np.any(self.mask[label[1:-1, 1:-1] == ilabel] == False):
+            if np.any(self.mask[label[1:-1, 1:-1] == ilabel] == True):
                 # If an island with cover==0 is on the mask==False, then it represents a circulation.
                 circulation += 1
             return circulation
@@ -220,7 +220,7 @@ class Puzzle:
             return False
         mask = np.zeros([self.height+2, self.width+2], dtype=bool)
         mask[1:-1, 1:-1] = self.mask
-        _, nlabel = ndimage.label(mask == False)
+        _, nlabel = ndimage.label(mask == True)
         return nlabel-1 == self.circulation
 
     def reinit(self, all=False):

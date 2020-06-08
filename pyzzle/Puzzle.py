@@ -53,7 +53,7 @@ class Puzzle:
         puzzle.export_json("out.json")
     """
 
-    def __init__(self, width=None, height=None, mask=None name="Criss Cross"):
+    def __init__(self, width=None, height=None, mask=None, name="Criss Cross"):
         """
         Initialize the puzzle object.
 
@@ -70,8 +70,9 @@ class Puzzle:
         """
         self.width = width
         self.height = height
-        if mask is not None:
-            self.mask = np.array(mask)
+        self.mask = mask
+        if self.mask is not None:
+            self.mask = np.array(self.mask)
             self.width = self.mask.shape[1]
             self.height = self.mask.shape[0]
         self.weight = 0

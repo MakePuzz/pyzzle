@@ -842,7 +842,7 @@ class Puzzle:
             Jumped Puzzle
         """
         jumped_puzzle = self.__class__(
-            self.width, self.height, slef.mask, self.name)
+            self.width, self.height, self.mask, self.name)
         jumped_puzzle.dic = copy.deepcopy(self.dic)
         jumped_puzzle.plc = Placeable(
             self.width, self.height, jumped_puzzle.dic, self.mask)

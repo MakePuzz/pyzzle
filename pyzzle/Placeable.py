@@ -33,12 +33,12 @@ class Placeable:
                                 continue
                             if ori == 1 and np.any(mask[i, j:j+w_len] == True):
                                 continue
-                        self.inv_p[ori, i, j, base_k+k] = len(self.ori)
+                        self.inv_p[ori, i, j, base_k+k] = self.size
                         self.ori.append(ori)
                         self.i.append(i)
                         self.j.append(j)
                         self.k.append(base_k+k)
-        self.size = len(self.k)
+                        self.size += 1
 
     def __len__(self):
         return self.size

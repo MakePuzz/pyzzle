@@ -706,9 +706,8 @@ class Puzzle:
                 break
             word_list.append(
                 {"word": self.dic.word[self.plc.k[p]], "ori": self.plc.ori[p], "i": self.plc.i[p], "j": self.plc.j[p]})
-        try:
-            mask = self.mask
-        except:
+        mask = self.mask
+        if mask is None:
             mask = np.full(self.cell.shape, True)
         with open(name, "w", encoding="utf-8") as f:
             json.dump({"list": word_list, "mask": mask.tolist(), "name": self.name, "width": self.width, "height": self.height, "nwords": self.nwords,

@@ -31,9 +31,9 @@ class Placeable:
                 for i in range(i_max):
                     for j in range(j_max):
                         if mask is not None:
-                            if ori == 0 and np.any(mask[i:i+w_len, j] == False):
+                            if ori == 0 and np.any(mask[i:i+w_len, j] == True):
                                 continue
-                            if ori == 1 and np.any(mask[i, j:j+w_len] == False):
+                            if ori == 1 and np.any(mask[i, j:j+w_len] == True):
                                 continue
                         self.inv_p[ori,i,j,base_k+k] = len(self.ori)
                         self.ori.append(ori)

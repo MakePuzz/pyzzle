@@ -805,7 +805,8 @@ class Puzzle:
         dpi : int, default 300
             Dot-per-inch
         """
-        empty_cell = np.full(self.cell.shape, "", dtype="unicode")
+        empty_cell = np.full(self.cell.shape, " ", dtype="unicode")
+        empty_cell[self.cell == ""] = ""
         word_list = self.used_words[self.used_words != ""]
         utils.save_image(fname, empty_cell, word_list, mask=self.mask,
                          title=self.name, label=list_label, dpi=dpi)

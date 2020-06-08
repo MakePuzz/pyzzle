@@ -77,17 +77,12 @@ class Puzzle:
             self.height = self.mask.shape[0]
         self.weight = 0
         self.name = name
-        self.cell = np.full(width * height, "",
-                            dtype="unicode").reshape(height, width)
-        self.cover = np.zeros(
-            width * height, dtype="int").reshape(height, width)
-        self.label = np.zeros(
-            width * height, dtype="int").reshape(height, width)
-        self.enable = np.ones(
-            width * height, dtype="bool").reshape(height, width)
-        self.used_words = np.full(
-            width * height, "", dtype=f"U{max(width, height)}")
-        self.used_plc_idx = np.full(width * height, -1, dtype="int")
+        self.cell = np.full([self.height, self.width], "", dtype="unicode")
+        self.cover = np.zeros(self.cell.shape, dtype="int")
+        self.label = np.zeros(self.cell.shape, dtype="int")
+        self.enable = np.ones(self.cell.shape, dtype="bool")
+        self.used_words = np.full(self.width * self.height, "", dtype=f"U{max(self.width, self.height)}")
+        self.used_plc_idx = np.full(self.width * self.height, -1, dtype="int")
         self.nwords = 0
         self.history = []
         self.base_history = []

@@ -1,10 +1,11 @@
 # coding: utf-8
 # In[]
+import matplotlib.pyplot as plt
+from pyzzle import Puzzle, FancyPuzzle, Dictionary, Mask
 import sys
 import numpy as np
 
 sys.path.append("../")
-from pyzzle import Puzzle, FancyPuzzle, Dictionary, Mask
 # In[]
 # Set variables
 width = 15
@@ -14,26 +15,26 @@ with_weight = False
 seed = 5
 np.random.seed(seed=seed)
 # In[]
-## Make instances
-### FuncyPuzzle
-puzzle = FancyPuzzle(Mask.donut_s, "Donut Puzzle")
+# Make instances
+# FuncyPuzzle
+puzzle = Puzzle(mask=Mask.donut_s, name="Donut Puzzle")
 
 ### Puzzle (normal)
 # puzzle = Puzzle(width, height)
 
-### Dictionary
+# Dictionary
 dic = Dictionary.dataset.logo
 puzzle.import_dict(dic)
 # In[]
 obj_func = [
-            "circulation",
-            "weight",
-            "nwords", 
-            "cross_count", 
-            "fill_count", 
-            "max_connected_empties", 
-            "difficulty"
-        ]
+    "circulation",
+    "weight",
+    "nwords",
+    "cross_count",
+    "fill_count",
+    "max_connected_empties",
+    "difficulty"
+]
 # In[]
 puzzle.first_solve()
 
@@ -51,7 +52,6 @@ puzzle.export_json(f"json/{oname[:-4]}.json")
 # puzzle.to_pickle(f"pickle/{oname[:-4]}.pickle")
 
 # In[]
-import matplotlib.pyplot as plt
 puzzle.show_log()
 plt.savefig(f"fig/log_{puzzle.epoch}ep.png")
 

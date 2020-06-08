@@ -26,7 +26,7 @@ def show_2Darray(cell, mask=None):
     """
     array = copy.deepcopy(cell)
     if mask is not None:
-        array[mask == False] = "■"
+        array[mask == True] = "■"
     if in_ipynb() is True:
         from IPython.display import display
         styles = [
@@ -155,7 +155,7 @@ def save_image(fpath, cell, word_list, mask=None, title="", label="word list", d
     ax1.set_title(label=title, size=20)
     # Delete unmasked cells
     if mask is not None:
-        wh_mask = np.where(mask == False)
+        wh_mask = np.where(mask == True)
         for i, j in list(zip(wh_mask[0], wh_mask[1])):
             del ax1_table._cells[i, j]
     # Draw word list

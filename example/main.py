@@ -7,24 +7,24 @@ import numpy as np
 
 sys.path.append("../")
 # In[]
-# Set variables
+# Set parameters
 width = 15
 height = 15
-with_weight = False
-
+mask = Mask.infinity_m # 不要ならNone
+dic = Dictionary.dataset.r100000
+name = "Pyzzle"
 seed = 5
+
+
 np.random.seed(seed=seed)
 # In[]
 # Make instances
-# FuncyPuzzle
-puzzle = Puzzle(mask=Mask.donut_s, name="Donut Puzzle")
+puzzle = Puzzle(mask=mask, name=name)
 
-### Puzzle (normal)
-# puzzle = Puzzle(width, height)
-
+# In[]
 # Dictionary
-dic = Dictionary.dataset.logo
 puzzle.import_dict(dic)
+
 # In[]
 obj_func = [
     "circulation",

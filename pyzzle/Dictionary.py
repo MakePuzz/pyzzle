@@ -109,12 +109,13 @@ class Dictionary:
     def read(self, dict_specifier):
         with open(dict_specifier, 'r', encoding='utf-8') as f:
             data = f.readlines()
+        data = [l for l in data if l != os.linesep]
 
-        # Remove "\n"
+        # Remove new_line_code
         def removed_new_line_code(word):
-            line = word.rstrip("\n").split(" ")
+            line = word.rstrip(os.linesep).split(" ")
             if len(line) == 1:
-                line.append(0)
+                line.append(0) # weight = 0
             line[1] = int(line[1])
             return line
 

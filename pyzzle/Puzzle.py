@@ -194,7 +194,7 @@ class Puzzle:
         """
         if self.mask is None:
             return 0
-        empties = np.zeros([self.width+2, self.height+2], dtype="int")
+        empties = np.zeros([self.height+2, self.width+2], dtype="int")
         empties[1:-1, 1:-1] = self.cover
         label, nlabel = ndimage.label(
             empties == False, structure=ndimage.generate_binary_structure(2, 2))

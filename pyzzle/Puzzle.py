@@ -218,7 +218,7 @@ class Puzzle:
         """
         if self.mask is None:
             return False
-        mask = np.zeros([self.width+2, self.height+2], dtype=bool)
+        mask = np.zeros([self.height+2, self.width+2], dtype=bool)
         mask[1:-1, 1:-1] = self.mask
         _, nlabel = ndimage.label(mask == False)
         return nlabel-1 == self.circulation

@@ -18,7 +18,9 @@ from pyzzle.Judgement import Judgement
 from pyzzle import utils
 
 rcParams['font.family'] = 'sans-serif'
-rcParams['font.sans-serif'] = ['Hiragino Maru Gothic Pro', 'Yu Gothic', 'Meiryo', 'Takao', 'IPAexGothic', 'IPAPGothic', 'VL PGothic', 'Noto Sans CJK JP']
+rcParams['font.sans-serif'] = ['Hiragino Maru Gothic Pro', 'Yu Gothic', 'Meiryo',
+                               'Takao', 'IPAexGothic', 'IPAPGothic', 'VL PGothic', 'Noto Sans CJK JP']
+
 
 class Puzzle:
     """
@@ -51,28 +53,39 @@ class Puzzle:
         puzzle.export_json("out.json")
     """
 
-    def __init__(self, width, height, name="Criss Cross"):
+    def __init__(self, width=None, height=None, mask=None name="Criss Cross"):
         """
         Initialize the puzzle object.
-        
+
         Parameters
         ----------
         width : int
             Width of the puzzle.
         height : int
             Height of the puzzle.
+        mask : array_like
+            Mask of the puzzle.
         name : str, default "Criss Cross"
             Title of the puzzle.
         """
         self.width = width
         self.height = height
+        if mask is not None:
+            self.mask = np.array(mask)
+            self.width = self.mask.shape[1]
+            self.height = self.mask.shape[0]
         self.weight = 0
         self.name = name
-        self.cell = np.full(width * height, "", dtype="unicode").reshape(height, width)
-        self.cover = np.zeros(width * height, dtype="int").reshape(height, width)
-        self.label = np.zeros(width * height, dtype="int").reshape(height, width)
-        self.enable = np.ones(width * height, dtype="bool").reshape(height, width)
-        self.used_words = np.full(width * height, "", dtype=f"U{max(width, height)}")
+        self.cell = np.full(width * height, "",
+                            dtype="unicode").reshape(height, width)
+        self.cover = np.zeros(
+            width * height, dtype="int").reshape(height, width)
+        self.label = np.zeros(
+            width * height, dtype="int").reshape(height, width)
+        self.enable = np.ones(
+            width * height, dtype="bool").reshape(height, width)
+        self.used_words = np.full(
+            width * height, "", dtype=f"U{max(width, height)}")
         self.used_plc_idx = np.full(width * height, -1, dtype="int")
         self.nwords = 0
         self.history = []
@@ -83,7 +96,7 @@ class Puzzle:
         self.first_solved = False
         self.seed = None
         self.dic = Dictionary()
-        self.plc = Placeable(self.width, self.height, self.dic)
+        self.plc = Placeable(self.width, self.height, self.dic, self.mask)
         self.obj_func = None
         self.optimizer = None
 
@@ -113,12 +126,15 @@ class Puzzle:
                 i = self.plc.i[q]
                 j = self.plc.j[q]
                 word2 = self.used_words[s + t + 1]
-                if len(word1) != len(word2):  # If word1 and word2 have different lengths, they can not be replaced
+                # If word1 and word2 have different lengths, they can not be replaced
+                if len(word1) != len(word2):
                     continue
                 if self.plc.ori[q] == 0:
-                    cross_idx2 = np.where(self.cover[i:i + len(word2), j] == 2)[0]
+                    cross_idx2 = np.where(
+                        self.cover[i:i + len(word2), j] == 2)[0]
                 if self.plc.ori[q] == 1:
-                    cross_idx2 = np.where(self.cover[i, j:j + len(word2)] == 2)[0]
+                    cross_idx2 = np.where(
+                        self.cover[i, j:j + len(word2)] == 2)[0]
                 replaceable = True
                 # Check cross part from word1
                 for w1idx in cross_idx1:
@@ -169,7 +185,47 @@ class Puzzle:
 
     @property
     def circulation(self):
-        return 0
+        """
+        Circulation means that when there is a hole in the puzzle, 
+        the words on the board surround it and are connected unbroken.
+        This method returns the number of the circulation.
+        So, if the puzzle has more than one hole, 
+        the circulation will match the number of holes at most.
+
+        See Also
+        --------
+        is_perfect_circulation
+        """
+        if self.mask is None:
+            return 0
+        empties = np.zeros([self.width+2, self.height+2], dtype="int")
+        empties[1:-1, 1:-1] = self.cover
+        label, nlabel = ndimage.label(
+            empties == False, structure=ndimage.generate_binary_structure(2, 2))
+        if nlabel <= 2:
+            return 0
+        circulation = 0
+        for ilabel in range(2, nlabel+1):
+            if np.any(self.mask[label[1:-1, 1:-1] == ilabel] == False):
+                # If an island with cover==0 is on the mask==False, then it represents a circulation.
+                circulation += 1
+            return circulation
+
+    @property
+    def is_perfect_circulation(self):
+        """
+        If the number of holes in the puzzle is the same as the circulation, it returns True.
+
+        See Also
+        --------
+        circulation
+        """
+        if self.mask is None:
+            return False
+        mask = np.zeros([self.width+2, self.height+2], dtype=bool)
+        mask[1:-1, 1:-1] = self.mask
+        _, nlabel = ndimage.label(mask == False)
+        return nlabel-1 == self.circulation
 
     def reinit(self, all=False):
         """
@@ -186,12 +242,18 @@ class Puzzle:
             self.obj_func = None
             self.optimizer = None
         self.weight = 0
-        self.enable = np.ones(self.width * self.height, dtype="bool").reshape(self.height, self.width)
-        self.cell = np.full(self.width * self.height, "", dtype="unicode").reshape(self.height, self.width)
-        self.cover = np.zeros(self.width * self.height, dtype="int").reshape(self.height, self.width)
-        self.label = np.zeros(self.width * self.height, dtype="int").reshape(self.height, self.width)
-        self.enable = np.ones(self.width * self.height, dtype="bool").reshape(self.height, self.width)
-        self.used_words = np.full(self.width * self.height, "", dtype=f"U{max(self.width, self.height)}")
+        self.enable = np.ones(self.width * self.height,
+                              dtype="bool").reshape(self.height, self.width)
+        self.cell = np.full(self.width * self.height, "",
+                            dtype="unicode").reshape(self.height, self.width)
+        self.cover = np.zeros(self.width * self.height,
+                              dtype="int").reshape(self.height, self.width)
+        self.label = np.zeros(self.width * self.height,
+                              dtype="int").reshape(self.height, self.width)
+        self.enable = np.ones(self.width * self.height,
+                              dtype="bool").reshape(self.height, self.width)
+        self.used_words = np.full(
+            self.width * self.height, "", dtype=f"U{max(self.width, self.height)}")
         self.used_plc_idx = np.full(self.width * self.height, -1, dtype="int")
         self.nwords = 0
         self.base_history = []
@@ -211,7 +273,7 @@ class Puzzle:
             Dictionary object imported by Puzzle
         """
         self.dic = dic
-        self.plc = Placeable(self.width, self.height, self.dic)
+        self.plc = Placeable(self.width, self.height, self.dic, self.mask)
 
     def is_placeable(self, ori, i, j, word, w_len):
         """
@@ -245,7 +307,6 @@ class Puzzle:
         4. The same word is in use
         5. The Neighbor cells are filled except at the intersection
         6. US/USA, DOMINICA/DOMINICAN problem
-        7. The word overlap with the mask (FancyPuzzle only)
         """
 
         # If 0 words used, return True
@@ -417,7 +478,8 @@ class Puzzle:
             nwords_tmp = self.nwords
             drop_idx = []
             for i, r in enumerate(random_index):
-                code = self._add(self.plc.ori[r], self.plc.i[r], self.plc.j[r], self.plc.k[r])
+                code = self._add(
+                    self.plc.ori[r], self.plc.i[r], self.plc.j[r], self.plc.k[r])
                 if code is not Judgement.AT_LEAST_ONE_PLACE_MUST_CROSS_OTHER_WORDS:
                     drop_idx.append(i)
             random_index = np.delete(random_index, drop_idx)
@@ -441,18 +503,20 @@ class Puzzle:
         """
         Display the puzzle.
         """
-        utils.show_2Darray(self.cell)
+        utils.show_2Darray(self.cell, self.mask)
 
     def logging(self):
         """
         This method logs the current objective function values
         """
         if self.obj_func is None:
-            raise RuntimeError("Logging method must be executed after compilation method")
+            raise RuntimeError(
+                "Logging method must be executed after compilation method")
         if self.log is None:
             self.log = pd.DataFrame(columns=self.obj_func.get_funcs())
             self.log.index.name = "epoch"
-        tmp_series = pd.Series(self.obj_func.get_score(self, all=True), index=self.obj_func.get_funcs())
+        tmp_series = pd.Series(self.obj_func.get_score(
+            self, all=True), index=self.obj_func.get_funcs())
         self.log = self.log.append(tmp_series, ignore_index=True)
 
     def _drop(self, ori, i, j, k, is_kick=False):
@@ -567,7 +631,8 @@ class Puzzle:
         if word is ori_i_j is None:
             raise ValueError("'word' or 'ori_i_j' must be specified")
         if word is ori_i_j is not None:
-            raise ValueError("Both 'word' and 'ori_i_j' must not be specified at the same time.")
+            raise ValueError(
+                "Both 'word' and 'ori_i_j' must not be specified at the same time.")
         if word is not None:
             if type(word) is int:
                 k = word
@@ -583,7 +648,8 @@ class Puzzle:
             if type(ori_i_j) not in (list, tuple):
                 raise TypeError(f"ori_i_j must be list or tuple")
             if len(ori_i_j) != 3:
-                raise ValueError(f"Length of 'ori_i_j' must be 3, not {len(ori_i_j)}")
+                raise ValueError(
+                    f"Length of 'ori_i_j' must be 3, not {len(ori_i_j)}")
             for p in self.used_plc_idx:
                 _ori, _i, _j = self.plc.ori[p], self.plc.i[p], self.plc.j[p]
                 if _ori == ori_i_j[0] and _i == ori_i_j[1] and _j == ori_i_j[2]:
@@ -629,7 +695,7 @@ class Puzzle:
     def export_json(self, name="out.json", indent=None):
         """
         Export puzzle answer as json.
-        
+
         Parameters
         ----------
         name : str, default "out.json"
@@ -642,13 +708,15 @@ class Puzzle:
         for p in self.used_plc_idx:
             if p == -1:
                 break
-            word_list.append({"word":self.dic.word[self.plc.k[p]], "ori":self.plc.ori[p], "i":self.plc.i[p], "j":self.plc.j[p]})
+            word_list.append(
+                {"word": self.dic.word[self.plc.k[p]], "ori": self.plc.ori[p], "i": self.plc.i[p], "j": self.plc.j[p]})
         try:
             mask = self.mask
         except:
             mask = np.full(self.cell.shape, True)
         with open(name, "w", encoding="utf-8") as f:
-            json.dump({"list":word_list, "mask":mask.tolist(), "name":self.name, "width":self.width, "height":self.height, "nwords":self.nwords, "dict_name":self.dic.name, "seed":int(self.seed), "epoch":self.epoch}, f, sort_keys=True, indent=indent, ensure_ascii=False)
+            json.dump({"list": word_list, "mask": mask.tolist(), "name": self.name, "width": self.width, "height": self.height, "nwords": self.nwords,
+                       "dict_name": self.dic.name, "seed": int(self.seed), "epoch": self.epoch}, f, sort_keys=True, indent=indent, ensure_ascii=False)
 
     def kick(self):
         """
@@ -666,7 +734,8 @@ class Puzzle:
             if p == -1:
                 continue
             if self.label[self.plc.i[p], self.plc.j[p]] != largest_ccl:
-                self._drop(self.plc.ori[p], self.plc.i[p], self.plc.j[p], self.plc.k[p], is_kick=True)
+                self._drop(self.plc.ori[p], self.plc.i[p],
+                           self.plc.j[p], self.plc.k[p], is_kick=True)
 
     def solve(self, epoch, optimizer="local_search", objective_function=None, of=None):
         """
@@ -690,10 +759,11 @@ class Puzzle:
         if isinstance(optimizer, Optimizer):
             self.optimizer = optimizer
         if objective_function is of is not None:
-            raise ValueError("'objective_function' and 'of' must not both be specified")
+            raise ValueError(
+                "'objective_function' and 'of' must not both be specified")
         if objective_function is None:
             objective_function = of
-        if isinstance(objective_function, (list,tuple,set)):
+        if isinstance(objective_function, (list, tuple, set)):
             self.obj_func = ObjectiveFunction(objective_function)
         if isinstance(objective_function, ObjectiveFunction):
             self.obj_func = objective_function
@@ -729,7 +799,7 @@ class Puzzle:
     def save_problem_image(self, fname, list_label="word list", dpi=300):
         """
         Generate a puzzle problem image with word lists.
-        
+
         Parameters
         ----------
         fname : str, default "problem.png"
@@ -739,14 +809,13 @@ class Puzzle:
         dpi : int, default 300
             Dot-per-inch
         """
-        empty_cell = np.full(self.cell.shape, "", dtype="unicode")
-        word_list = self.used_words[self.used_words != ""]
-        utils.save_image(fname, empty_cell, word_list, title=self.name, label=list_label, dpi=dpi)
+        utils.save_image(fname, empty_cell, word_list, mask=self.mask,
+                         title=self.name, label=list_label, dpi=dpi)
 
     def save_answer_image(self, fname, list_label="word list", dpi=300):
         """
         Generate a puzzle answer image with word lists.
-        
+
         Parameters
         ----------
         fname : str, default "problem.png"
@@ -757,7 +826,8 @@ class Puzzle:
             Dot-per-inch
         """
         word_list = self.used_words[self.used_words != ""]
-        utils.save_image(fname, self.cell, word_list, title=self.name, label=list_label, dpi=dpi)
+        utils.save_image(fname, self.cell, word_list, mask=self.mask,
+                         title=self.name, label=list_label, dpi=dpi)
 
     def jump(self, idx):
         """
@@ -773,9 +843,11 @@ class Puzzle:
         jumped_puzzle : Puzzle
             Jumped Puzzle
         """
-        jumped_puzzle = self.__class__(self.width, self.height, self.name)
+        jumped_puzzle = self.__class__(
+            self.width, self.height, slef.mask, self.name)
         jumped_puzzle.dic = copy.deepcopy(self.dic)
-        jumped_puzzle.plc = Placeable(self.width, self.height, jumped_puzzle.dic)
+        jumped_puzzle.plc = Placeable(
+            self.width, self.height, jumped_puzzle.dic, self.mask)
         jumped_puzzle.optimizer = copy.deepcopy(self.optimizer)
         jumped_puzzle.obj_func = copy.deepcopy(self.obj_func)
         jumped_puzzle.base_history = copy.deepcopy(self.base_history)
@@ -857,7 +929,7 @@ class Puzzle:
     def get_rect(self):
         """
         Return a rectangular region that encloses a words
-        
+
         Returns
         -------
         r_min : int
@@ -904,7 +976,8 @@ class Puzzle:
             direction = reverse[str(direction)]
             n = -n
 
-        n2limit = {1: r_min, 2: self.height - (r_max + 1), 3: c_min, 4: self.width - (c_max + 1)}
+        n2limit = {1: r_min, 2: self.height -
+                   (r_max + 1), 3: c_min, 4: self.width - (c_max + 1)}
 
         if limit is True:
             n = n2limit[direction]
@@ -942,7 +1015,8 @@ class Puzzle:
         self.label = np.roll(self.label, num, axis=axis)
         self.enable = np.roll(self.enable, num, axis=axis)
         for i, p in enumerate(self.used_plc_idx[:self.nwords]):
-            self.used_plc_idx[i] = self.plc.inv_p[self.plc.ori[p], self.plc.i[p] + di, self.plc.j[p] + dj, self.plc.k[p]]
+            self.used_plc_idx[i] = self.plc.inv_p[self.plc.ori[p],
+                                                  self.plc.i[p] + di, self.plc.j[p] + dj, self.plc.k[p]]
         self.history.append((4, direction, n))
 
     def get_used_words_and_enable(self):
@@ -954,41 +1028,46 @@ class Puzzle:
         """
         jj, ii = np.meshgrid(np.arange(self.width), np.arange(self.height))
         # 縦
-        head0 = (self.cell[ii[0,:], jj[0,:]] != "") * (self.cell[ii[0,:]+1, jj[0,:]] != "")
-        body0 = (self.cell[ii[1:-1,:]-1, jj[1:-1,:]] == "") * (self.cell[ii[1:-1,:], jj[1:-1,:]] != "") * (self.cell[ii[1:-1,:]+1, jj[1:-1,:]] != "")
+        head0 = (self.cell[ii[0, :], jj[0, :]] != "") * \
+            (self.cell[ii[0, :]+1, jj[0, :]] != "")
+        body0 = (self.cell[ii[1:-1, :]-1, jj[1:-1, :]] == "") * (self.cell[ii[1:-1, :],
+                                                                           jj[1:-1, :]] != "") * (self.cell[ii[1:-1, :]+1, jj[1:-1, :]] != "")
         start0 = np.vstack([head0, body0])
 
         # 横
-        head1 = (self.cell[ii[:,0], jj[:,0]] != "") * (self.cell[ii[:,0], jj[:,0]+1] != "")
-        body1 = (self.cell[ii[:,1:-1], jj[:,1:-1]-1] == "") * (self.cell[ii[:,1:-1], jj[:,1:-1]] != "") * (self.cell[ii[:,1:-1], jj[:,1:-1]+1] != "")
-        start1 = np.hstack([head1.reshape(self.height,1), body1])
+        head1 = (self.cell[ii[:, 0], jj[:, 0]] != "") * \
+            (self.cell[ii[:, 0], jj[:, 0]+1] != "")
+        body1 = (self.cell[ii[:, 1:-1], jj[:, 1:-1]-1] == "") * (self.cell[ii[:, 1:-1],
+                                                                           jj[:, 1:-1]] != "") * (self.cell[ii[:, 1:-1], jj[:, 1:-1]+1] != "")
+        start1 = np.hstack([head1.reshape(self.height, 1), body1])
 
-        indices = {"vertical":np.where(start0), "horizontal":np.where(start1)}
+        indices = {"vertical": np.where(
+            start0), "horizontal": np.where(start1)}
 
         used_words = []
         enable = np.ones(self.cell.shape).astype(bool)
         for i, j in zip(indices["vertical"][0], indices["vertical"][1]):
             # used_words
             try:
-                imax = i + np.where(self.cell[i:, j]=='')[0][0]
+                imax = i + np.where(self.cell[i:, j] == '')[0][0]
             except:
                 imax = self.height
-            used_words.append(''.join(self.cell[i:imax,j]))
+            used_words.append(''.join(self.cell[i:imax, j]))
             # enable
             if i != 0:
-                enable[i-1,j] = False
+                enable[i-1, j] = False
             if imax != self.height:
-                enable[imax,j] = False
-            
+                enable[imax, j] = False
+
         for i, j in zip(indices["horizontal"][0], indices["horizontal"][1]):
             # used_words
             try:
-                jmax = j + np.where(self.cell[i, j:]=='')[0][0]
+                jmax = j + np.where(self.cell[i, j:] == '')[0][0]
             except:
                 jmax = self.width
-            used_words.append(''.join(self.cell[i,j:jmax]))
+            used_words.append(''.join(self.cell[i, j:jmax]))
             # enable
             if j != 0:
-                enable[i,j-1] = False
+                enable[i, j-1] = False
             if jmax != self.height:
-                enable[i,jmax] = False
+                enable[i, jmax] = False

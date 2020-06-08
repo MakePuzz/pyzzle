@@ -13,7 +13,6 @@ class Judgement(Enum):
     4. The same word is in use
     5. The Neighbor cells are filled except at the intersection
     6. US/USA, DOMINICA/DOMINICAN problem
-    7. The word overlap with the mask
     """
     THE_WORD_CAN_BE_PLACED = 0
     THE_PRECEDING_AND_SUCCEEDING_CELLS_ARE_ALREADY_FILLED = 1
@@ -22,4 +21,3 @@ class Judgement(Enum):
     THE_SAME_WORD_IS_IN_USE = 4
     THE_NEIGHBOR_CELLS_ARE_FILLED_EXCEPT_AT_THE_INTERSECTION = 5
     US_USA_DOMINICA_DOMINICAN_PROBLEM = 6
-    THE_WORD_OVERLAP_WITH_THE_MASK = 7

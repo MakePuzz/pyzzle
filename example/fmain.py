@@ -1,7 +1,7 @@
 # coding: utf-8
 # In[]
 import matplotlib.pyplot as plt
-from pyzzle import Puzzle, FancyPuzzle, Dictionary, Mask
+from pyzzle import Puzzle, Dictionary, Mask, utils
 import sys
 import numpy as np
 
@@ -10,8 +10,8 @@ sys.path.append("../")
 # Set parameters
 width = 15
 height = 15
-mask = Mask.infinity_m # 不要ならNone
-dic = Dictionary.dataset.r100000
+mask = Mask.donut_m # 不要ならNone
+dic = Dictionary.dataset.logo
 name = "Pyzzle"
 seed = 5
 
@@ -24,6 +24,7 @@ puzzle = Puzzle(mask=mask, name=name)
 # In[]
 # Dictionary
 puzzle.import_dict(dic)
+
 
 # In[]
 obj_func = [
@@ -45,8 +46,9 @@ n = puzzle.plc.size
 w_len_max = max(puzzle.dic.w_len)
 
 ori_s = puzzle.plc.ori
-i_s = puzzle.plc.i
-j_s = puzzle.plc.j
+i_s = np.array(puzzle.plc.i) + 1 # fortran は 1から
+j_s = np.array(puzzle.plc.j) + 1 # fortran は 1から
+k_s = np.array(puzzle.plc.k)
 
 words = list(map(lambda k: puzzle.dic.word[k], puzzle.plc.k))
 words_int = np.full([n, w_len_max], ord(blank), dtype=np.int32)
@@ -63,13 +65,18 @@ width = puzzle.width
 
 # In[]
 from pyzzle.Puzzle import add_to_limit
-is_used = add_to_limit(height, width, n, w_len_max, ori_s, i_s, j_s, words_int, w_lens, cell, enable)
+is_used = add_to_limit(height, width, n, w_len_max, ord(blank), ori_s, i_s, j_s, k_s, words_int, w_lens, cell, enable)
 
 # In[]
 ocell = np.array(list(map(lambda x: chr(x), cell.ravel()))).reshape(puzzle.cell.shape)
 ocell = np.where(ocell == blank, "", ocell)
-print(ocell)
+puzzle.cell = ocell
+puzzle.show()
 
+
+# In[]
+
+print(ocell)
 
 # In[]
 """

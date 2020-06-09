@@ -159,7 +159,7 @@ def save_image(fpath, cell, word_list, mask=None, title="", label="word list", d
         for i, j in list(zip(wh_mask[0], wh_mask[1])):
             del ax1_table._cells[i, j]
     # Draw word list
-    if word_list == []:
+    if len(word_list) == 0:
         word_list = ['']
     word_list = sorted(word_list, key=len)
     rows = cell.shape[0]

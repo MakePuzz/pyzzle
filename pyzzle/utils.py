@@ -50,7 +50,7 @@ def show_2Darray(cell, mask=None):
         df = (df.style.set_table_styles(styles))
         display(df)
     else:
-        array = np.where(array == "", "  ", array)
+        array = np.where(array == "", " ", array)
         print(array)
 
 def decode_json(fpath):

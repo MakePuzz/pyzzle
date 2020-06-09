@@ -41,7 +41,7 @@ obj_func = [
 blank = "*"
 cell = np.where(puzzle.cell == "", blank, puzzle.cell)
 cell = np.array(list(map(lambda x: ord(x), cell.ravel()))).reshape(cell.shape)
-cell = np.asfortranarray(cell.astype(np.int32).T)
+cell = np.asfortranarray(cell.astype(np.int32))
 
 height = puzzle.height
 width = puzzle.width
@@ -66,18 +66,17 @@ enable = np.asfortranarray(puzzle.enable.astype(np.int32))
 
 # In[]
 from pyzzle.Puzzle import add_to_limit
-is_used = add_to_limit(height, width, n, w_len_max, ord(blank), ori_s, i_s, j_s, k_s, words_int, w_lens, cell, enable)
-
+used_idx = add_to_limit(height, width, n, w_len_max, ord(blank), ori_s, i_s, j_s, k_s, words_int, w_lens, cell, enable)
+i_s -= 1
+j_s -= 1
 # In[]
-# ocell = np.array(list(map(lambda x: chr(x), cell.ravel()))).reshape(puzzle.cell.shape)
-cell = np.array(list(map(lambda x: list(map(chr, x)), cell)))
-ocell = np.where(cell == blank, "", cell)
-puzzle.cell = ocell.T
-puzzle.cover = np.where(puzzle.cell != "", 1, 0)
-puzzle.used_words, _ = puzzle.get_used_words_and_enable()
-print(puzzle.used_words)
+for p in used_idx-1:
+    if p == -2:
+        break
+    puzzle.add(ori_s[p], i_s[p], j_s[p], words[p], puzzle.dic.weight[k_s[p]])
 puzzle.show()
 puzzle.save_answer_image(f"fig/answer.png")
+puzzle.save_problem_image(f"fig/problem.png")
 # In[]
 
 # print(ocell)

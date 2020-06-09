@@ -495,6 +495,7 @@ class Puzzle:
         self.add_to_limit()
         self.first_solved = True
 
+
     def show(self):
         """
         Display the puzzle.

@@ -133,9 +133,8 @@ subroutine add_to_limit(height, width, n, w_len_max, blank, oris, is, js, ks, wo
     logical :: placed
 
     logical :: is_already_used
-    integer :: c, place_count!, used_k(n)
+    integer :: c, place_count!
     place_count = 0
-    ! used_k = -1
     used_index = -1
 
 
@@ -170,7 +169,6 @@ subroutine add_to_limit(height, width, n, w_len_max, blank, oris, is, js, ks, wo
             end if
 
             placeability = is_placeable(puzzle, enable, height, width, ori, i, j, word, w_len, blank)    
-            used_index(a) = placeability
             ! write(6,*) a, placeability
             if (placeability /= 0) then
                 cycle

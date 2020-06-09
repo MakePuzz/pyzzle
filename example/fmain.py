@@ -10,8 +10,9 @@ sys.path.append("../")
 # Set parameters
 width = 15
 height = 15
-mask = Mask.donut_m # 不要ならNone
-dic = Dictionary.dataset.logo
+mask = Mask.infinity_m
+ # 不要ならNone
+dic = Dictionary.dataset.pokemon
 name = "Pyzzle"
 seed = 5
 
@@ -19,7 +20,7 @@ seed = 5
 np.random.seed(seed=seed)
 # In[]
 # Make instances
-puzzle = Puzzle(mask=mask, name=name)
+puzzle = Puzzle(width=3, height=6, mask=mask, name=name)
 
 # In[]
 # Dictionary
@@ -39,8 +40,11 @@ obj_func = [
 # In[]
 blank = "*"
 cell = np.where(puzzle.cell == "", blank, puzzle.cell)
-cell = np.array(list(map(lambda x: ord(x), cell.ravel()))).reshape(puzzle.cell.shape)
-cell = np.asfortranarray(cell.astype(np.int32))
+cell = np.array(list(map(lambda x: ord(x), cell.ravel()))).reshape(cell.shape)
+cell = np.asfortranarray(cell.astype(np.int32).T)
+
+height = puzzle.height
+width = puzzle.width
 
 n = puzzle.plc.size
 w_len_max = max(puzzle.dic.w_len)
@@ -60,23 +64,21 @@ for i in range(n):
 words_int = np.asfortranarray(words_int)
 enable = np.asfortranarray(puzzle.enable.astype(np.int32))
 
-height = puzzle.height
-width = puzzle.width
-
 # In[]
 from pyzzle.Puzzle import add_to_limit
 is_used = add_to_limit(height, width, n, w_len_max, ord(blank), ori_s, i_s, j_s, k_s, words_int, w_lens, cell, enable)
 
 # In[]
-ocell = np.array(list(map(lambda x: chr(x), cell.ravel()))).reshape(puzzle.cell.shape)
-ocell = np.where(ocell == blank, "", ocell)
-puzzle.cell = ocell
+# ocell = np.array(list(map(lambda x: chr(x), cell.ravel()))).reshape(puzzle.cell.shape)
+cell = np.array(list(map(lambda x: list(map(chr, x)), cell)))
+ocell = np.where(cell == blank, "", cell)
+puzzle.cell = ocell.T
 puzzle.show()
 
 
 # In[]
 
-print(ocell)
+# print(ocell)
 
 # In[]
 """

@@ -137,6 +137,12 @@ subroutine add_to_limit(height, width, n, w_len_max, blank, oris, is, js, ks, wo
     place_count = 0
     used_k = -1
     is_used = -1
+
+
+    do i = 1, height
+        write(*,*) puzzle(1:width, i)
+    end do
+
     do while (.true.)
         placed = .false.
         do a = 1, n

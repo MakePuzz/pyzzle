@@ -454,7 +454,7 @@ class Puzzle:
             k = word
         elif type(word) is str:
             self.dic.add(word, weight)
-            self.plc._compute([word], self.dic.size - 1)
+            self.plc._compute([word], mask=self.mask, base_k = self.dic.size - 1)
             k = self.dic.word.index(word)
         else:
             raise TypeError("word must be int or str.")

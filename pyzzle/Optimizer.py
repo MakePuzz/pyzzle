@@ -7,7 +7,7 @@ class Optimizer:
         self.set_method(method)
 
     @staticmethod
-    def get_neighbor_solution(puzzle):
+    def get_neighbor_solution(puzzle, use_f=False):
         """
         This method gets the neighborhood solution
         """
@@ -18,10 +18,13 @@ class Optimizer:
         # Kick
         _puzzle.kick()
         # Add as much as possible
-        _puzzle.add_to_limit()
+        if use_f is True:
+            _puzzle.add_to_limit_f()
+        else:
+            _puzzle.add_to_limit()
         return _puzzle
 
-    def local_search(self, puzzle, epoch, show=True, move=False):
+    def local_search(self, puzzle, epoch, show=True, move=False, use_f=False):
         """
         This method performs a local search
         """
@@ -38,7 +41,7 @@ class Optimizer:
             _puzzle.epoch += 1
             print(f">>> Epoch {_puzzle.epoch}/{goal_epoch}")
             # Get neighbor solution by drop->kick->add
-            new_puzzle = self.get_neighbor_solution(_puzzle)
+            new_puzzle = self.get_neighbor_solution(_puzzle, use_f=use_f)
 
             # Repeat if the score is high
             for func_num in range(len(_puzzle.obj_func)):

@@ -481,7 +481,49 @@ class Puzzle:
             random_index = np.delete(random_index, drop_idx)
         return
 
-    def first_solve(self):
+    def add_to_limit_f(self):
+        """
+        Adds the words as much as possible.
+        """
+        try:
+            from pyzzle.Puzzle.add_to_limit import add_to_limit as _add_to_limit
+        except:
+            raise RuntimeError("Puzzle.add_to_limit is not installed.\
+                            After installing GCC and GFortran, you need to reinstall pyzzle.")
+        # Make a random index of plc
+        random_index = np.arange(self.plc.size)
+        np.random.shuffle(random_index)
+
+        # Add as much as possible
+        blank = "*"
+        cell = np.where(self.cell == "", blank, self.cell)
+        cell = np.array(list(map(lambda x: ord(x), cell.ravel()))).reshape(cell.shape)
+        cell = np.asfortranarray(cell.astype(np.int32))
+        n = self.plc.size
+        w_len_max = max(self.dic.w_len)
+
+        ori_s = np.array(self.plc.ori)[random_index]
+        i_s = np.array(self.plc.i)[random_index] + 1
+        j_s = np.array(self.plc.j)[random_index] + 1
+        k_s = np.array(self.plc.k)[random_index]
+        
+        words = np.array(self.dic.word)
+        words_int = np.full([n, w_len_max], ord(blank), dtype=np.int32)
+        w_lens = np.zeros(n, dtype=np.int32, order="F")
+        for i in range(n):
+            word = words[k_s[i]]
+            w_lens[i] = len(word)
+            words_int[i,:w_lens[i]] = list(map(ord, word))
+        words_int = np.asfortranarray(words_int)
+        enable = np.asfortranarray(self.enable.astype(np.int32))
+        used_idx = _add_to_limit(self.height, self.width, n, w_len_max, ord(blank),
+                                ori_s, i_s, j_s, k_s, words_int, w_lens, cell, enable)
+        for p in used_idx[used_idx != -1]-1:
+            self._add(ori_s[p], i_s[p] - 1, j_s[p] - 1, k_s[p])
+        self.show()
+        return
+
+    def first_solve(self, use_f=False):
         """
         Create an initial solution.
         This method should always be called only once.
@@ -492,7 +534,10 @@ class Puzzle:
         # Save initial seed number
         self.seed = np.random.get_state()[1][0]
         # Add as much as possible
-        self.add_to_limit()
+        if use_f is True:
+            self.add_to_limit_f()
+        else:
+            self.add_to_limit()
         self.first_solved = True
 
 
@@ -733,7 +778,7 @@ class Puzzle:
                 self._drop(self.plc.ori[p], self.plc.i[p],
                            self.plc.j[p], self.plc.k[p], is_kick=True)
 
-    def solve(self, epoch, optimizer="local_search", objective_function=None, of=None):
+    def solve(self, epoch, optimizer="local_search", objective_function=None, of=None,  use_f=False):
         """
         This method repeats the solution improvement by the specified number of epoch.
 
@@ -764,7 +809,7 @@ class Puzzle:
         if isinstance(objective_function, ObjectiveFunction):
             self.obj_func = objective_function
         if self.optimizer.method == "local_search":
-            exec(f"self.optimizer.{self.optimizer.method}(self, {epoch})")
+            exec(f"self.optimizer.{self.optimizer.method}(self, {epoch}, use_f={use_f})")
 
     def show_log(self, name="Objective Function's epoch series", grid=True, figsize=None, **kwargs):
         """

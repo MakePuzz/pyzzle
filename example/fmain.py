@@ -73,9 +73,11 @@ is_used = add_to_limit(height, width, n, w_len_max, ord(blank), ori_s, i_s, j_s,
 cell = np.array(list(map(lambda x: list(map(chr, x)), cell)))
 ocell = np.where(cell == blank, "", cell)
 puzzle.cell = ocell.T
+puzzle.cover = np.where(puzzle.cell != "", 1, 0)
+puzzle.used_words, _ = puzzle.get_used_words_and_enable()
+print(puzzle.used_words)
 puzzle.show()
-
-
+puzzle.save_answer_image(f"fig/answer.png")
 # In[]
 
 # print(ocell)

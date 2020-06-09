@@ -1069,3 +1069,4 @@ class Puzzle:
                 enable[i, j-1] = False
             if jmax != self.height:
                 enable[i, jmax] = False
+        return np.array(used_words), enable

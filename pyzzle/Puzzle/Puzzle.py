@@ -733,6 +733,35 @@ class Puzzle:
             if self.nlabel >= 2:
                 break
         return
+    
+    def to_json(self, indent=None):
+        """
+        Export puzzle answer as json.
+
+        Parameters
+        ----------
+        name : str, default "out.json"
+            Output file name
+        indent : int, default None
+            The indent in json output
+
+        Returns
+        -------
+        json_dict : dict
+            The json dictionary
+        """
+        word_list = []
+        for p in self.used_plc_idx:
+            if p == -1:
+                break
+            word_list.append(
+                {"i": self.plc.i[p], "j": self.plc.j[p], "ori": self.plc.ori[p], "word": self.dic.word[self.plc.k[p]]})
+        mask = self.mask
+        if mask is None:
+            mask = np.full(self.cell.shape, True)
+        json_dict = {"list": word_list, "mask": mask.tolist(), "name": self.name, "width": self.width, "height": self.height, "nwords": self.nwords,
+                       "dict_name": self.dic.name, "seed": int(self.seed), "epoch": self.epoch}
+        return json_dict
 
     def export_json(self, name="out.json", indent=None):
         """
@@ -746,18 +775,8 @@ class Puzzle:
             The indent in json output
         """
         import json
-        word_list = []
-        for p in self.used_plc_idx:
-            if p == -1:
-                break
-            word_list.append(
-                {"word": self.dic.word[self.plc.k[p]], "ori": self.plc.ori[p], "i": self.plc.i[p], "j": self.plc.j[p]})
-        mask = self.mask
-        if mask is None:
-            mask = np.full(self.cell.shape, True)
         with open(name, "w", encoding="utf-8") as f:
-            json.dump({"list": word_list, "mask": mask.tolist(), "name": self.name, "width": self.width, "height": self.height, "nwords": self.nwords,
-                       "dict_name": self.dic.name, "seed": int(self.seed), "epoch": self.epoch}, f, sort_keys=True, indent=indent, ensure_ascii=False)
+            json.dump(self.to_json(), f, sort_keys=True, indent=indent, ensure_ascii=False)
 
     def kick(self):
         """
@@ -771,7 +790,7 @@ class Puzzle:
         sizes = ndimage.sum(mask, self.label, range(self.nlabel + 1))
         largest_ccl = sizes.argmax()
         # Erase elements except CCL ('kick' in C-program)
-        for idx, p in enumerate(self.used_plc_idx[:self.nwords]):
+        for _, p in enumerate(self.used_plc_idx[:self.nwords]):
             if p == -1:
                 continue
             if self.label[self.plc.i[p], self.plc.j[p]] != largest_ccl:

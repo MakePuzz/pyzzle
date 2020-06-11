@@ -10,8 +10,8 @@ sys.path.append("../")
 # Set parameters
 width = 15
 height = 15
-mask = Mask.infinity_m # 不要ならNone
-dic = Dictionary.dataset.r100000
+mask = Mask.donut_s # 不要ならNone
+dic = Dictionary.dataset.logo
 name = "Pyzzle"
 seed = 5
 
@@ -38,7 +38,7 @@ obj_func = [
 
 
 # In[]
-puzzle.first_solve(use_f=True)
+puzzle.first_solve(use_f=False)
 
 # In[]
 puzzle.solve(epoch=5, optimizer="local_search", of=obj_func, use_f=True)

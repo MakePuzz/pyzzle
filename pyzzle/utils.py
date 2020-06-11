@@ -168,6 +168,7 @@ def save_image(fpath, cell, word_list, mask=None, title="", label="word list", d
     # Draw word list
     if len(word_list) == 0:
         word_list = ['']
+    word_list = sorted(word_list)
     word_list = sorted(word_list, key=len)
     rows = cell.shape[0]
     cols = np.ceil(len(word_list) / rows).astype("int")

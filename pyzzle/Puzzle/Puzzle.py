@@ -819,8 +819,7 @@ class Puzzle:
         if isinstance(optimizer, Optimizer):
             self.optimizer = optimizer
         if objective_function is of is not None:
-            raise ValueError(
-                "'objective_function' and 'of' must not both be specified")
+            raise ValueError("'objective_function' and 'of' must not both be specified")
         if objective_function is None:
             objective_function = of
         if isinstance(objective_function, (list, tuple, set)):
@@ -828,7 +827,7 @@ class Puzzle:
         if isinstance(objective_function, ObjectiveFunction):
             self.obj_func = objective_function
         if self.optimizer.method == "local_search":
-            exec(f"self.optimizer.{self.optimizer.method}(self, {epoch}, show={show}, use_f={use_f})")
+            self.optimizer.solve(self, epoch, show=show, use_f=use_f)
 
     def show_log(self, name="Objective Function's epoch series", grid=True, figsize=None, **kwargs):
         """

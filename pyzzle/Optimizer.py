@@ -2,8 +2,10 @@ import copy
 
 
 class Optimizer:
+    method_list = ["local_search"]
+
     def __init__(self, method="local_search"):
-        self.method_list = ["local_search"]
+        self.methods = {"local_search": self.local_search}
         self.set_method(method)
 
     @staticmethod
@@ -24,6 +26,7 @@ class Optimizer:
             _puzzle.add_to_limit()
         return _puzzle
 
+    @classmethod
     def local_search(self, puzzle, epoch, show=True, move=False, use_f=False):
         """
         This method performs a local search
@@ -37,7 +40,7 @@ class Optimizer:
             print(">>> Interim solution")
             _puzzle.show()
         goal_epoch = _puzzle.epoch + epoch
-        for ep in range(epoch):
+        for _ in range(epoch):
             _puzzle.epoch += 1
             print(f">>> Epoch {_puzzle.epoch}/{goal_epoch}")
             # Get neighbor solution by drop->kick->add
@@ -89,3 +92,4 @@ class Optimizer:
         if method_name not in self.method_list:
             raise ValueError(f"Optimizer doesn't have '{method_name}' method")
         self.method = method_name
+        self.solve = self.methods[method_name]

@@ -14,6 +14,7 @@ mask = Mask.donut_s # 不要ならNone
 dic = Dictionary.dataset.logo
 name = "Pyzzle"
 seed = 5
+epoch = 5
 
 
 np.random.seed(seed=seed)
@@ -41,7 +42,7 @@ obj_func = [
 puzzle.first_solve(use_f=False)
 
 # In[]
-puzzle.solve(epoch=5, optimizer="local_search", of=obj_func, use_f=True)
+puzzle.solve(epoch=epoch, optimizer="local_search", of=obj_func, use_f=True)
 print(f"unique solution: {puzzle.is_unique}")
 
 # In[]
@@ -59,5 +60,20 @@ plt.savefig(f"fig/{oname}_log.png")
 
 # %%
 puzzle.show()
+
+# %%
+
+# In[]
+# puzzle.solve(epoch=5, optimizer="local_search", of=obj_func, use_f=True)
+# print(f"unique solution: {puzzle.is_unique}")
+
+# In[]
+# print(puzzle.cell)
+# print(f"単語リスト：{puzzle.used_words[:puzzle.nwords]}")
+# oname = f"{dic.name}_w{puzzle.width}_h{puzzle.height}_ep{puzzle.epoch}_seed{puzzle.seed}"
+# puzzle.save_answer_image(f"fig/answer_{oname}_answer.png")
+# puzzle.save_problem_image(f"fig/problem_{oname}_problem.png")
+# puzzle.export_json(f"json/{oname}.json")
+# puzzle.to_pickle(f"pickle/{oname}.pickle")
 
 # %%

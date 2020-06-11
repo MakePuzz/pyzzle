@@ -95,9 +95,10 @@ class ObjectiveFunction:
         This method returns any objective function value
         """
         if all is True:
-            scores = np.zeros(len(self.registered_funcs), dtype="float")
-            for n in range(scores.size):
-                scores[n] = eval(f"self.{self.registered_funcs[n]}(puzzle)")
+            scores = {}
+            # scores = np.zeros(len(self.registered_funcs), dtype="float")
+            for func_name in self.registered_funcs:
+                scores[func_name] = eval(f"self.{func_name}(puzzle)")
             return scores
         if func is None:
             func = self.registered_funcs[i]

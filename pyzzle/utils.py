@@ -142,10 +142,17 @@ def save_image(fpath, cell, word_list, mask=None, title="", label="word list", d
     # Generate puzzle image
     colors = np.where(cell == '', "#000000", "#FFFFFF")
     df = pd.DataFrame(cell)
-    fig = plt.figure(figsize=(16,8), dpi=dpi)
+    x = cell.shape[1]
+    y = cell.shape[0]
+    if y >= x:
+        fig = plt.figure(figsize=(x*2,y), dpi=dpi)
+        ax1 = fig.add_subplot(121)  # puzzle
+        ax2 = fig.add_subplot(122)  # word list
+    else:
+        fig = plt.figure(figsize=(x,y*2), dpi=dpi)
+        ax1 = fig.add_subplot(211)  # puzzle
+        ax2 = fig.add_subplot(212)  # word list
     fig.set_facecolor('#EEEEEE')
-    ax1 = fig.add_subplot(121)  # puzzle
-    ax2 = fig.add_subplot(122)  # word list
     ax1.axis("off")
     ax2.axis("off")
     # Draw puzzle

@@ -7,3 +7,4 @@ from pyzzle.Judgement import Judgement
 from pyzzle.Mask import Mask
 
 from pyzzle.PyzzleAPI import PyzzleAPI
+from pyzzle.Gravity import Gravity

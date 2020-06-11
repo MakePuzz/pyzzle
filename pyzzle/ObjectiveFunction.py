@@ -13,6 +13,7 @@ class ObjectiveFunction:
             "difficulty",
             "ease",
             "circulation",
+            "gravity",
         ]
         if not isinstance(objective_function, (list, tuple, set)):
             raise TypeError("'nwords' must be list or tuple or set")
@@ -75,6 +76,10 @@ class ObjectiveFunction:
     @staticmethod
     def circulation(puzzle):
         return puzzle.circulation
+
+    @staticmethod
+    def gravity(puzzle):
+        return puzzle.gravity[puzzle.cover != 0].sum()
 
     def register(self, func_names):
         """

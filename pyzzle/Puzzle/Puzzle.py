@@ -53,7 +53,7 @@ class Puzzle:
         puzzle.export_json("out.json")
     """
 
-    def __init__(self, width=None, height=None, mask=None, name="Criss Cross"):
+    def __init__(self, width=None, height=None, mask=None, gravity=None, name="Criss Cross"):
         """
         Initialize the puzzle object.
 
@@ -75,6 +75,9 @@ class Puzzle:
             self.mask = np.array(self.mask)
             self.width = self.mask.shape[1]
             self.height = self.mask.shape[0]
+        if gravity is None:
+            gravity = np.zeros([self.height, self.width])
+        self.gravity = gravity
         self.weight = 0
         self.name = name
         self.cell = np.full([self.height, self.width], "", dtype="unicode")
@@ -238,18 +241,12 @@ class Puzzle:
             self.obj_func = None
             self.optimizer = None
         self.weight = 0
-        self.enable = np.ones(self.width * self.height,
-                              dtype="bool").reshape(self.height, self.width)
-        self.cell = np.full(self.width * self.height, "",
-                            dtype="unicode").reshape(self.height, self.width)
-        self.cover = np.zeros(self.width * self.height,
-                              dtype="int").reshape(self.height, self.width)
-        self.label = np.zeros(self.width * self.height,
-                              dtype="int").reshape(self.height, self.width)
-        self.enable = np.ones(self.width * self.height,
-                              dtype="bool").reshape(self.height, self.width)
-        self.used_words = np.full(
-            self.width * self.height, "", dtype=f"U{max(self.width, self.height)}")
+        self.enable = np.ones(self.width * self.height,dtype="bool").reshape(self.height, self.width)
+        self.cell = np.full(self.width * self.height, "",dtype="unicode").reshape(self.height, self.width)
+        self.cover = np.zeros(self.width * self.height,dtype="int").reshape(self.height, self.width)
+        self.label = np.zeros(self.width * self.height,dtype="int").reshape(self.height, self.width)
+        self.enable = np.ones(self.width * self.height,dtype="bool").reshape(self.height, self.width)
+        self.used_words = np.full(self.width * self.height, "", dtype=f"U{max(self.width, self.height)}")
         self.used_plc_idx = np.full(self.width * self.height, -1, dtype="int")
         self.nwords = 0
         self.base_history = []

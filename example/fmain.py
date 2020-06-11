@@ -45,13 +45,13 @@ print(f"unique solution: {puzzle.is_unique}")
 
 # In[]
 print(f"単語リスト：{puzzle.used_words[:puzzle.nwords]}")
-oname = f"{dic.name}_w{puzzle.width}_h{puzzle.height}_ep{puzzle.epoch}_seed{puzzle.seed}.png"
-puzzle.save_answer_image(f"fig/answer_{oname}")
-puzzle.save_problem_image(f"fig/problem_{oname}")
-puzzle.export_json(f"json/{oname[:-4]}.json")
+oname = f"{dic.name}_w{puzzle.width}_h{puzzle.height}_ep{puzzle.epoch}_seed{puzzle.seed}"
+puzzle.save_answer_image(f"fig/{oname}_answer.png")
+puzzle.save_problem_image(f"fig/{oname}_problem.png")
+puzzle.export_json(f"json/{oname}.json")
 # puzzle.to_pickle(f"pickle/{oname[:-4]}.pickle")
 
 # In[]
 puzzle.show_log()
-plt.savefig(f"fig/log_{puzzle.epoch}ep.png")
+plt.savefig(f"fig/{oname}_log.png")
 # %%

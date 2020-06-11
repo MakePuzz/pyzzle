@@ -38,10 +38,10 @@ obj_func = [
 
 
 # In[]
-puzzle.first_solve()
+puzzle.first_solve(use_f=True)
 
 # In[]
-puzzle.solve(epoch=5, optimizer="local_search", of=obj_func)
+puzzle.solve(epoch=5, optimizer="local_search", of=obj_func, use_f=True)
 print(f"unique solution: {puzzle.is_unique}")
 
 # In[]
@@ -51,7 +51,7 @@ oname = f"{dic.name}_w{puzzle.width}_h{puzzle.height}_ep{puzzle.epoch}_seed{puzz
 puzzle.save_answer_image(f"fig/answer_{oname}_answer.png")
 puzzle.save_problem_image(f"fig/problem_{oname}_problem.png")
 puzzle.export_json(f"json/{oname}.json")
-# puzzle.to_pickle(f"pickle/{oname[:-4]}.pickle")
+# puzzle.to_pickle(f"pickle/{oname}.pickle")
 
 # In[]
 puzzle.show_log()

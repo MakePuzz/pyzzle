@@ -19,7 +19,7 @@ seed = 5
 np.random.seed(seed=seed)
 # In[]
 # Make instances
-puzzle = Puzzle(mask=mask, name=name)
+puzzle = Puzzle(width=width, height=height, mask=mask, name=name)
 
 # In[]
 # Dictionary

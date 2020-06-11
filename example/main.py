@@ -1,7 +1,7 @@
 # coding: utf-8
 # In[]
 import matplotlib.pyplot as plt
-from pyzzle import Puzzle, FancyPuzzle, Dictionary, Mask
+from pyzzle import Puzzle, FancyPuzzle, Dictionary, Mask, Gravity
 import sys
 import numpy as np
 
@@ -10,8 +10,9 @@ sys.path.append("../")
 # Set parameters
 width = 15
 height = 15
-mask = Mask.donut_s # 不要ならNone
-dic = Dictionary.dataset.logo
+mask = Mask.hokkaido # 不要ならNone
+gravity = Gravity.hokkaido # 不要ならNone
+dic = Dictionary.dataset.hokkaido
 name = "Pyzzle"
 seed = 5
 epoch = 5
@@ -20,7 +21,7 @@ epoch = 5
 np.random.seed(seed=seed)
 # In[]
 # Make instances
-puzzle = Puzzle(width=width, height=height, mask=mask, name=name)
+puzzle = Puzzle(width=width, height=height, mask=mask, name=name, gravity=gravity)
 
 # In[]
 # Dictionary
@@ -28,6 +29,7 @@ puzzle.import_dict(dic)
 
 # In[]
 obj_func = [
+    "gravity",
     "circulation",
     "weight",
     "nwords",
@@ -42,10 +44,10 @@ obj_func = [
 puzzle.first_solve(use_f=False)
 
 # In[]
-puzzle.solve(epoch=epoch, optimizer="local_search", of=obj_func, use_f=True)
+puzzle.solve(epoch=epoch, optimizer="local_search", of=obj_func, show=False, use_f=True)
 
 # In[]
-# puzzle.solve(epoch=10, optimizer="local_search", of=obj_func, use_f=True)
+# puzzle.solve(epoch=300, optimizer="local_search", of=obj_func, show=False, use_f=True)
 
 # In[]
 print(f"unique solution: {puzzle.is_unique}")
@@ -64,3 +66,5 @@ plt.savefig(f"fig/{oname}_log.png")
 
 # %%
 puzzle.show()
+
+# %%

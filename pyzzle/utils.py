@@ -145,11 +145,11 @@ def save_image(fpath, cell, word_list, mask=None, title="", label="word list", d
     x = cell.shape[1]
     y = cell.shape[0]
     if y >= x:
-        fig = plt.figure(figsize=(x*2,y), dpi=dpi)
+        fig = plt.figure(figsize=(16,8), dpi=dpi)
         ax1 = fig.add_subplot(121)  # puzzle
         ax2 = fig.add_subplot(122)  # word list
     else:
-        fig = plt.figure(figsize=(x,y*2), dpi=dpi)
+        fig = plt.figure(figsize=(8,16), dpi=dpi)
         ax1 = fig.add_subplot(211)  # puzzle
         ax2 = fig.add_subplot(212)  # word list
     fig.set_facecolor('#EEEEEE')

@@ -70,8 +70,8 @@ class Puzzle:
         """
         self.width = width
         self.height = height
-        self.mask = np.array(mask)
-        if self.mask is not None:
+        self.mask = mask
+        if mask is not None:
             self.mask = np.array(self.mask)
             self.width = self.mask.shape[1]
             self.height = self.mask.shape[0]
@@ -517,7 +517,6 @@ class Puzzle:
                                 ori_s, i_s, j_s, k_s, words_int, w_lens, cell, enable)
         for p in used_idx[used_idx != -1]-1:
             self._add(ori_s[p], i_s[p] - 1, j_s[p] - 1, k_s[p])
-        self.show()
         return
 
     def first_solve(self, use_f=False):
@@ -824,7 +823,7 @@ class Puzzle:
         if isinstance(objective_function, ObjectiveFunction):
             self.obj_func = objective_function
         if self.optimizer.method == "local_search":
-            self.optimizer.solve(self, epoch, show=show, use_f=use_f)
+            self.optimizer.optimize(self, epoch, show=show, use_f=use_f)
 
     def show_log(self, name="Objective Function's epoch series", grid=True, figsize=None, **kwargs):
         """

@@ -92,4 +92,4 @@ class Optimizer:
         if method_name not in self.method_list:
             raise ValueError(f"Optimizer doesn't have '{method_name}' method")
         self.method = method_name
-        self.solve = self.methods[method_name]
+        self.optimize = self.methods[method_name]

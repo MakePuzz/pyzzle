@@ -16,7 +16,7 @@ class ObjectiveFunction:
             "gravity",
         ]
         if not isinstance(objective_function, (list, tuple, set)):
-            raise TypeError("'nwords' must be list or tuple or set")
+            raise TypeError("'objective_function' must be list or tuple or set")
         self.register(objective_function)
 
     def __len__(self):

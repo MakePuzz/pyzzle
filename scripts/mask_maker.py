@@ -20,7 +20,7 @@ gray_img = Image.open(path).convert("L")
 gray_img = np.array(gray_img.resize((int(gray_img.width*rate), int(gray_img.height*rate))))
 
 thresh = np.mean(gray_img)
-gray_01 = np.where(gray_img>=thresh, 0, 1).reshape(gray_img.shape).astype("int")
+gray_01 = np.where(gray_img>=thresh, 1, 0).reshape(gray_img.shape).astype("int")
 
 gray_str = gray_01.astype("str")
 for i in range(gray_str.shape[0]):

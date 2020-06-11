@@ -70,14 +70,14 @@ class Puzzle:
         """
         self.width = width
         self.height = height
-        self.mask = mask
+        self.mask = np.array(mask)
         if self.mask is not None:
             self.mask = np.array(self.mask)
             self.width = self.mask.shape[1]
             self.height = self.mask.shape[0]
         if gravity is None:
             gravity = np.zeros([self.height, self.width])
-        self.gravity = gravity
+        self.gravity = np.array(gravity)
         self.weight = 0
         self.name = name
         self.cell = np.full([self.height, self.width], "", dtype="unicode")

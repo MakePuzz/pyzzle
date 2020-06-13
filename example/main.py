@@ -1,18 +1,21 @@
 # coding: utf-8
 # In[]
-import matplotlib.pyplot as plt
-from pyzzle import Puzzle, FancyPuzzle, Dictionary, Mask, Gravity
 import sys
+from pathlib import PurePath
+
 import numpy as np
+import matplotlib.pyplot as plt
+
+from pyzzle import Puzzle, FancyPuzzle, Dictionary, Mask, Gravity
 
 sys.path.append("../")
 # In[]
 # Set parameters
 width = 15
 height = 15
-mask = Mask.hokkaido # 不要ならNone
-gravity = Gravity.hokkaido # 不要ならNone
-dic = Dictionary.dataset.hokkaido
+mask = Mask.donut_s # 不要ならNone
+# gravity = Gravity.hokkaido # 不要ならNone
+dic = Dictionary.dataset.logo
 name = "Pyzzle"
 seed = 5
 epoch = 5
@@ -21,7 +24,7 @@ epoch = 5
 np.random.seed(seed=seed)
 # In[]
 # Make instances
-puzzle = Puzzle(width=width, height=height, mask=mask, name=name, gravity=gravity)
+puzzle = Puzzle(width=width, height=height, mask=mask, name=name) #, gravity=gravity
 
 # In[]
 # Dictionary
@@ -53,16 +56,16 @@ puzzle.solve(epoch=epoch, optimizer="local_search", of=obj_func, show=False, use
 print(f"unique solution: {puzzle.is_unique}")
 
 # In[]
-print(f"単語リスト：{puzzle.used_words[:puzzle.nwords]}")
+base_dir = str(PurePath(__file__).parent)
 oname = f"{dic.name}_w{puzzle.width}_h{puzzle.height}_ep{puzzle.epoch}_seed{puzzle.seed}"
-puzzle.save_answer_image(f"fig/answer_{oname}_answer.png")
-puzzle.save_problem_image(f"fig/problem_{oname}_problem.png")
-puzzle.export_json(f"json/{oname}.json")
+puzzle.save_answer_image(f"{base_dir}/fig/answer_{oname}_answer.png")
+puzzle.save_problem_image(f"{base_dir}/fig/problem_{oname}_problem.png")
+puzzle.export_json(f"{base_dir}/json/{oname}.json")
 # puzzle.to_pickle(f"pickle/{oname}.pickle")
 
 # In[]
 puzzle.show_log()
-plt.savefig(f"fig/{oname}_log.png")
+plt.savefig(f"{base_dir}/fig/{oname}_log.png")
 
 # %%
 puzzle.show()

@@ -1,17 +1,15 @@
-import os
-import copy
-import glob
-import pathlib
+import os, copy
+from glob import glob
+from pathlib import PurePath
 import collections
 
 import numpy as np
 
 
 class Dictionary:
-
     class Dataset:
-        dict_dir = "dict"
-        dict_list = list(map(lambda x: pathlib.PurePath(x).stem, glob.glob(f"{dict_dir}/*.txt")))           
+        dict_dir = str(PurePath(__file__).parent/PurePath("dict"))
+        dict_list = list(map(lambda x: PurePath(x).stem, glob(f"{dict_dir}/*.txt")))           
 
         def __getattr__(self, name):
             if name not in (self.dict_list):

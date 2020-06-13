@@ -10,12 +10,13 @@ import numpy as np
 class Dictionary:
 
     class Dataset:
+        dict_dir = "dict"
         dict_list = list(map(lambda x: pathlib.PurePath(x).stem, glob.glob(f"{dict_dir}/*.txt")))           
 
         def __getattr__(self, name):
             if name not in (self.dict_list):
                 raise AttributeError(f"{name} must be an element of the 'dict_list'")
-            return Dictionary(f"dict/{name}.txt")
+            return Dictionary(f"{self.dict_dir}/{name}.txt")
 
     dataset = Dataset()
 

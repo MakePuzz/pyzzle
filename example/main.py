@@ -58,8 +58,8 @@ print(f"unique solution: {puzzle.is_unique}")
 # In[]
 base_dir = str(PurePath(__file__).parent)
 oname = f"{dic.name}_w{puzzle.width}_h{puzzle.height}_ep{puzzle.epoch}_seed{puzzle.seed}"
-puzzle.save_answer_image(f"{base_dir}/fig/answer_{oname}_answer.png")
-puzzle.save_problem_image(f"{base_dir}/fig/problem_{oname}_problem.png")
+puzzle.save_answer_image(f"{base_dir}/fig/{oname}_answer.png")
+puzzle.save_problem_image(f"{base_dir}/fig/{oname}_problem.png")
 puzzle.export_json(f"{base_dir}/json/{oname}.json")
 # puzzle.to_pickle(f"pickle/{oname}.pickle")
 

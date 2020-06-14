@@ -11,10 +11,13 @@ class Dictionary:
         dict_dir = str(PurePath(__file__).parent/PurePath("dict"))
         dict_list = list(map(lambda x: PurePath(x).stem, glob(f"{dict_dir}/*.txt")))           
 
-        def __getattr__(self, name):
-            if name not in (self.dict_list):
-                raise AttributeError(f"{name} must be an element of the 'dict_list'")
-            return Dictionary(f"{self.dict_dir}/{name}.txt")
+        def __getattr__(self, key):
+            if key not in (self.dict_list):
+                raise AttributeError(f"{key} must be an element of the 'dict_list'")
+            return Dictionary(f"{self.dict_dir}/{key}.txt")
+        
+        def __getitem__(self, key):
+            return Dictionary(f"{self.dict_dir}/{key}.txt")
 
     dataset = Dataset()
 

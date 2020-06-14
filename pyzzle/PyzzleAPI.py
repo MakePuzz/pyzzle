@@ -19,7 +19,7 @@ class PyzzleAPI:
                 url=os.environ.get('PYZZLEAPI_URL'),
                 key=os.environ.get('PYZZLEAPI_KEY')):
 
-        dotrc = os.environ.get('PYZZLE_RC', os.path.expanduser('~/.pyzzleapirc'))
+        dotrc = os.environ.get('PYZZLEAPI_RC', os.path.expanduser('~/.pyzzleapirc'))
 
         if url is None or key is None:
             if os.path.exists(dotrc):

@@ -77,7 +77,7 @@ class Dictionary:
         self._i += 1
         return word, weight
     
-    def getK(self, word):
+    def get_k(self, word):
         return np.where(self.word == word)[0][0]
 
     def include(self, word):

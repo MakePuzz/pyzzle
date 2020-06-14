@@ -85,7 +85,8 @@ class Puzzle:
         self.label = np.zeros(self.cell.shape, dtype="int")
         self.enable = np.ones(self.cell.shape, dtype="bool")
         self.used_words = np.full(self.width * self.height, "", dtype=f"U{max(self.width, self.height)}")
-        self.used_plc_idx = np.full(self.width * self.height, -1, dtype="int")
+        self.used_plc_idx = np.full(self.used_words.size, -1, dtype="int")
+        self.used_k = np.full(self.used_words.size, -1, dtype="int")
         self.nwords = 0
         self.history = []
         self.base_history = []
@@ -94,10 +95,6 @@ class Puzzle:
         self.nlabel = None
         self.first_solved = False
         self.seed = None
-        self.dic = Dictionary()
-        self.plc = Placeable(self.width, self.height, self.dic, self.mask)
-        self.obj_func = None
-        self.optimizer = None
 
     def __str__(self):
         """
@@ -424,6 +421,7 @@ class Puzzle:
         word_idx = self.dic.word.index(word)
         self.used_plc_idx[self.nwords] = self.plc.inv_p[ori, i, j, word_idx]
         self.used_words[self.nwords] = self.dic.word[k]
+        self.used_k[self.nwords] = k
         self.nwords += 1
         self.weight += weight
         self.history.append((1, word_idx, ori, i, j))
@@ -488,25 +486,30 @@ class Puzzle:
             raise RuntimeError("Puzzle.add_to_limit is not installed.\
                             After installing GCC and GFortran, you need to reinstall pyzzle.")
         # Make a random index of plc
-        random_index = np.arange(self.plc.size)
+        not_used_words_idx = np.ones(len(self.plc), dtype=bool)
+        for used_k in self.used_k:
+            not_used_words_idx[np.array(self.plc.k) == used_k] = False
+
+        random_index = np.arange(self.plc.size - np.count_nonzero(not_used_words_idx==False))
         np.random.shuffle(random_index)
 
         # Add as much as possible
         blank = "*"
+        n = random_index.size
+        w_len_max = max(self.dic.w_len)
+
         cell = np.where(self.cell == "", blank, self.cell)
         cell = np.array(list(map(lambda x: ord(x), cell.ravel()))).reshape(cell.shape)
         cell = np.asfortranarray(cell.astype(np.int32))
-        n = self.plc.size
-        w_len_max = max(self.dic.w_len)
 
-        ori_s = np.array(self.plc.ori)[random_index]
-        i_s = np.array(self.plc.i)[random_index] + 1
-        j_s = np.array(self.plc.j)[random_index] + 1
-        k_s = np.array(self.plc.k)[random_index]
+        ori_s = np.array(self.plc.ori)[not_used_words_idx][random_index]
+        i_s = np.array(self.plc.i)[not_used_words_idx][random_index] + 1
+        j_s = np.array(self.plc.j)[not_used_words_idx][random_index] + 1
+        k_s = np.array(self.plc.k)[not_used_words_idx][random_index]
         
         words = np.array(self.dic.word)
-        words_int = np.full([n, w_len_max], ord(blank), dtype=np.int32)
-        w_lens = np.zeros(n, dtype=np.int32, order="F")
+        words_int = np.full([n, w_len_max], 0, dtype=np.int32)
+        w_lens = np.zeros(n, dtype=np.int32)
         for i in range(n):
             word = words[k_s[i]]
             w_lens[i] = len(word)
@@ -553,8 +556,9 @@ class Puzzle:
         if self.log is None:
             self.log = pd.DataFrame(columns=self.obj_func.get_funcs())
             self.log.index.name = "epoch"
-        tmp_series = pd.Series(self.obj_func.get_score(
-            self, all=True), index=self.obj_func.get_funcs())
+            if len(self.obj_func) == 1:
+                self.log = self.log.squeeze()
+        tmp_series = pd.Series(self.obj_func.get_score(self, all=True), index=self.obj_func.get_funcs())
         self.log = self.log.append(tmp_series, ignore_index=True)
 
     def _drop(self, ori, i, j, k, is_kick=False):
@@ -603,6 +607,8 @@ class Puzzle:
         self.used_words = np.append(self.used_words, "")  # append
         self.used_plc_idx = np.delete(self.used_plc_idx, p_idx)  # delete
         self.used_plc_idx = np.append(self.used_plc_idx, -1)  # append
+        self.used_k = np.delete(self.used_k, p_idx)  # delete
+        self.used_k = np.append(self.used_k, -1)  # append
         self.nwords -= 1
         self.weight -= weight
         # Insert data to history
@@ -703,11 +709,9 @@ class Puzzle:
         # If nwords = 0, return
         if self.nwords == 0:
             return
-
         # Make a random index of nwords
         random_index = np.arange(self.nwords)
         np.random.shuffle(random_index)
-
         # Drop words until connectivity collapses
         tmp_used_plc_idx = copy.deepcopy(self.used_plc_idx)
         for r, p in enumerate(tmp_used_plc_idx[random_index]):
@@ -792,6 +796,7 @@ class Puzzle:
             if self.label[self.plc.i[p], self.plc.j[p]] != largest_ccl:
                 self._drop(self.plc.ori[p], self.plc.i[p],
                            self.plc.j[p], self.plc.k[p], is_kick=True)
+        return
 
     def solve(self, epoch, optimizer="local_search", objective_function=None, of=None, show=True, use_f=False):
         """
@@ -904,8 +909,7 @@ class Puzzle:
         jumped_puzzle = self.__class__(
             self.width, self.height, self.mask, self.name)
         jumped_puzzle.dic = copy.deepcopy(self.dic)
-        jumped_puzzle.plc = Placeable(
-            self.width, self.height, jumped_puzzle.dic, self.mask)
+        jumped_puzzle.plc = Placeable(self.width, self.height, jumped_puzzle.dic, self.mask)
         jumped_puzzle.optimizer = copy.deepcopy(self.optimizer)
         jumped_puzzle.obj_func = copy.deepcopy(self.obj_func)
         jumped_puzzle.base_history = copy.deepcopy(self.base_history)

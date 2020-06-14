@@ -71,3 +71,8 @@ plt.savefig(f"{base_dir}/fig/{oname}_log.png")
 puzzle.show()
 
 # %%
+# from pyzzle import PyzzleAPI
+# api = PyzzleAPI()
+# a = api.get_all_puzzles()
+# a.text
+# %%

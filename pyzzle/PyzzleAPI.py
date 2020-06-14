@@ -1,12 +1,45 @@
-import requests
+import os
 import json
 
+import requests
+
+
+def read_config(path):
+    config = {}
+    with open(path) as f:
+        for l in f.readlines():
+            if ':' in l:
+                k, v = l.strip().split(':', 1)
+                if k in ('url', 'key', 'verify'):
+                    config[k] = v.strip()
+    return config
+
 class PyzzleAPI:
-    def __init__(self, api_token):
-        self.url = 'https://pyzzle.du.r.appspot.com/api/puzzles/'
+    def __init__(self,
+                url=os.environ.get('PYZZLEAPI_URL'),
+                key=os.environ.get('PYZZLEAPI_KEY')):
+
+        dotrc = os.environ.get('PYZZLE_RC', os.path.expanduser('~/.pyzzleapirc'))
+
+        if url is None or key is None:
+            if os.path.exists(dotrc):
+                config = read_config(dotrc)
+
+                if key is None:
+                    key = config.get('key')
+
+                if url is None:
+                    url = config.get('url')
+    
+        if url is None or key is None:
+            raise Exception('Missing/incomplete configuration file: %s' % (dotrc))
+        
+        self.url = url
+        self.key = key
+
         self.headers = {
             "Accept": "application/json",
-            "Authorization": "Bearer " + api_token,
+            "Authorization": "Bearer " + self.key,
             'Content-Type': 'application/json'
         }
     

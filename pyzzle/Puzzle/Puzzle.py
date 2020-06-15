@@ -476,7 +476,7 @@ class Puzzle:
             random_index = np.delete(random_index, drop_idx)
         return
 
-    def add_to_limit_f(self):
+    def add_to_limit_f(self, blank="*"):
         """
         Adds the words as much as possible.
         """
@@ -487,14 +487,13 @@ class Puzzle:
                             After installing GCC and GFortran, you need to reinstall pyzzle.")
         # Make a random index of plc
         not_used_words_idx = np.ones(len(self.plc), dtype=bool)
+        k_s = np.array(self.plc.k)
         for used_k in self.used_k:
-            not_used_words_idx[np.array(self.plc.k) == used_k] = False
-
-        random_index = np.arange(self.plc.size - np.count_nonzero(not_used_words_idx==False))
+            not_used_words_idx[k_s == used_k] = False
+        random_index = np.arange(self.plc.size - np.count_nonzero(~not_used_words_idx))
         np.random.shuffle(random_index)
 
         # Add as much as possible
-        blank = "*"
         n = random_index.size
         w_len_max = max(self.dic.w_len)
 
@@ -505,16 +504,16 @@ class Puzzle:
         ori_s = np.array(self.plc.ori)[not_used_words_idx][random_index]
         i_s = np.array(self.plc.i)[not_used_words_idx][random_index] + 1
         j_s = np.array(self.plc.j)[not_used_words_idx][random_index] + 1
-        k_s = np.array(self.plc.k)[not_used_words_idx][random_index]
+        k_s = k_s[not_used_words_idx][random_index]
         
-        words = np.array(self.dic.word)
-        words_int = np.full([n, w_len_max], 0, dtype=np.int32)
-        w_lens = np.zeros(n, dtype=np.int32)
-        for i in range(n):
-            word = words[k_s[i]]
-            w_lens[i] = len(word)
-            words_int[i,:w_lens[i]] = list(map(ord, word))
-        words_int = np.asfortranarray(words_int)
+        w_lens = np.array(self.dic.w_len)[k_s]
+        plc_words = np.array(self.dic.word)[k_s]
+        ### convert str to int
+        converter = lambda plc_word: list(map(ord, plc_word))
+        words_int = list(map(converter, plc_words))
+        ### 0 padding
+        padding = lambda x: x + [0] * (w_len_max - len(x))
+        words_int = np.asfortranarray(np.array(list(map(padding, words_int)), dtype=np.int32))
         enable = np.asfortranarray(self.enable.astype(np.int32))
         used_idx = _add_to_limit(self.height, self.width, n, w_len_max, ord(blank),
                                 ori_s, i_s, j_s, k_s, words_int, w_lens, cell, enable)

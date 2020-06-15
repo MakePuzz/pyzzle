@@ -98,7 +98,7 @@ class Puzzle:
 
     def __str__(self):
         """
-        Retrun the puzzle's name.
+        Return the puzzle's name.
         """
         return self.name
 
@@ -225,7 +225,7 @@ class Puzzle:
 
     def reinit(self, all=False):
         """
-        Reinitilize Puzzle information.
+        Reinitialize Puzzle information.
 
         Parameters
         ----------
@@ -660,7 +660,7 @@ class Puzzle:
         Parameters
         ----------
         word : int or str
-            The word number or word in the puzlle to drop.
+            The word number or word in the puzzle to drop.
         ori_i_j : tuple of int, optional
             Tuple indicating a specific word to drop.
 
@@ -973,7 +973,7 @@ class Puzzle:
         """
         Return a puzzle with the state of the latest log.
 
-        Retruns
+        Returns
         -------
         latest_puzzle : Puzzle
             Latest puzzle

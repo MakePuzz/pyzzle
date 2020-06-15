@@ -556,8 +556,6 @@ class Puzzle:
         if self.log is None:
             self.log = pd.DataFrame(columns=self.obj_func.get_funcs())
             self.log.index.name = "epoch"
-            # if len(self.obj_func) == 1:
-            #     self.log = self.log.squeeze()
         tmp_series = pd.Series(self.obj_func.get_score(self, all=True), index=self.obj_func.get_funcs())
         self.log = self.log.append(tmp_series, ignore_index=True)
 

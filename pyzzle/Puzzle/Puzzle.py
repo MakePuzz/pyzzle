@@ -15,6 +15,7 @@ from pyzzle.Dictionary import Dictionary
 from pyzzle.Optimizer import Optimizer
 from pyzzle.ObjectiveFunction import ObjectiveFunction
 from pyzzle.Judgement import Judgement
+from pyzzle.History import History
 from pyzzle import utils
 
 rcParams['font.family'] = 'sans-serif'
@@ -246,8 +247,8 @@ class Puzzle:
         self.used_words = np.full(self.width * self.height, "", dtype=f"U{max(self.width, self.height)}")
         self.used_plc_idx = np.full(self.width * self.height, -1, dtype="int")
         self.nwords = 0
-        self.base_history = []
         self.history = []
+        self.base_history = []
         self.log = None
         self.epoch = 0
         self.first_solved = False
@@ -424,7 +425,7 @@ class Puzzle:
         self.used_k[self.nwords] = k
         self.nwords += 1
         self.weight += weight
-        self.history.append((1, word_idx, ori, i, j))
+        self.history.append((History.ADD, word_idx, ori, i, j))
         return code
 
     def add(self, ori, i, j, word, weight=0):
@@ -469,8 +470,7 @@ class Puzzle:
             nwords_tmp = self.nwords
             drop_idx = []
             for i, r in enumerate(random_index):
-                code = self._add(
-                    self.plc.ori[r], self.plc.i[r], self.plc.j[r], self.plc.k[r])
+                code = self._add(self.plc.ori[r], self.plc.i[r], self.plc.j[r], self.plc.k[r])
                 if code is not Judgement.AT_LEAST_ONE_PLACE_MUST_CROSS_OTHER_WORDS:
                     drop_idx.append(i)
             random_index = np.delete(random_index, drop_idx)
@@ -609,7 +609,7 @@ class Puzzle:
         self.nwords -= 1
         self.weight -= weight
         # Insert data to history
-        code = 3 if is_kick else 2
+        code = History.DROP_KICK if is_kick else History.DROP
         self.history.append((code, k, ori, i, j))
         # Update enable cells
         remove_flag = True
@@ -920,13 +920,15 @@ class Puzzle:
             else:
                 raise RuntimeError('This puzzle is up to date')
 
-        for code, k, ori, i, j in jumped_puzzle.base_history[:idx]:
-            if code == 1:
-                jumped_puzzle._add(ori, i, j, k)
-            elif code == 2:
-                jumped_puzzle._drop(ori, i, j, k, is_kick=False)
-            elif code == 3:
-                jumped_puzzle._drop(ori, i, j, k, is_kick=True)
+        for hist in jumped_puzzle.base_history[:idx]:
+            if hist[0] == History.ADD:
+                jumped_puzzle._add(hist[2], hist[3], hist[4], hist[1])
+            elif hist[0] == History.DROP:
+                jumped_puzzle._drop(hist[2], hist[3], hist[4], hist[1], is_kick=False)
+            elif hist[0] == History.DROP_KICK:
+                jumped_puzzle._drop(hist[2], hist[3], hist[4], hist[1], is_kick=True)
+            elif hist[0] == History.MOVE:
+                jumped_puzzle.move(direction=hist[1], n=hist[2])
         jumped_puzzle.first_solved = True
         return jumped_puzzle
 
@@ -1079,7 +1081,7 @@ class Puzzle:
         for i, p in enumerate(self.used_plc_idx[:self.nwords]):
             self.used_plc_idx[i] = self.plc.inv_p[self.plc.ori[p],
                                                   self.plc.i[p] + di, self.plc.j[p] + dj, self.plc.k[p]]
-        self.history.append((4, direction, n))
+        self.history.append((History.MOVE, direction, n, None, None))
 
     def get_used_words_and_enable(self):
         """

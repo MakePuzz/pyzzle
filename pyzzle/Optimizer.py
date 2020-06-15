@@ -65,7 +65,7 @@ class Optimizer:
             else:
                 _puzzle = copy.deepcopy(new_puzzle)
                 _puzzle.logging()
-                print(f"    - Replaced(same scores): {_puzzle.obj_func.get_score(_puzzle, all=True)}")
+                print(f"    - Replaced: {_puzzle.obj_func.get_score(_puzzle, all=True)}")
                 if show is True:
                     _puzzle.show()
         # Update previous puzzle

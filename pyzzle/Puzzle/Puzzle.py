@@ -93,7 +93,6 @@ class Puzzle:
         self.base_history = []
         self.log = None
         self.epoch = 0
-        self.nlabel = None
         self.first_solved = False
         self.seed = None
 
@@ -197,8 +196,7 @@ class Puzzle:
             return 0
         empties = np.zeros([self.height+2, self.width+2], dtype="int")
         empties[1:-1, 1:-1] = self.cover
-        label, nlabel = ndimage.label(
-            empties == False, structure=ndimage.generate_binary_structure(2, 2))
+        label, nlabel = ndimage.label(empties == False, structure=ndimage.generate_binary_structure(2, 2))
         if nlabel <= 2:
             return 0
         circulation = 0
@@ -221,8 +219,12 @@ class Puzzle:
             return False
         mask = np.zeros([self.height+2, self.width+2], dtype=bool)
         mask[1:-1, 1:-1] = self.mask
-        _, nlabel = ndimage.label(mask == True)
-        return nlabel-1 == self.circulation
+        mask_component = ndimage.label(mask == True)[1]
+        return mask_component - 1 == self.circulation
+    
+    @property
+    def component(self):
+        return ndimage.label(self.cover)[1]
 
     def reinit(self, all=False):
         """
@@ -725,9 +727,7 @@ class Puzzle:
             if ori == 1:
                 if not np.any(np.diff(np.where(self.cover[i, j:j + w_len] == 2)[0]) == 1):
                     self._drop(ori, i, j, k)
-
-            self.label, self.nlabel = ndimage.label(self.cover)
-            if self.nlabel >= 2:
+            if self.component >= 2:
                 break
         return
     
@@ -783,14 +783,14 @@ class Puzzle:
         if self.nwords == 0:
             return
         mask = self.cover > 0
-        self.label, self.nlabel = ndimage.label(mask)
-        sizes = ndimage.sum(mask, self.label, range(self.nlabel + 1))
+        label, nlabel = ndimage.label(mask)
+        sizes = ndimage.sum(mask, label, range(nlabel + 1))
         largest_ccl = sizes.argmax()
         # Erase elements except CCL ('kick' in C-program)
         for _, p in enumerate(self.used_plc_idx[:self.nwords]):
             if p == -1:
                 continue
-            if self.label[self.plc.i[p], self.plc.j[p]] != largest_ccl:
+            if label[self.plc.i[p], self.plc.j[p]] != largest_ccl:
                 self._drop(self.plc.ori[p], self.plc.i[p], self.plc.j[p], self.plc.k[p], is_kick=True)
         return
 
@@ -1135,7 +1135,3 @@ class Puzzle:
             if jmax != self.height:
                 enable[i, jmax] = False
         return np.array(used_words), enable
-
-    def get_nlabel(self):
-        _, nlabel = ndimage.label(self.cover)
-        return nlabel

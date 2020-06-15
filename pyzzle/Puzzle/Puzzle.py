@@ -600,12 +600,12 @@ class Puzzle:
             i_all = np.full(where.size, i, dtype="int")
             self.cell[i_all, j + where] = ""
         # Update used_words, used_plc_idx, nwords, weight
-        self.used_words = np.delete(self.used_words, p_idx)  # delete
-        self.used_words = np.append(self.used_words, "")  # append
-        self.used_plc_idx = np.delete(self.used_plc_idx, p_idx)  # delete
-        self.used_plc_idx = np.append(self.used_plc_idx, -1)  # append
-        self.used_k = np.delete(self.used_k, p_idx)  # delete
-        self.used_k = np.append(self.used_k, -1)  # append
+        self.used_words[p_idx:-1] = self.used_words[p_idx+1:]
+        self.used_words[-1] = ""
+        self.used_plc_idx[p_idx:-1] = self.used_plc_idx[p_idx+1:]
+        self.used_plc_idx[-1] = -1
+        self.used_k[p_idx:-1] = self.used_k[p_idx+1:]
+        self.used_k[-1] = -1
         self.nwords -= 1
         self.weight -= weight
         # Insert data to history

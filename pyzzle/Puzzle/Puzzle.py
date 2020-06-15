@@ -556,8 +556,8 @@ class Puzzle:
         if self.log is None:
             self.log = pd.DataFrame(columns=self.obj_func.get_funcs())
             self.log.index.name = "epoch"
-            if len(self.obj_func) == 1:
-                self.log = self.log.squeeze()
+            # if len(self.obj_func) == 1:
+            #     self.log = self.log.squeeze()
         tmp_series = pd.Series(self.obj_func.get_score(self, all=True), index=self.obj_func.get_funcs())
         self.log = self.log.append(tmp_series, ignore_index=True)
 
@@ -853,7 +853,10 @@ class Puzzle:
         if self.log is None:
             raise RuntimeError("Puzzle has no log")
         if figsize is None:
-            figsize = [len(self.obj_func), len(self.obj_func)]
+            if len(self.obj_func) <= 5:
+                figsize = [5, 5]
+            else:
+                figsize = [len(self.obj_func), len(self.obj_func)]
         return self.log.plot(subplots=True, title=name, grid=grid, figsize=figsize, **kwargs)
 
     def save_problem_image(self, fname, list_label="word list", dpi=300):

@@ -488,7 +488,7 @@ class Puzzle:
         # Make a random index of plc
         not_used_words_idx = np.ones(len(self.plc), dtype=bool)
         k_s = np.array(self.plc.k)
-        for used_k in self.used_k:
+        for used_k in self.used_k[self.used_k != 0]:
             not_used_words_idx[k_s == used_k] = False
         random_index = np.arange(self.plc.size - np.count_nonzero(~not_used_words_idx))
         np.random.shuffle(random_index)
@@ -600,12 +600,12 @@ class Puzzle:
             i_all = np.full(where.size, i, dtype="int")
             self.cell[i_all, j + where] = ""
         # Update used_words, used_plc_idx, nwords, weight
-        self.used_words[p_idx:-1] = self.used_words[p_idx+1:]
-        self.used_words[-1] = ""
-        self.used_plc_idx[p_idx:-1] = self.used_plc_idx[p_idx+1:]
-        self.used_plc_idx[-1] = -1
-        self.used_k[p_idx:-1] = self.used_k[p_idx+1:]
-        self.used_k[-1] = -1
+        self.used_words = np.delete(self.used_words, p_idx)  # delete       self.used_words[p_idx:-1] = self.used_words[p_idx+1:]
+        self.used_words = np.append(self.used_words, "")  # append	        self.used_words[-1] = ""
+        self.used_plc_idx = np.delete(self.used_plc_idx, p_idx)  # delete   self.used_plc_idx[p_idx:-1] = self.used_plc_idx[p_idx+1:]
+        self.used_plc_idx = np.append(self.used_plc_idx, -1)  # append      self.used_plc_idx[-1] = -1
+        self.used_k = np.delete(self.used_k, p_idx)  # delete	            self.used_k[p_idx:-1] = self.used_k[p_idx+1:]
+        self.used_k = np.append(self.used_k, -1)  # append                  self.used_k[-1] = -1
         self.nwords -= 1
         self.weight -= weight
         # Insert data to history
@@ -711,7 +711,7 @@ class Puzzle:
         np.random.shuffle(random_index)
         # Drop words until connectivity collapses
         tmp_used_plc_idx = copy.deepcopy(self.used_plc_idx)
-        for r, p in enumerate(tmp_used_plc_idx[random_index]):
+        for p in tmp_used_plc_idx[random_index]:
             # Get ori, i, j, k, w_len
             ori = self.plc.ori[p]
             i = self.plc.i[p]
@@ -791,8 +791,7 @@ class Puzzle:
             if p == -1:
                 continue
             if self.label[self.plc.i[p], self.plc.j[p]] != largest_ccl:
-                self._drop(self.plc.ori[p], self.plc.i[p],
-                           self.plc.j[p], self.plc.k[p], is_kick=True)
+                self._drop(self.plc.ori[p], self.plc.i[p], self.plc.j[p], self.plc.k[p], is_kick=True)
         return
 
     def solve(self, epoch, optimizer="local_search", objective_function=None, of=None, show=True, use_f=False):
@@ -1136,3 +1135,7 @@ class Puzzle:
             if jmax != self.height:
                 enable[i, jmax] = False
         return np.array(used_words), enable
+
+    def get_nlabel(self):
+        _, nlabel = ndimage.label(self.cover)
+        return nlabel

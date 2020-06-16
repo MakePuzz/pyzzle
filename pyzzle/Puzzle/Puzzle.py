@@ -989,27 +989,6 @@ class Puzzle:
         with open(name, mode="wb") as f:
             pickle.dump(self, f)
 
-    def get_rect(self):
-        """
-        Return a rectangular region that encloses a words
-
-        Returns
-        -------
-        r_min : int
-           Minimum number of rows
-        r_max : int
-           Maximum number of rows
-        c_min : int
-           Minimum number of cols
-        c_min : int
-           Maximum number of cols
-        """
-        rows = np.any(self.cover, axis=1)
-        cols = np.any(self.cover, axis=0)
-        r_min, r_max = np.where(rows)[0][[0, -1]]
-        c_min, c_max = np.where(cols)[0][[0, -1]]
-        return r_min, r_max, c_min, c_max
-
     def move(self, direction, n=0, limit=False):
         """
         Move the word-enclosing-region in the specified direction for the specified number of times.
@@ -1028,7 +1007,7 @@ class Puzzle:
         limit : bool, default False
             If True, move as much as possible in the specified direction.
         """
-        r_min, r_max, c_min, c_max = self.get_rect()
+        r_min, r_max, c_min, c_max = utils.get_rect(self.cover)
         str2int = {'U': 1, 'D': 2, 'R': 3, 'L': 4}
         if direction.upper() in ('U', 'D', 'R', 'L'):
             direction = str2int[direction.upper()]

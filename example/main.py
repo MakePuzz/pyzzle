@@ -11,16 +11,15 @@ from pyzzle import Puzzle, FancyPuzzle, Dictionary, Mask, Gravity
 sys.path.append("../")
 # In[]
 # Set parameters
-width = 15
-height = 15
-mask = Mask.donut_s # 不要ならNone
-# gravity = Gravity.hokkaido # 不要ならNone
-dic = Dictionary.dataset.logo
+width = 5
+height = 5
+mask = Mask.hokkaido # 不要ならNone
+gravity = None # 不要ならNone
+dic = Dictionary.dataset["hokkaido"]
 name = "Pyzzle"
-seed = 5
-epoch = 5
+epoch = 10
 
-
+seed = 0
 np.random.seed(seed=seed)
 # In[]
 # Make instances
@@ -32,26 +31,17 @@ puzzle.import_dict(dic)
 
 # In[]
 obj_func = [
-    "gravity",
-    "circulation",
-    "weight",
-    "nwords",
-    "cross_count",
-    "fill_count",
-    "max_connected_empties",
-    "difficulty"
+    "nwords"
 ]
 
-
 # In[]
-puzzle.first_solve(use_f=False)
+puzzle.first_solve(use_f=True)
 
 # In[]
 puzzle.solve(epoch=epoch, optimizer="local_search", of=obj_func, show=False, use_f=True)
 
 # In[]
 # puzzle.solve(epoch=300, optimizer="local_search", of=obj_func, show=False, use_f=True)
-
 # In[]
 print(f"unique solution: {puzzle.is_unique}")
 
@@ -76,3 +66,5 @@ puzzle.show()
 # a = api.get_all_puzzles()
 # a.text
 # %%
+
+puzzle.jump(50).show()

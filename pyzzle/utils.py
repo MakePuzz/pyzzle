@@ -182,3 +182,24 @@ def save_image(fpath, cell, word_list, mask=None, title="", label="word list", d
     plt.tight_layout()
     plt.savefig(fpath, dpi=dpi)
     plt.close()
+
+def get_rect(cell):
+    """
+    Return coordinates of rectangular region
+
+    Returns
+    -------
+    r_min : int
+       Minimum number of rows
+    r_max : int
+       Maximum number of rows
+    c_min : int
+       Minimum number of cols
+    c_min : int
+       Maximum number of cols
+    """
+    rows = np.any(cell, axis=1)
+    cols = np.any(cell, axis=0)
+    r_min, r_max = np.where(rows)[0][[0, -1]]
+    c_min, c_max = np.where(cols)[0][[0, -1]]
+    return r_min, r_max, c_min, c_max

@@ -164,7 +164,9 @@ def save_image(fpath, cell, word_list, mask=None, title="", label="word list", d
     if mask is not None:
         wh_mask = np.where(mask == True)
         for i, j in list(zip(wh_mask[0], wh_mask[1])):
-            del ax1_table._cells[i, j]
+            ax1_table._cells[i, j].set_edgecolor('#FFFFFF')
+            ax1_table._cells[i, j].set_facecolor('#FFFFFF')
+
     # Draw word list
     if len(word_list) == 0:
         word_list = ['']

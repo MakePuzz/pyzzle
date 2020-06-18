@@ -2,10 +2,13 @@ import copy
 
 
 class Optimizer:
-    method_list = ["local_search"]
+    method_list = ["local_search", "multi_start"]
 
     def __init__(self, method="local_search"):
-        self.methods = {"local_search": self.local_search}
+        self.methods = {
+            "local_search": self.local_search,
+            "multi_start": self.multi_start
+        }
         self.set_method(method)
 
     @staticmethod
@@ -15,10 +18,11 @@ class Optimizer:
         """
         # Copy the puzzle
         _puzzle = copy.deepcopy(puzzle)
-        # Drop words until connectivity collapse
-        _puzzle.collapse()
-        # Kick
-        _puzzle.kick()
+        if _puzzle.nwords >= 1:
+            # Drop words until connectivity collapse
+            _puzzle.collapse()
+            # Kick
+            _puzzle.kick()
         # Add as much as possible
         if use_f is True:
             _puzzle.add_to_limit_f()
@@ -68,22 +72,24 @@ class Optimizer:
                 print(f"    - Replaced: {_puzzle.obj_func.get_score(_puzzle, all=True)}")
                 if show is True:
                     _puzzle.show()
-        # Update previous puzzle
-        puzzle.weight = copy.deepcopy(_puzzle.weight)
-        puzzle.enable = copy.deepcopy(_puzzle.enable)
-        puzzle.cell = copy.deepcopy(_puzzle.cell)
-        puzzle.cover = copy.deepcopy(_puzzle.cover)
-        puzzle.used_words = copy.deepcopy(_puzzle.used_words)
-        puzzle.used_plc_idx = copy.deepcopy(_puzzle.used_plc_idx)
-        puzzle.nwords = copy.deepcopy(_puzzle.nwords)
-        puzzle.history = copy.deepcopy(_puzzle.history)
-        puzzle.base_history = copy.deepcopy(_puzzle.base_history)
-        puzzle.log = copy.deepcopy(_puzzle.log)
-        puzzle.epoch = copy.deepcopy(_puzzle.epoch)
-        puzzle.first_solved = copy.deepcopy(_puzzle.first_solved)
-        puzzle.seed = copy.deepcopy(_puzzle.seed)
-        puzzle.dic = copy.deepcopy(_puzzle.dic)
-        puzzle.plc = copy.deepcopy(_puzzle.plc)
+        return _puzzle
+
+    def multi_start(self, puzzle, epoch, n=1, unique=False, show=True, use_f=False):
+        puzzles = []
+        for _n in range(n):
+            print(f"> Node: {_n+1}")
+            _puzzle = copy.deepcopy(puzzle)
+            _puzzle.solve(epoch=epoch, optimizer="local_search", show=show, use_f=use_f)
+            puzzles.append(_puzzle)
+        for i, _puzzle in enumerate(puzzles):
+            if i == 0:
+                prime_puzzle = _puzzle
+            else:
+                if unique is True and _puzzle.is_unique is False:
+                    continue
+                if _puzzle >= prime_puzzle:
+                    prime_puzzle = _puzzle
+        return _puzzle
 
     def set_method(self, method_name):
         """

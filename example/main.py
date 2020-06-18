@@ -13,7 +13,7 @@ sys.path.append("../")
 # Set parameters
 width = 5
 height = 5
-mask = Mask.hokkaido # 不要ならNone
+mask = Mask.donut_s # 不要ならNone
 gravity = None # 不要ならNone
 dic = Dictionary.dataset["hokkaido"]
 name = "Pyzzle"
@@ -31,14 +31,11 @@ puzzle.import_dict(dic)
 
 # In[]
 obj_func = [
-    "nwords"
+    "nwords", "cross_count"
 ]
 
 # In[]
-puzzle.first_solve(use_f=True)
-
-# In[]
-puzzle.solve(epoch=epoch, optimizer="local_search", of=obj_func, show=False, use_f=True)
+puzzle = puzzle.solve(epoch=epoch, n=10, optimizer="local_search", of=obj_func, show=False, use_f=True)
 
 # In[]
 # puzzle.solve(epoch=300, optimizer="local_search", of=obj_func, show=False, use_f=True)
@@ -68,3 +65,20 @@ puzzle.show()
 # %%
 
 puzzle.jump(50).show()
+
+
+
+# %%
+
+# In[]
+puzzle.show()
+
+# %%
+puzzle.obj_func.get_score(puzzle, all=True)
+
+# %%
+puzzle.log
+# %%
+puzzle >= puzzle
+
+# %%

@@ -44,8 +44,6 @@ class Puzzle:
         dic = Dictionary("path_to_dict")
         puzzle.import_dict(dic)
 
-        puzzle.first_solve()
-
         obj_func = ["weight", "nwords", "cross_count", "fill_count", "max_connected_empties"]
         puzzle.solve(epoch=5, optimizer="local_search", objective_function=obj_func)
 
@@ -93,7 +91,6 @@ class Puzzle:
         self.base_history = []
         self.log = None
         self.epoch = 0
-        self.first_solved = False
         self.seed = None
 
     def __str__(self):
@@ -101,6 +98,42 @@ class Puzzle:
         Return the puzzle's name.
         """
         return self.name
+
+    def __lt__(self, other):
+        if not isinstance(other, Puzzle):
+            raise TypeError(f"'<' not supported between instances of 'Puzzle' and '{type(other)}'")
+        if self.obj_func.registered_funcs != other.obj_func.registered_funcs:
+            raise ValueError("Puzzles with different registered objective functions cannot be compared with each other")
+        for func_num in range(len(self.obj_func)):
+            self_score = self.obj_func.get_score(self, func_num)
+            other_score = other.obj_func.get_score(other, func_num)
+            if self_score < other_score:
+                return True
+        return False
+    
+    def __eq__(self, other):
+        if not isinstance(other, Puzzle):
+            raise TypeError(f"'==' not supported between instances of 'Puzzle' and '{type(other)}'")
+        if self.obj_func.registered_funcs != other.obj_func.registered_funcs:
+            raise ValueError("Puzzles with different registered objective functions cannot be compared with each other")
+        for func_num in range(len(self.obj_func)):
+            self_score = self.obj_func.get_score(self, func_num)
+            other_score = other.obj_func.get_score(other, func_num)
+            if self_score != other_score:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __le__(self, other):
+        return self.__lt__(other) or self.__eq__(other)
+
+    def __gt__(self, other):
+        return not self.__le__(other)
+
+    def __ge__(self, other):
+        return not self.__lt__(other)
 
     @property
     def is_unique(self):
@@ -253,7 +286,6 @@ class Puzzle:
         self.base_history = []
         self.log = None
         self.epoch = 0
-        self.first_solved = False
         self.seed = None
 
     def import_dict(self, dic):
@@ -523,24 +555,6 @@ class Puzzle:
             self._add(ori_s[p], i_s[p] - 1, j_s[p] - 1, k_s[p])
         return
 
-    def first_solve(self, use_f=False):
-        """
-        Create an initial solution.
-        This method should always be called only once.
-        """
-        # Check the first_solved
-        if self.first_solved:
-            raise RuntimeError("'first_solve' method has already called")
-        # Save initial seed number
-        self.seed = np.random.get_state()[1][0]
-        # Add as much as possible
-        if use_f is True:
-            self.add_to_limit_f()
-        else:
-            self.add_to_limit()
-        self.first_solved = True
-
-
     def show(self):
         """
         Display the puzzle.
@@ -794,7 +808,7 @@ class Puzzle:
                 self._drop(self.plc.ori[p], self.plc.i[p], self.plc.j[p], self.plc.k[p], is_kick=True)
         return
 
-    def solve(self, epoch, optimizer="local_search", objective_function=None, of=None, show=True, use_f=False):
+    def solve(self, epoch, optimizer="local_search", objective_function=None, of=None, n=None, show=True, use_f=False):
         """
         This method repeats the solution improvement by the specified number of epoch.
 
@@ -807,8 +821,9 @@ class Puzzle:
         objective_function or of : list or ObjectiveFunction
             ObjectiveFunction
         """
-        if self.first_solved is False:
-            raise RuntimeError("'first_solve' method shoukd be called earlier")
+        # Save initial seed number
+        if self.seed == None:
+            self.seed = np.random.get_state()[1][0]
         if epoch <= 0:
             raise ValueError("'epoch' must be lather than 0")
         if isinstance(optimizer, str):
@@ -824,7 +839,9 @@ class Puzzle:
         if isinstance(objective_function, ObjectiveFunction):
             self.obj_func = objective_function
         if self.optimizer.method == "local_search":
-            self.optimizer.optimize(self, epoch, show=show, use_f=use_f)
+            return self.optimizer.optimize(self, epoch, show=show, use_f=use_f)
+        if self.optimizer.method == "multi_start":
+            return self.optimizer.optimize(self, epoch, n=n, show=show, use_f=use_f)
 
     def show_log(self, name="Objective Function's epoch series", grid=True, figsize=None, **kwargs):
         """
@@ -928,7 +945,6 @@ class Puzzle:
                 jumped_puzzle._drop(hist[2], hist[3], hist[4], hist[1], is_kick=True)
             elif hist[0] == History.MOVE:
                 jumped_puzzle.move(direction=hist[1], n=hist[2])
-        jumped_puzzle.first_solved = True
         return jumped_puzzle
 
     def get_prev(self, n=1):

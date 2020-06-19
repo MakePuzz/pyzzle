@@ -6,9 +6,10 @@ from pathlib import PurePath
 import numpy as np
 import matplotlib.pyplot as plt
 
-from pyzzle import Puzzle, FancyPuzzle, Dictionary, Mask, Gravity
+from pyzzle import Puzzle, Dictionary, Mask, Gravity
+from pyzzle import utils
 
-sys.path.append("../")
+utils.debug_on()
 # In[]
 # Set parameters
 width = 5
@@ -64,21 +65,5 @@ puzzle.show()
 # a.text
 # %%
 
-puzzle.jump(50).show()
-
-
-
-# %%
-
 # In[]
 puzzle.show()
-
-# %%
-puzzle.obj_func.get_score(puzzle, all=True)
-
-# %%
-puzzle.log
-# %%
-puzzle >= puzzle
-
-# %%

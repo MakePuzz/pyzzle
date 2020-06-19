@@ -90,7 +90,7 @@ class Optimizer:
                     continue
                 if _puzzle >= prime_puzzle:
                     prime_puzzle = _puzzle
-        return _puzzle
+        return prime_puzzle
 
     def set_method(self, method_name):
         """

@@ -18,7 +18,7 @@ mask = None #Mask.donut_s # 不要ならNone
 gravity = None # 不要ならNone
 dic = Dictionary.dataset["nikoli105"]
 name = "Nikoli 105 contest"
-epoch = 1000
+epoch = 50
 
 seed = 0
 np.random.seed(seed=seed)
@@ -32,11 +32,14 @@ puzzle.import_dict(dic)
 
 # In[]
 obj_func = [
-    "nwords", "cross_count"
+    "weight", "nwords"
 ]
 
 # In[]
-puzzle = puzzle.solve(epoch=epoch, n=10, optimizer="local_search", of=obj_func, show=False, use_f=True)
+puzzle = puzzle.solve(epoch=epoch, n=100, optimizer="multi_start", of=obj_func, show=False, use_f=True)
+
+# In[]
+puzzle.show()
 
 # In[]
 # puzzle.solve(epoch=300, optimizer="local_search", of=obj_func, show=False, use_f=True)

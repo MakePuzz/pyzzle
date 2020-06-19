@@ -1,5 +1,6 @@
-import copy
+import copy, logging
 
+LOG = logging.getLogger(__name__)
 
 class Optimizer:
     method_list = ["local_search", "multi_start"]
@@ -41,12 +42,12 @@ class Optimizer:
         # Copy
         _puzzle = copy.deepcopy(puzzle)
         if show is True:
-            print(">>> Interim solution")
+            LOG.info(">>> Interim solution")
             _puzzle.show()
         goal_epoch = _puzzle.epoch + epoch
         for _ in range(epoch):
             _puzzle.epoch += 1
-            print(f">>> Epoch {_puzzle.epoch}/{goal_epoch}")
+            LOG.info(f">>> Epoch {_puzzle.epoch}/{goal_epoch}")
             # Get neighbor solution by drop->kick->add
             new_puzzle = self.get_neighbor_solution(_puzzle, use_f=use_f)
 
@@ -55,8 +56,8 @@ class Optimizer:
                 prev_score = _puzzle.obj_func.get_score(_puzzle, func_num)
                 new_score = new_puzzle.obj_func.get_score(new_puzzle, func_num)
                 if new_score > prev_score:
-                    print(f"    - Improved: {_puzzle.obj_func.get_score(_puzzle, all=True)}")
-                    print(f"            --> {new_puzzle.obj_func.get_score(new_puzzle, all=True)}")
+                    LOG.info(f"- Improved: {_puzzle.obj_func.get_score(_puzzle, all=True)}")
+                    LOG.info(f"        --> {new_puzzle.obj_func.get_score(new_puzzle, all=True)}")
                     _puzzle = copy.deepcopy(new_puzzle)
                     _puzzle.logging()
                     if show is True:
@@ -64,12 +65,12 @@ class Optimizer:
                     break
                 if new_score < prev_score:
                     _puzzle.logging()
-                    print(f"    - Stayed: {_puzzle.obj_func.get_score(_puzzle, all=True)}")
+                    LOG.info(f"- Stayed: {_puzzle.obj_func.get_score(_puzzle, all=True)}")
                     break
             else:
                 _puzzle = copy.deepcopy(new_puzzle)
                 _puzzle.logging()
-                print(f"    - Replaced: {_puzzle.obj_func.get_score(_puzzle, all=True)}")
+                LOG.info(f"- Replaced: {_puzzle.obj_func.get_score(_puzzle, all=True)}")
                 if show is True:
                     _puzzle.show()
         return _puzzle
@@ -77,7 +78,7 @@ class Optimizer:
     def multi_start(self, puzzle, epoch, n=1, unique=False, show=True, use_f=False):
         puzzles = []
         for _n in range(n):
-            print(f"> Node: {_n+1}")
+            LOG.info(f"> Node: {_n+1}")
             _puzzle = copy.deepcopy(puzzle)
             _puzzle.solve(epoch=epoch, optimizer="local_search", show=show, use_f=use_f)
             puzzles.append(_puzzle)

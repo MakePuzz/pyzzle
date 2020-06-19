@@ -2,6 +2,7 @@ import copy
 import math
 import pickle
 import datetime
+import logging
 from enum import Enum
 
 import numpy as np
@@ -22,6 +23,8 @@ rcParams['font.family'] = 'sans-serif'
 rcParams['font.sans-serif'] = ['Hiragino Maru Gothic Pro', 'Yu Gothic', 'Meiryo',
                                'Takao', 'IPAexGothic', 'IPAPGothic', 'VL PGothic', 'Noto Sans CJK JP']
 
+LOG = logging.getLogger(__name__)
+BLANK = ""
 
 class Puzzle:
     """
@@ -79,11 +82,11 @@ class Puzzle:
         self.gravity = np.array(gravity)
         self.weight = 0
         self.name = name
-        self.cell = np.full([self.height, self.width], "", dtype="unicode")
+        self.cell = np.full([self.height, self.width], BLANK, dtype="unicode")
         self.cover = np.zeros(self.cell.shape, dtype="int")
         self.label = np.zeros(self.cell.shape, dtype="int")
         self.enable = np.ones(self.cell.shape, dtype="bool")
-        self.used_words = np.full(self.width * self.height, "", dtype=f"U{max(self.width, self.height)}")
+        self.used_words = np.full(self.width * self.height, BLANK, dtype=f"U{max(self.width, self.height)}")
         self.used_plc_idx = np.full(self.used_words.size, -1, dtype="int")
         self.used_k = np.full(self.used_words.size, -1, dtype="int")
         self.nwords = 0
@@ -178,7 +181,7 @@ class Puzzle:
                             break
                 # If word1 and word2 are replaceable, this puzzle doesn't have a simple solution -> return False
                 if replaceable is True:
-                    print(f" - words '{word1}' and '{word2}' are replaceable")
+                    LOG.info(f" - Words '{word1}' and '{word2}' are replaceable")
                     rtn_bool = False
         return rtn_bool
 
@@ -274,12 +277,12 @@ class Puzzle:
             self.obj_func = None
             self.optimizer = None
         self.weight = 0
-        self.enable = np.ones(self.width * self.height,dtype="bool").reshape(self.height, self.width)
-        self.cell = np.full(self.width * self.height, "",dtype="unicode").reshape(self.height, self.width)
-        self.cover = np.zeros(self.width * self.height,dtype="int").reshape(self.height, self.width)
-        self.label = np.zeros(self.width * self.height,dtype="int").reshape(self.height, self.width)
-        self.enable = np.ones(self.width * self.height,dtype="bool").reshape(self.height, self.width)
-        self.used_words = np.full(self.width * self.height, "", dtype=f"U{max(self.width, self.height)}")
+        self.enable = np.ones(self.width * self.height, dtype="bool").reshape(self.height, self.width)
+        self.cell = np.full(self.width * self.height, BLANK, dtype="unicode").reshape(self.height, self.width)
+        self.cover = np.zeros(self.width * self.height, dtype="int").reshape(self.height, self.width)
+        self.label = np.zeros(self.width * self.height, dtype="int").reshape(self.height, self.width)
+        self.enable = np.ones(self.width * self.height, dtype="bool").reshape(self.height, self.width)
+        self.used_words = np.full(self.width * self.height, BLANK, dtype=f"U{max(self.width, self.height)}")
         self.used_plc_idx = np.full(self.width * self.height, -1, dtype="int")
         self.nwords = 0
         self.history = []
@@ -299,6 +302,7 @@ class Puzzle:
         """
         self.dic = dic
         self.plc = Placeable(self.width, self.height, self.dic, self.mask)
+        LOG.info(f"Dictionary '{dic.name}' imported")
 
     def is_placeable(self, ori, i, j, word, w_len):
         """
@@ -340,21 +344,21 @@ class Puzzle:
 
         # If the preceding and succeeding cells are already filled
         if ori == 0:
-            if i > 0 and self.cell[i - 1, j] != "":
+            if i > 0 and self.cell[i - 1, j] != BLANK:
                 return Judgement.THE_PRECEDING_AND_SUCCEEDING_CELLS_ARE_ALREADY_FILLED
-            if i + w_len < self.height and self.cell[i + w_len, j] != "":
+            if i + w_len < self.height and self.cell[i + w_len, j] != BLANK:
                 return Judgement.THE_PRECEDING_AND_SUCCEEDING_CELLS_ARE_ALREADY_FILLED
         if ori == 1:
-            if j > 0 and self.cell[i, j - 1] != "":
+            if j > 0 and self.cell[i, j - 1] != BLANK:
                 return Judgement.THE_PRECEDING_AND_SUCCEEDING_CELLS_ARE_ALREADY_FILLED
-            if j + w_len < self.width and self.cell[i, j + w_len] != "":
+            if j + w_len < self.width and self.cell[i, j + w_len] != BLANK:
                 return Judgement.THE_PRECEDING_AND_SUCCEEDING_CELLS_ARE_ALREADY_FILLED
 
         # At least one place must cross other words
         if ori == 0:
-            empties = self.cell[i:i + w_len, j] == ""
+            empties = self.cell[i:i + w_len, j] == BLANK
         if ori == 1:
-            empties = self.cell[i, j:j + w_len] == ""
+            empties = self.cell[i, j:j + w_len] == BLANK
         if np.all(empties == True):
             return Judgement.AT_LEAST_ONE_PLACE_MUST_CROSS_OTHER_WORDS
 
@@ -378,18 +382,18 @@ class Puzzle:
         if ori == 0:
             j_all = np.full(where.size, j, dtype="int")
             # Left side
-            if j > 0 and np.any(self.cell[where + i, j_all - 1] != ""):
+            if j > 0 and np.any(self.cell[where + i, j_all - 1] != BLANK):
                 return Judgement.THE_NEIGHBOR_CELLS_ARE_FILLED_EXCEPT_AT_THE_INTERSECTION
             # Right side
-            if j < self.width - 1 and np.any(self.cell[where + i, j_all + 1] != ""):
+            if j < self.width - 1 and np.any(self.cell[where + i, j_all + 1] != BLANK):
                 return Judgement.THE_NEIGHBOR_CELLS_ARE_FILLED_EXCEPT_AT_THE_INTERSECTION
         if ori == 1:
             i_all = np.full(where.size, i, dtype="int")
             # Upper
-            if i > 0 and np.any(self.cell[i_all - 1, where + j] != ""):
+            if i > 0 and np.any(self.cell[i_all - 1, where + j] != BLANK):
                 return Judgement.THE_NEIGHBOR_CELLS_ARE_FILLED_EXCEPT_AT_THE_INTERSECTION
             # Lower
-            if i < self.height - 1 and np.any(self.cell[i_all + 1, where + j] != ""):
+            if i < self.height - 1 and np.any(self.cell[i_all + 1, where + j] != BLANK):
                 return Judgement.THE_NEIGHBOR_CELLS_ARE_FILLED_EXCEPT_AT_THE_INTERSECTION
 
         # US/USA, DOMINICA/DOMINICAN problem
@@ -516,8 +520,9 @@ class Puzzle:
         """
         try:
             from pyzzle.Puzzle.add_to_limit import add_to_limit as _add_to_limit
-        except:
-            raise RuntimeError("Puzzle.add_to_limit is not installed.\
+        except(ImportError) as err:
+            LOG.debug(str(err))
+            raise ImportError("Puzzle.add_to_limit is not installed.\
                             After installing GCC and GFortran, you need to reinstall pyzzle.")
         # Make a random index of plc
         not_used_words_idx = np.ones(len(self.plc), dtype=bool)
@@ -531,7 +536,7 @@ class Puzzle:
         n = random_index.size
         w_len_max = max(self.dic.w_len)
 
-        cell = np.where(self.cell == "", blank, self.cell)
+        cell = np.where(self.cell == BLANK, blank, self.cell)
         cell = np.array(list(map(lambda x: ord(x), cell.ravel()))).reshape(cell.shape)
         cell = np.asfortranarray(cell.astype(np.int32))
 
@@ -559,7 +564,7 @@ class Puzzle:
         """
         Display the puzzle.
         """
-        utils.show_2Darray(self.cell, self.mask)
+        utils.show_2Darray(self.cell, self.mask, blank=BLANK)
 
     def logging(self):
         """
@@ -609,15 +614,15 @@ class Puzzle:
             self.cover[i:i + w_len, j] -= 1
             where = np.where(self.cover[i:i + w_len, j] == 0)[0]
             j_all = np.full(where.size, j, dtype="int")
-            self.cell[i + where, j_all] = ""
+            self.cell[i + where, j_all] = BLANK
         if ori == 1:
             self.cover[i, j:j + w_len] -= 1
             where = np.where(self.cover[i, j:j + w_len] == 0)[0]
             i_all = np.full(where.size, i, dtype="int")
-            self.cell[i_all, j + where] = ""
+            self.cell[i_all, j + where] = BLANK
         # Update used_words, used_plc_idx, nwords, weight
         self.used_words = np.delete(self.used_words, p_idx)  # delete       self.used_words[p_idx:-1] = self.used_words[p_idx+1:]
-        self.used_words = np.append(self.used_words, "")  # append	        self.used_words[-1] = ""
+        self.used_words = np.append(self.used_words, BLANK)  # append	        self.used_words[-1] = BLANK
         self.used_plc_idx = np.delete(self.used_plc_idx, p_idx)  # delete   self.used_plc_idx[p_idx:-1] = self.used_plc_idx[p_idx+1:]
         self.used_plc_idx = np.append(self.used_plc_idx, -1)  # append      self.used_plc_idx[-1] = -1
         self.used_k = np.delete(self.used_k, p_idx)  # delete	            self.used_k[p_idx:-1] = self.used_k[p_idx+1:]
@@ -631,39 +636,39 @@ class Puzzle:
         remove_flag = True
         if ori == 0:
             if i > 0:
-                if i > 2 and np.all(self.cell[[i - 3, i - 2], [j, j]] != ""):
+                if i > 2 and np.all(self.cell[[i - 3, i - 2], [j, j]] != BLANK):
                     remove_flag = False
-                if j > 2 and np.all(self.cell[[i - 1, i - 1], [j - 2, j - 1]] != ""):
+                if j > 2 and np.all(self.cell[[i - 1, i - 1], [j - 2, j - 1]] != BLANK):
                     remove_flag = False
-                if j < self.width - 2 and np.all(self.cell[[i - 1, i - 1], [j + 1, j + 2]] != ""):
+                if j < self.width - 2 and np.all(self.cell[[i - 1, i - 1], [j + 1, j + 2]] != BLANK):
                     remove_flag = False
                 if remove_flag == True:
                     self.enable[i - 1, j] = True
             if i + w_len < self.height:
-                if i + w_len < self.height - 2 and np.all(self.cell[[i + w_len + 1, i + w_len + 2], [j, j]] != ""):
+                if i + w_len < self.height - 2 and np.all(self.cell[[i + w_len + 1, i + w_len + 2], [j, j]] != BLANK):
                     remove_flag = False
-                if j > 2 and np.all(self.cell[[i + w_len, i + w_len], [j - 2, j - 1]] != ""):
+                if j > 2 and np.all(self.cell[[i + w_len, i + w_len], [j - 2, j - 1]] != BLANK):
                     remove_flag = False
-                if j < self.width - 2 and np.all(self.cell[[i + w_len, i + w_len], [j + 1, j + 2]] != ""):
+                if j < self.width - 2 and np.all(self.cell[[i + w_len, i + w_len], [j + 1, j + 2]] != BLANK):
                     remove_flag = False
                 if remove_flag == True:
                     self.enable[i + w_len, j] = True
         if ori == 1:
             if j > 0:
-                if j > 2 and np.all(self.cell[[i, i], [j - 3, j - 2]] != ""):
+                if j > 2 and np.all(self.cell[[i, i], [j - 3, j - 2]] != BLANK):
                     remove_flag = False
-                if i > 2 and np.all(self.cell[[i - 2, i - 1], [j - 1, j - 1]] != ""):
+                if i > 2 and np.all(self.cell[[i - 2, i - 1], [j - 1, j - 1]] != BLANK):
                     remove_flag = False
-                if i < self.height - 2 and np.all(self.cell[[i + 1, i + 2], [j - 1, j - 1]] != ""):
+                if i < self.height - 2 and np.all(self.cell[[i + 1, i + 2], [j - 1, j - 1]] != BLANK):
                     remove_flag = False
                 if remove_flag == True:
                     self.enable[i, j - 1] = True
             if j + w_len < self.width:
-                if j + w_len < self.width - 2 and np.all(self.cell[[i, i], [j + w_len + 1, j + w_len + 2]] != ""):
+                if j + w_len < self.width - 2 and np.all(self.cell[[i, i], [j + w_len + 1, j + w_len + 2]] != BLANK):
                     remove_flag = False
-                if i > 2 and np.all(self.cell[[i - 2, i - 1], [j + w_len, j + w_len]] != ""):
+                if i > 2 and np.all(self.cell[[i - 2, i - 1], [j + w_len, j + w_len]] != BLANK):
                     remove_flag = False
-                if i < self.height - 2 and np.all(self.cell[[i + 1, i + 2], [j + w_len, j + w_len]] != ""):
+                if i < self.height - 2 and np.all(self.cell[[i + 1, i + 2], [j + w_len, j + w_len]] != BLANK):
                     remove_flag = False
                 if remove_flag == True:
                     self.enable[i, j + w_len] = True
@@ -886,8 +891,8 @@ class Puzzle:
             Dot-per-inch
         """
         empty_cell = np.full(self.cell.shape, " ", dtype="unicode")
-        empty_cell[self.cell == ""] = ""
-        word_list = self.used_words[self.used_words != ""]
+        empty_cell[self.cell == BLANK] = BLANK
+        word_list = self.used_words[self.used_words != BLANK]
         utils.save_image(fname, empty_cell, word_list, mask=self.mask,
                          title=self.name, label=list_label, dpi=dpi)
 
@@ -904,7 +909,7 @@ class Puzzle:
         dpi : int, default 300
             Dot-per-inch
         """
-        word_list = self.used_words[self.used_words != ""]
+        word_list = self.used_words[self.used_words != BLANK]
         utils.save_image(fname, self.cell, word_list, mask=self.mask,
                          title=self.name, label=list_label, dpi=dpi)
 
@@ -1086,17 +1091,17 @@ class Puzzle:
         """
         jj, ii = np.meshgrid(np.arange(self.width), np.arange(self.height))
         # 縦
-        head0 = (self.cell[ii[0, :], jj[0, :]] != "") * \
-            (self.cell[ii[0, :]+1, jj[0, :]] != "")
-        body0 = (self.cell[ii[1:-1, :]-1, jj[1:-1, :]] == "") * (self.cell[ii[1:-1, :],
-                                                                           jj[1:-1, :]] != "") * (self.cell[ii[1:-1, :]+1, jj[1:-1, :]] != "")
+        head0 = (self.cell[ii[0, :], jj[0, :]] != BLANK) * \
+            (self.cell[ii[0, :]+1, jj[0, :]] != BLANK)
+        body0 = (self.cell[ii[1:-1, :]-1, jj[1:-1, :]] == BLANK) * (self.cell[ii[1:-1, :],
+                                                                           jj[1:-1, :]] != BLANK) * (self.cell[ii[1:-1, :]+1, jj[1:-1, :]] != BLANK)
         start0 = np.vstack([head0, body0])
 
         # 横
-        head1 = (self.cell[ii[:, 0], jj[:, 0]] != "") * \
-            (self.cell[ii[:, 0], jj[:, 0]+1] != "")
-        body1 = (self.cell[ii[:, 1:-1], jj[:, 1:-1]-1] == "") * (self.cell[ii[:, 1:-1],
-                                                                           jj[:, 1:-1]] != "") * (self.cell[ii[:, 1:-1], jj[:, 1:-1]+1] != "")
+        head1 = (self.cell[ii[:, 0], jj[:, 0]] != BLANK) * \
+            (self.cell[ii[:, 0], jj[:, 0]+1] != BLANK)
+        body1 = (self.cell[ii[:, 1:-1], jj[:, 1:-1]-1] == BLANK) * (self.cell[ii[:, 1:-1],
+                                                                           jj[:, 1:-1]] != BLANK) * (self.cell[ii[:, 1:-1], jj[:, 1:-1]+1] != BLANK)
         start1 = np.hstack([head1.reshape(self.height, 1), body1])
 
         indices = {"vertical": np.where(

@@ -36,7 +36,7 @@ obj_func = [
 ]
 
 # In[]
-puzzle = puzzle.solve(epoch=epoch, n=100, optimizer="multi_start", of=obj_func, show=False, use_f=True)
+puzzle = puzzle.solve(epoch=epoch, n=3, optimizer="multi_start", of=obj_func, show=False, use_f=True)
 
 # In[]
 puzzle.show()

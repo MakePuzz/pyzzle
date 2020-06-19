@@ -12,13 +12,13 @@ from pyzzle import utils
 utils.debug_on()
 # In[]
 # Set parameters
-width = 5
-height = 5
-mask = Mask.donut_s # 不要ならNone
+width = 15
+height = 15
+mask = None #Mask.donut_s # 不要ならNone
 gravity = None # 不要ならNone
-dic = Dictionary.dataset["hokkaido"]
-name = "Pyzzle"
-epoch = 10
+dic = Dictionary.dataset["nikoli105"]
+name = "Nikoli 105 contest"
+epoch = 1000
 
 seed = 0
 np.random.seed(seed=seed)

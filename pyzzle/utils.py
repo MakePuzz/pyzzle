@@ -1,9 +1,15 @@
 import copy
 import json
+import logging
+
 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+
+_is_logging_on = False
+TRACE_LEVEL = 5
+
 
 def in_ipynb():
     """Are we in a jupyter notebook?"""
@@ -12,8 +18,52 @@ def in_ipynb():
     except NameError:
         return False
 
+def debug_on():
+    """Turn debugging logging on."""
+    logging_on(logging.DEBUG)
 
-def show_2Darray(cell, mask=None):
+def trace_on():
+    """Turn trace logging on."""
+    logging_on(TRACE_LEVEL)
+
+def logging_on(level=logging.WARNING):
+    """Turn logging on."""
+    global _is_logging_on
+
+    if not _is_logging_on:
+        console = logging.StreamHandler()
+        console.setFormatter(logging.Formatter("[%(levelname)s: %(asctime)s :"
+                                               " %(name)s] %(message)s",
+                                               '%Y-%m-%d %H:%M:%S'))
+        console.setLevel(level)
+        logging.getLogger('').addHandler(console)
+        _is_logging_on = True
+
+    log = logging.getLogger('')
+    log.setLevel(level)
+    for h in log.handlers:
+        h.setLevel(level)
+
+def get_logger(name):
+    """Return logger with null handler added if needed."""
+    if not hasattr(logging.Logger, 'trace'):
+        logging.addLevelName(TRACE_LEVEL, 'TRACE')
+
+        def trace(self, message, *args, **kwargs):
+            if self.isEnabledFor(TRACE_LEVEL):
+                # Yes, logger takes its '*args' as 'args'.
+                self._log(TRACE_LEVEL, message, args, **kwargs)
+
+        logging.Logger.trace = trace
+
+    log = logging.getLogger(name)
+    return log
+
+def logging_off():
+    """Turn logging off."""
+    logging.getLogger('').handlers = [logging.NullHandler()]
+
+def show_2Darray(cell, mask=None, blank="", stdout=False):
     """
     Display the puzzle.
 
@@ -27,7 +77,10 @@ def show_2Darray(cell, mask=None):
     array = copy.deepcopy(cell)
     if mask is not None:
         array[mask == True] = "■"
-    if in_ipynb() is True:
+    if stdout is True or in_ipynb() is False:
+        array = np.where(array == blank, " ", array)
+        print(array)
+    else:
         from IPython.display import display
         styles = [
             dict(selector="th", props=[("font-size", "90%"),
@@ -49,9 +102,6 @@ def show_2Darray(cell, mask=None):
         df = pd.DataFrame(array)
         df = (df.style.set_table_styles(styles))
         display(df)
-    else:
-        array = np.where(array == "", " ", array)
-        print(array)
 
 def decode_json(fpath):
     """

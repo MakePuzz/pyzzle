@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 from pyzzle import Puzzle, FancyPuzzle, Dictionary, Mask, Gravity
 
-sys.path.append("../")
+utils.debug_on()
 # In[]
 # Set parameters
 width = 5
@@ -35,10 +35,7 @@ obj_func = [
 ]
 
 # In[]
-puzzle.first_solve(use_f=True)
-
-# In[]
-puzzle.solve(epoch=epoch, optimizer="local_search", of=obj_func, show=False, use_f=True)
+puzzle = puzzle.solve(epoch=epoch, optimizer="local_search", of=obj_func, show=False, use_f=True)
 
 # In[]
 # puzzle.solve(epoch=300, optimizer="local_search", of=obj_func, show=False, use_f=True)
@@ -68,3 +65,5 @@ puzzle.show()
 # %%
 
 puzzle.jump(50).show()
+
+

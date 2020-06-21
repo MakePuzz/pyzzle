@@ -6,18 +6,19 @@ from pathlib import PurePath
 import numpy as np
 import matplotlib.pyplot as plt
 
-from pyzzle import Puzzle, FancyPuzzle, Dictionary, Mask, Gravity
+from pyzzle import Puzzle, Dictionary, Mask, Gravity
+from pyzzle import utils
 
 utils.debug_on()
 # In[]
 # Set parameters
-width = 5
-height = 5
-mask = Mask.hokkaido # 不要ならNone
+width = 15
+height = 15
+mask = None #Mask.donut_s # 不要ならNone
 gravity = None # 不要ならNone
-dic = Dictionary.dataset["hokkaido"]
-name = "Pyzzle"
-epoch = 10
+dic = Dictionary.dataset["nikoli105"]
+name = "Nikoli 105 contest"
+epoch = 50
 
 seed = 0
 np.random.seed(seed=seed)
@@ -31,11 +32,13 @@ puzzle.import_dict(dic)
 
 # In[]
 obj_func = [
-    "nwords"
+    "weight", "nwords"
 ]
 
 # In[]
-puzzle = puzzle.solve(epoch=epoch, optimizer="local_search", of=obj_func, show=False, use_f=True)
+puzzle = puzzle.solve(epoch=epoch, n=3, optimizer="multi_start", of=obj_func, show=False, use_f=True)
+
+# In[]
 
 # In[]
 # puzzle.solve(epoch=300, optimizer="local_search", of=obj_func, show=False, use_f=True)
@@ -63,7 +66,3 @@ puzzle.show()
 # a = api.get_all_puzzles()
 # a.text
 # %%
-
-puzzle.jump(50).show()
-
-

@@ -460,8 +460,8 @@ class Puzzle:
         self.used_ori[self.nwords] = ori
         self.used_i[self.nwords] = i
         self.used_j[self.nwords] = j
-        self.used_words[self.nwords] = self.dic.word[k]
         self.used_k[self.nwords] = k
+        self.used_words[self.nwords] = self.dic.word[k]
         self.nwords += 1
         self.weight += weight
         self.history.append((History.ADD, word_idx, ori, i, j))
@@ -620,17 +620,17 @@ class Puzzle:
             where = np.where(self.cover[i, j:j + w_len] == 0)[0]
             i_all = np.full(where.size, i, dtype="int")
             self.cell[i_all, j + where] = BLANK
-        # Update
-        self.used_ori = np.delete(self.used_ori, drop_idx)  # delete	    self.used_ori[p_idx:-1] = self.used_ori[p_idx+1:]
-        self.used_ori = np.append(self.used_ori, -1)  # append              self.used_ori[-1] = -1
-        self.used_i = np.delete(self.used_i, drop_idx)  # delete	        self.used_i[p_idx:-1] = self.used_i[p_idx+1:]
-        self.used_i = np.append(self.used_i, -1)  # append                  self.used_i[-1] = -1
-        self.used_j = np.delete(self.used_j, drop_idx)  # delete	        self.used_j[p_idx:-1] = self.used_j[p_idx+1:]
-        self.used_j = np.append(self.used_j, -1)  # append                  self.used_j[-1] = -1
-        self.used_words = np.delete(self.used_words, drop_idx)  # delete    self.used_words[p_idx:-1] = self.used_words[p_idx+1:]
-        self.used_words = np.append(self.used_words, BLANK)  # append	    self.used_words[-1] = BLANK
-        self.used_k = np.delete(self.used_k, drop_idx)  # delete	        self.used_k[p_idx:-1] = self.used_k[p_idx+1:]
-        self.used_k = np.append(self.used_k, -1)  # append                  self.used_k[-1] = -1
+        # Update        
+        self.used_ori[drop_idx:-1] = self.used_ori[drop_idx+1:]
+        self.used_ori[-1] = -1
+        self.used_i[drop_idx:-1] = self.used_i[drop_idx+1:]
+        self.used_i[-1] = -1
+        self.used_j[drop_idx:-1] = self.used_j[drop_idx+1:]
+        self.used_j[-1] = -1
+        self.used_k[drop_idx:-1] = self.used_k[drop_idx+1:]
+        self.used_k[-1] = -1
+        self.used_words[drop_idx:-1] = self.used_words[drop_idx+1:]
+        self.used_words[-1] = BLANK
         self.nwords -= 1
         self.weight -= weight
         # Insert data to history
@@ -734,12 +734,12 @@ class Puzzle:
         random = np.arange(self.nwords)
         np.random.shuffle(random)
         # Drop words until connectivity collapses
-        prev_used_ori = copy.deepcopy(self.used_ori)
-        prev_used_i = copy.deepcopy(self.used_i)
-        prev_used_j = copy.deepcopy(self.used_j)
-        prev_used_k = copy.deepcopy(self.used_k)
-        prev_used_word = copy.deepcopy(self.used_words)
-        for ori, i, j, k, word in zip(prev_used_ori[random], prev_used_i[random], prev_used_j[random], prev_used_k[random], prev_used_word[random]):
+        used_ori_random = copy.deepcopy(self.used_ori[:self.nwords][random])
+        used_i_random = copy.deepcopy(self.used_i[:self.nwords][random])
+        used_j_random = copy.deepcopy(self.used_j[:self.nwords][random])
+        used_k_random = copy.deepcopy(self.used_k[:self.nwords][random])
+        used_word_random = copy.deepcopy(self.used_words[:self.nwords][random])
+        for ori, i, j, k, word in zip(used_ori_random, used_i_random, used_j_random, used_k_random, used_word_random):
             w_len = len(word)
             # If '2' is aligned in the cover array, the word can not be dropped
             if ori == 0:
@@ -795,7 +795,7 @@ class Puzzle:
 
     def kick(self):
         """
-        Remove words other than the maximum CCL from the board
+        Remove words other than the largest component from puzzle
         """
         # If nwords = 0, return
         if self.nwords == 0:
@@ -804,8 +804,13 @@ class Puzzle:
         label, nlabel = ndimage.label(mask)
         sizes = ndimage.sum(mask, label, range(nlabel + 1))
         largest_ccl = sizes.argmax()
-        # Erase elements except CCL ('kick' in C-program)
-        for ori, i, j, k in zip(self.used_ori[:self.nwords], self.used_i[:self.nwords], self.used_j[:self.nwords], self.used_k[:self.nwords]):
+        # Erase elements except largest component.
+        # In self._drop used_x will shrink, so pass prev_used_x in reverse order.
+        prev_used_ori = self.used_ori[:self.nwords][::-1]
+        prev_used_i = self.used_i[:self.nwords][::-1]
+        prev_used_j = self.used_j[:self.nwords][::-1]
+        prev_used_k = self.used_k[:self.nwords][::-1]
+        for ori, i, j, k in zip(prev_used_ori, prev_used_i, prev_used_j, prev_used_k):
             if label[i, j] != largest_ccl:
                 self._drop(ori, i, j, k, is_kick=True)
         return

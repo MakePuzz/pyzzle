@@ -8,6 +8,7 @@ class ObjectiveFunction:
             "weight",
             "nwords",
             "cross_count",
+            "cross_rate",
             "fill_count",
             "max_connected_empties",
             "difficulty",
@@ -38,6 +39,13 @@ class ObjectiveFunction:
         This method returns the number of crosses of a word.
         """
         return np.sum(puzzle.cover == 2)
+
+    @staticmethod
+    def cross_rate(puzzle):
+        """
+        This method returns the rate of crosses of a word.
+        """
+        return ObjectiveFunction.cross_count(puzzle)/ObjectiveFunction.nwords(puzzle)
 
     @staticmethod
     def fill_count(puzzle):

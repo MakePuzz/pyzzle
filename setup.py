@@ -28,8 +28,8 @@ version = next((line.split('=')[1].strip().replace("'", '')
 
 extensions = []
 extensions.append(
-    Extension(name='pyzzle.Puzzle.add_to_limit',sources=['pyzzle/Puzzle/add_to_limit.f90'])
-)
+    Extension(name='pyzzle.Puzzle.add_to_limit',
+              sources=['pyzzle/Puzzle/add_to_limit.f90'])) #f2py_options=["--opt='-O3'"]
 
 setup(
     name="pyzzle",

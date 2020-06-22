@@ -85,7 +85,6 @@ class Puzzle:
         self.name = name
         self.cell = np.full([self.height, self.width], BLANK, dtype="unicode")
         self.cover = np.zeros(self.cell.shape, dtype=np.int32)
-        self.label = np.zeros(self.cell.shape, dtype=np.int32)
         self.enable = np.ones(self.cell.shape, dtype="bool")
         self.used_ori = np.full(self.width * self.height, -1, dtype=np.int32)
         self.used_i = np.full(self.used_ori.size, -1, dtype=np.int32)
@@ -278,7 +277,6 @@ class Puzzle:
         self.enable = np.ones(self.width * self.height, dtype="bool").reshape(self.height, self.width)
         self.cell = np.full(self.width * self.height, BLANK, dtype="unicode").reshape(self.height, self.width)
         self.cover = np.zeros(self.width * self.height, dtype=np.int32).reshape(self.height, self.width)
-        self.label = np.zeros(self.width * self.height, dtype=np.int32).reshape(self.height, self.width)
         self.enable = np.ones(self.width * self.height, dtype="bool").reshape(self.height, self.width)
         self.used_ori = np.full(self.width * self.height, -1, dtype=np.int32)
         self.used_i = np.full(self.used_ori.size, -1, dtype=np.int32)
@@ -1040,7 +1038,7 @@ class Puzzle:
             direction = reverse[str(direction)]
             n = -n
 
-        n2limit = {1: r_min, 2: self.height - (r_max + 1), 3: c_min, 4: self.width - (c_max + 1)}
+        n2limit = {1: r_min, 2: self.height - (r_max + 1), 3: self.width - (c_max + 1), 4: c_min}
 
         if limit is True:
             n = n2limit[direction]
@@ -1072,11 +1070,11 @@ class Puzzle:
                     break
             self.cell = np.roll(self.cell, sum(di_dj), axis=axis)
             self.cover = np.roll(self.cover, sum(di_dj), axis=axis)
-            self.label = np.roll(self.label, sum(di_dj), axis=axis)
-            self.enable = np.roll(self.enable, sum(di_dj), axis=axis)
             self.used_i += di_dj[0]
             self.used_j += di_dj[1]
             self.history.append((History.MOVE, direction, 1, None, None))
+        _, self.enable = self.get_used_words_and_enable()
+        return
 
     def get_used_words_and_enable(self):
         """

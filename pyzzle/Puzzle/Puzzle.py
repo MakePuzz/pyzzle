@@ -49,7 +49,7 @@ class Puzzle:
         puzzle.import_dict(dic)
 
         obj_func = ["weight", "nwords", "cross_count", "fill_count", "max_connected_empties"]
-        puzzle.solve(epoch=5, optimizer="local_search", objective_function=obj_func)
+        puzzle = puzzle.solve(epoch=5, optimizer="local_search", objective_function=obj_func)
 
         puzzle.save_problem_image("problem.png")
         puzzle.save_answer_image("answer.png")
@@ -97,6 +97,8 @@ class Puzzle:
         self.log = None
         self.epoch = 0
         self.seed = None
+        self.dic = Dictionary()
+        self.plc = Placeable(width=self.width, height=self.height)
 
     def __str__(self):
         """
@@ -268,8 +270,8 @@ class Puzzle:
             If True, Reinitialize the Dictionary, ObjectiveFunction, and Optimizer as well.
         """
         if all is True:
-            self.dic = None
-            self.plc = None
+            self.dic = Dictionary()
+            self.plc = Placeable(width=self.width, height=self.height)
             self.obj_func = None
             self.optimizer = None
         self.weight = 0
@@ -296,11 +298,24 @@ class Puzzle:
         Parameters
         ----------
         dic : Dictionary
-            Dictionary object imported by Puzzle
+            Dictionary object imported to Puzzle
+        """
+        self.dic += dic
+        self.plc = Placeable(self.width, self.height, self.dic.word, self.mask)
+        LOG.info(f"Dictionary imported")
+
+    def replace_dict(self, dic):
+        """
+        Replace the imported Dictionary, and generate the Placeable internally.
+
+        Parameters
+        ----------
+        dic : Dictionary
+            Dictionary object replaced in Puzzle
         """
         self.dic = dic
-        self.plc = Placeable(self.width, self.height, self.dic, self.mask)
-        LOG.info(f"Dictionary '{dic.name}' imported")
+        self.plc = Placeable(self.width, self.height, self.dic.word, self.mask)
+        LOG.info(f"Dictionary replaced")
 
     def is_placeable(self, ori, i, j, word, w_len):
         """
@@ -482,10 +497,9 @@ class Puzzle:
         """
         if not isinstance(word, str):
             raise TypeError("word must be Word or str")
-        _word = Word(word, weight)
         self.dic.add(word, weight)
-        self.plc._compute([_word], mask=self.mask, base_k = self.dic.size - 1)
-        return self._add(ori, i, j, word)
+        self.plc._compute([Word(word, weight)], mask=self.mask, base_k = self.dic.size - 1)
+        return self._add(ori, i, j, Word(word, weight))
 
     def add_to_limit(self):
         """
@@ -691,6 +705,7 @@ class Puzzle:
         if word:
             if not isinstance(word, str):
                 raise TypeError("'word' must be Word or str")
+            word = Word(word)
             drop_idx = np.where(self.used_words == word)[0][0]
             ori = self.used_ori[drop_idx]
             i = self.used_i[drop_idx]
@@ -759,7 +774,7 @@ class Puzzle:
         if mask is None:
             mask = np.full(self.cell.shape, True)
         json_dict = {"list": word_list, "mask": mask.tolist(), "name": self.name, "width": self.width, "height": self.height, "nwords": self.nwords,
-                       "dict_name": self.dic.name, "seed": int(self.seed), "epoch": self.epoch}
+                       "seed": int(self.seed), "epoch": self.epoch}
         return json_dict
 
     def export_json(self, name="out.json", indent=None):
@@ -992,7 +1007,7 @@ class Puzzle:
         Save Puzzle object as Pickle
         """
         now = datetime.datetime.today().strftime("%Y%m%d%H%M%S")
-        name = name or f"{now}_{self.dic.name}_{self.width}_{self.height}_{self.seed}_{self.epoch}.pickle"
+        name = name or f"{now}_{self.width}_{self.height}_{self.seed}_{self.epoch}.pickle"
         with open(name, mode="wb") as f:
             pickle.dump(self, f)
 

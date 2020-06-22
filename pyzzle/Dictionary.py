@@ -5,6 +5,7 @@ import collections
 
 import numpy as np
 
+from pyzzle import Word
 
 class Dictionary:
     class Dataset:
@@ -25,7 +26,6 @@ class Dictionary:
         self.dict_specifier = dict_specifier
         self.name = name
         self.word = []
-        self.weight = []
         self.removed_words = []
         self._i = 0
         if isinstance(dict_specifier, (list, np.ndarray)):
@@ -57,13 +57,13 @@ class Dictionary:
         new_dict = copy.deepcopy(self)
         if isinstance(other, Dictionary):
             for wo, we in other:
-                new_dict.add(word = wo, weight = we)
+                new_dict.add(Word(wo, we))
         if isinstance(other, str):
-            new_dict.add(word = other, weight = 0)
+            new_dict.add(Word(other, 0))
         if isinstance(other, (tuple, list)):
-            new_dict.add(word = other[0], weight = other[1])
+            new_dict.add(Word(other[0], other[1]))
         if isinstance(other, dict):
-            new_dict.add(word = other["word"], weight = other["weight"])
+            new_dict.add(Word(other["word"], other["weight"]))
         return new_dict
 
     def __iter__(self):
@@ -84,7 +84,7 @@ class Dictionary:
         return word in self.word
 
     def add(self, word=None, weight=None, dict_specifier=None):
-        if (word,dict_specifier) == (None,None):
+        if (word, dict_specifier) == (None, None):
             raise ValueError("'word' or 'dict_specifier' must be specified")
         if word is dict_specifier is not None:
             raise ValueError("'word' or 'dict_specifier' must be specified")
@@ -96,16 +96,15 @@ class Dictionary:
             if weight is None:
                 weight = [0]*len(word)
             else:
-                if isinstance(weight, int):
+                if isinstance(weight, (int, float)):
                     weight = [weight]
                 if len(word) != len(weight):
                     raise ValueError(f"'word' and 'weight' must be same size")
             for wo, we in zip(word, weight):
                 if self.include(wo) is True: # replace the weight
-                    self.weight[self.word.index(wo)] = we
+                    self.word[self.word.index(wo)].weight = we
                 else:
-                    self.word.append(wo)
-                    self.weight.append(we)
+                    self.word.append(Word(wo, we))
 
     def read(self, dict_specifier):
         with open(dict_specifier, 'r', encoding='utf-8') as f:
@@ -138,7 +137,6 @@ class Dictionary:
             if char_value == len(w):
                 self.removed_words.append(w)
                 del self.word[i]
-                del self.weight[i]
 
     def calc_weight(self):
         """
@@ -149,4 +147,4 @@ class Dictionary:
 
         for i, w in enumerate(self.word):
             for char in w:
-                self.weight[i] += counts[char]
+                self.word[i].weight += counts[char]

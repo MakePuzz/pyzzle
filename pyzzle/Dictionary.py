@@ -22,16 +22,14 @@ class Dictionary:
 
     dataset = Dataset()
 
-    def __init__(self, dict_specifier=None, word=None, weight=None, name=''):
+    def __init__(self, dict_specifier=None, word=None, weight=None):
         self.dict_specifier = dict_specifier
-        self.name = name
         self.word = []
         self.removed_words = []
         self._i = 0
         if isinstance(dict_specifier, (list, np.ndarray)):
             self.add(dict_specifier)
         if isinstance(dict_specifier, str):
-            self.name = os.path.basename(dict_specifier)[:-4]
             self.read(dict_specifier)
         if word is not None:
             self.add(word, weight)
@@ -39,6 +37,10 @@ class Dictionary:
     @property
     def size(self):
         return len(self.word)
+    
+    @property
+    def weight(self):
+        return list(map(lambda x: x.weight, self.word))
 
     @property
     def w_len(self):
@@ -48,7 +50,7 @@ class Dictionary:
         return {'word': self.word[key], 'weight': self.word[key].weight, 'len': self.w_len[key]}
 
     def __str__(self):
-        return str({"name": self.name, "words": self.word, "weight": self.word[key].weight})
+        return str({"words": self.word, "weight": self.weight})
 
     def __len__(self):
         return self.size
@@ -57,13 +59,13 @@ class Dictionary:
         new_dict = copy.deepcopy(self)
         if isinstance(other, Dictionary):
             for wo, we in other:
-                new_dict.add(Word(wo, we))
+                new_dict.add(wo, we)
         if isinstance(other, str):
-            new_dict.add(Word(other, 0))
+            new_dict.add(other, 0)
         if isinstance(other, (tuple, list)):
-            new_dict.add(Word(other[0], other[1]))
+            new_dict.add(other[0], other[1])
         if isinstance(other, dict):
-            new_dict.add(Word(other["word"], other["weight"]))
+            new_dict.add(other["word"], other["weight"])
         return new_dict
 
     def __iter__(self):
@@ -95,11 +97,10 @@ class Dictionary:
                 word = [word]
             if weight is None:
                 weight = [0]*len(word)
-            else:
-                if isinstance(weight, (int, float)):
-                    weight = [weight]
-                if len(word) != len(weight):
-                    raise ValueError(f"'word' and 'weight' must be same size")
+            if isinstance(weight, (int, float)):
+                weight = [weight]
+            if len(word) != len(weight):
+                raise ValueError(f"'word' and 'weight' must be same size")
             for wo, we in zip(word, weight):
                 if self.include(wo) is True: # replace the weight
                     self.word[self.word.index(wo)].weight = we

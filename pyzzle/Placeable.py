@@ -7,21 +7,16 @@ class Placeable:
         self.width = width
         self.height = height
         self.ori, self.i, self.j, self.k = [], [], [], []
-        self.inv_p = np.full((2, self.height, self.width, 0), np.nan, dtype="int")
 
         self._compute(dic.word, mask=mask)
 
     def _compute(self, word, mask=None, base_k=0):
         if type(word) is str:
             word = [word]
-        if self.size == 0 or base_k != 0:
-            ap = np.full((2, self.height, self.width, len(word)), np.nan, dtype="int")
-            self.inv_p = np.append(self.inv_p, ap, axis=3)
         len_arr = np.vectorize(len)(word)
         len_count = Counter(len_arr)
-
         for ori in (0, 1):
-            for l, c in enumerate(len_count):
+            for l, c in len_count.items():
                 if ori == 0:
                     i_max = self.height - l + 1
                     j_max = self.width
@@ -35,13 +30,11 @@ class Placeable:
                                 continue
                             if ori == 1 and np.any(mask[i, j:j+l] == True):
                                 continue
-                        for k in np.where(len_arr == l)[0]:
-                            self.ori.append(ori)
-                            self.i.append(i)
-                            self.j.append(j)
-                            self.size += 1
-                            self.inv_p[ori, i, j, base_k + k] = self.size
-                            self.k.append(base_k + k)
+                        self.ori += [ori]*c
+                        self.i += [i]*c
+                        self.j += [j]*c
+                        self.k += (np.where(len_arr == l)[0]+base_k).tolist()
+                        self.size += c
 
     def __len__(self):
         return self.size

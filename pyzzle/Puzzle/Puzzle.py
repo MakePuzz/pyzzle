@@ -11,6 +11,7 @@ from scipy import ndimage
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 
+from pyzzle.Word import Word
 from pyzzle.Placeable import Placeable
 from pyzzle.Dictionary import Dictionary
 from pyzzle.Optimizer import Optimizer
@@ -48,7 +49,7 @@ class Puzzle:
         puzzle.import_dict(dic)
 
         obj_func = ["weight", "nwords", "cross_count", "fill_count", "max_connected_empties"]
-        puzzle.solve(epoch=5, optimizer="local_search", objective_function=obj_func)
+        puzzle = puzzle.solve(epoch=5, optimizer="local_search", objective_function=obj_func)
 
         puzzle.save_problem_image("problem.png")
         puzzle.save_answer_image("answer.png")
@@ -89,14 +90,15 @@ class Puzzle:
         self.used_ori = np.full(self.width * self.height, -1, dtype=np.int32)
         self.used_i = np.full(self.used_ori.size, -1, dtype=np.int32)
         self.used_j = np.full(self.used_ori.size, -1, dtype=np.int32)
-        self.used_words = np.full(self.used_ori.size, BLANK, dtype=f"U{max(self.width, self.height)}")
-        self.used_k = np.full(self.used_ori.size, -1, dtype=np.int32)
+        self.used_words = np.full(self.used_ori.size, BLANK, dtype=object)
         self.nwords = 0
         self.history = []
         self.base_history = []
         self.log = None
         self.epoch = 0
         self.seed = None
+        self.dic = Dictionary()
+        self.plc = Placeable(width=self.width, height=self.height)
 
     def __str__(self):
         """
@@ -268,8 +270,8 @@ class Puzzle:
             If True, Reinitialize the Dictionary, ObjectiveFunction, and Optimizer as well.
         """
         if all is True:
-            self.dic = None
-            self.plc = None
+            self.dic = Dictionary()
+            self.plc = Placeable(width=self.width, height=self.height)
             self.obj_func = None
             self.optimizer = None
         self.weight = 0
@@ -282,7 +284,6 @@ class Puzzle:
         self.used_i = np.full(self.used_ori.size, -1, dtype=np.int32)
         self.used_j = np.full(self.used_ori.size, -1, dtype=np.int32)
         self.used_words = np.full(self.used_ori.size, BLANK, dtype=f"U{max(self.width, self.height)}")
-        self.used_k = np.full(self.used_ori.size, -1, dtype=np.int32)
         self.nwords = 0
         self.history = []
         self.base_history = []
@@ -297,11 +298,24 @@ class Puzzle:
         Parameters
         ----------
         dic : Dictionary
-            Dictionary object imported by Puzzle
+            Dictionary object imported to Puzzle
+        """
+        self.dic += dic
+        self.plc = Placeable(self.width, self.height, self.dic.word, self.mask)
+        LOG.info(f"Dictionary imported")
+
+    def replace_dict(self, dic):
+        """
+        Replace the imported Dictionary, and generate the Placeable internally.
+
+        Parameters
+        ----------
+        dic : Dictionary
+            Dictionary object replaced in Puzzle
         """
         self.dic = dic
-        self.plc = Placeable(self.width, self.height, self.dic, self.mask)
-        LOG.info(f"Dictionary '{dic.name}' imported")
+        self.plc = Placeable(self.width, self.height, self.dic.word, self.mask)
+        LOG.info(f"Dictionary replaced")
 
     def is_placeable(self, ori, i, j, word, w_len):
         """
@@ -406,7 +420,7 @@ class Puzzle:
         # Returns True if no conditions are encountered.
         return Judgement.THE_WORD_CAN_BE_PLACED
 
-    def _add(self, ori, i, j, k):
+    def _add(self, ori, i, j, word):
         """
         This internal method places a word at arbitrary positions.
         If it is impossible to place, do nothing.
@@ -419,12 +433,10 @@ class Puzzle:
             Row number of the word
         j : int
             Column number of the word
-        k : int
-            The number of the word registered in Placeable
+        word : Word or str
+            The word registered in Placeable
         """
-        word = self.dic.word[k]
-        weight = self.dic.weight[k]
-        w_len = self.dic.w_len[k]
+        w_len = len(word)
 
         # Judge whether adding is enabled
         code = self.is_placeable(ori, i, j, word, w_len)
@@ -456,15 +468,13 @@ class Puzzle:
             self.cover[i, j:j + w_len] += 1
 
         # Update properties
-        word_idx = self.dic.word.index(word)
         self.used_ori[self.nwords] = ori
         self.used_i[self.nwords] = i
         self.used_j[self.nwords] = j
-        self.used_k[self.nwords] = k
-        self.used_words[self.nwords] = self.dic.word[k]
+        self.used_words[self.nwords] = word
         self.nwords += 1
-        self.weight += weight
-        self.history.append((History.ADD, word_idx, ori, i, j))
+        self.weight += word.weight
+        self.history.append((History.ADD, ori, i, j, word))
         return code
 
     def add(self, ori, i, j, word, weight=0):
@@ -485,15 +495,11 @@ class Puzzle:
         weight : int, default 0
             Word weight
         """
-        if type(word) is int:
-            k = word
-        elif type(word) is str:
-            self.dic.add(word, weight)
-            self.plc._compute([word], mask=self.mask, base_k = self.dic.size - 1)
-            k = self.dic.word.index(word)
-        else:
-            raise TypeError("word must be int or str.")
-        return self._add(ori, i, j, k)
+        if not isinstance(word, str):
+            raise TypeError("word must be Word or str")
+        self.dic.add(word, weight)
+        self.plc._compute([Word(word, weight)], mask=self.mask, base_k = self.dic.size - 1)
+        return self._add(ori, i, j, Word(word, weight))
 
     def add_to_limit(self):
         """
@@ -509,7 +515,7 @@ class Puzzle:
             nwords_tmp = self.nwords
             drop_idx = []
             for i, r in enumerate(random):
-                code = self._add(self.plc.ori[r], self.plc.i[r], self.plc.j[r], self.plc.k[r])
+                code = self._add(self.plc.ori[r], self.plc.i[r], self.plc.j[r], self.plc.word[r])
                 if code is not Judgement.AT_LEAST_ONE_PLACE_MUST_CROSS_OTHER_WORDS:
                     drop_idx.append(i)
             random = np.delete(random, drop_idx)
@@ -527,9 +533,9 @@ class Puzzle:
                             After installing GCC and GFortran, you need to reinstall pyzzle.")
         # Make a random index of plc
         not_used_words_idx = np.ones(len(self.plc), dtype=bool)
-        k_s = np.array(self.plc.k)
-        for used_k in self.used_k[self.used_k != 0]:
-            not_used_words_idx[k_s == used_k] = False
+        plc_words = np.array(self.plc.word, dtype=object)
+        for used_word in self.used_words[:self.nwords]:
+            not_used_words_idx[plc_words == used_word] = False
         random = np.arange(self.plc.size - np.count_nonzero(~not_used_words_idx))
         np.random.shuffle(random)
 
@@ -544,13 +550,12 @@ class Puzzle:
         ori_s = np.array(self.plc.ori)[not_used_words_idx][random]
         i_s = np.array(self.plc.i)[not_used_words_idx][random] + 1
         j_s = np.array(self.plc.j)[not_used_words_idx][random] + 1
-        k_s = k_s[not_used_words_idx][random]
-        
+        k_s = np.array(self.plc.k)[not_used_words_idx][random]
+        plc_words = plc_words[not_used_words_idx][random]
         w_lens = np.array(self.dic.w_len)[k_s]
-        plc_words = np.array(self.dic.word)[k_s]
         ### convert str to int
-        converter = lambda plc_word: list(map(ord, plc_word))
-        words_int = list(map(converter, plc_words))
+        str2int = lambda plc_word: list(map(ord, plc_word))
+        words_int = list(map(str2int, plc_words))
         ### 0 padding
         padding = lambda x: x + [0] * (w_len_max - len(x))
         words_int = np.asfortranarray(np.array(list(map(padding, words_int)), dtype=np.int32))
@@ -558,7 +563,7 @@ class Puzzle:
         used_idx = _add_to_limit(self.height, self.width, n, w_len_max, ord(blank),
                                 ori_s, i_s, j_s, k_s, words_int, w_lens, cell, enable)
         for p in used_idx[used_idx != -1]-1:
-            self._add(ori_s[p], i_s[p] - 1, j_s[p] - 1, k_s[p])
+            self._add(ori_s[p], i_s[p] - 1, j_s[p] - 1, Word(plc_words[p], plc_words[p].weight))
         return
 
     def show(self):
@@ -580,7 +585,7 @@ class Puzzle:
         tmp_series = pd.Series(self.obj_func.get_score(self, all=True), index=self.obj_func.get_funcs())
         self.log = self.log.append(tmp_series, ignore_index=True)
 
-    def _drop(self, ori, i, j, k, is_kick=False):
+    def _drop(self, ori, i, j, word, is_kick=False):
         """
         Remove the specified word from the puzzle.
 
@@ -592,8 +597,8 @@ class Puzzle:
             Row number of the word
         j : int
             Column number of the word
-        k : int
-            The number of the word registered in Placeable
+        word : Word or str
+            The word to be drop
         is_kick : bool default False
             If this dropping is in the kick process, it should be True.
             This information is used in making ``history``.
@@ -605,10 +610,9 @@ class Puzzle:
         or cause LAOS / US / USA problems.
         """
         # Get p_idx
-        drop_idx = np.where(self.used_k == k)[0][0]
+        drop_idx = np.where(self.used_words == word)[0][0]
+        w_len = len(word)
 
-        w_len = self.dic.w_len[k]
-        weight = self.dic.weight[k]
         # Pull out a word
         if ori == 0:
             self.cover[i:i + w_len, j] -= 1
@@ -627,15 +631,13 @@ class Puzzle:
         self.used_i[-1] = -1
         self.used_j[drop_idx:-1] = self.used_j[drop_idx+1:]
         self.used_j[-1] = -1
-        self.used_k[drop_idx:-1] = self.used_k[drop_idx+1:]
-        self.used_k[-1] = -1
         self.used_words[drop_idx:-1] = self.used_words[drop_idx+1:]
         self.used_words[-1] = BLANK
         self.nwords -= 1
-        self.weight -= weight
+        self.weight -= word.weight
         # Insert data to history
         code = History.DROP_KICK if is_kick else History.DROP
-        self.history.append((code, k, ori, i, j))
+        self.history.append((code, ori, i, j, word))
         # Update enable cells
         remove_flag = True
         if ori == 0:
@@ -676,6 +678,7 @@ class Puzzle:
                     remove_flag = False
                 if remove_flag == True:
                     self.enable[i, j + w_len] = True
+        return
 
     def drop(self, word=None, ori_i_j=None):
         """
@@ -683,8 +686,8 @@ class Puzzle:
 
         Parameters
         ----------
-        word : int or str
-            The word number or word in the puzzle to drop.
+        word : Word or str
+            The word in the puzzle to drop.
         ori_i_j : tuple of int, optional
             Tuple indicating a specific word to drop.
 
@@ -696,17 +699,14 @@ class Puzzle:
         """
         if word is ori_i_j is None:
             raise ValueError("'word' or 'ori_i_j' must be specified")
-        if word is ori_i_j is not None:
+        if word and ori_i_j:
             raise ValueError(
                 "Both 'word' and 'ori_i_j' must not be specified at the same time.")
-        if word is not None:
-            if type(word) is int:
-                k = word
-            elif type(word) is str:
-                k = self.dic.word.index(word)
-            else:
-                raise TypeError("'word' must be int or str")
-            drop_idx = np.where(self.used_k == k)[0][0]
+        if word:
+            if not isinstance(word, str):
+                raise TypeError("'word' must be Word or str")
+            word = Word(word)
+            drop_idx = np.where(self.used_words == word)[0][0]
             ori = self.used_ori[drop_idx]
             i = self.used_i[drop_idx]
             j = self.used_j[drop_idx]
@@ -717,11 +717,11 @@ class Puzzle:
                 raise ValueError(
                     f"Length of 'ori_i_j' must be 3, not {len(ori_i_j)}")
             ori, i, j = ori_i_j
-            for _ori, _i, _j, _k in zip(self.used_ori, self.used_i, self.used_j, self.used_k):
+            for _ori, _i, _j, _word in zip(self.used_ori, self.used_i, self.used_j, self.used_words):
                 if _ori == ori and _i == i and _j == j:
-                    k = _k
+                    word = _word
                     break
-        self._drop(ori, i, j, k)
+        self._drop(ori, i, j, word)
 
     def collapse(self):
         """
@@ -737,17 +737,16 @@ class Puzzle:
         used_ori_random = copy.deepcopy(self.used_ori[:self.nwords][random])
         used_i_random = copy.deepcopy(self.used_i[:self.nwords][random])
         used_j_random = copy.deepcopy(self.used_j[:self.nwords][random])
-        used_k_random = copy.deepcopy(self.used_k[:self.nwords][random])
         used_word_random = copy.deepcopy(self.used_words[:self.nwords][random])
-        for ori, i, j, k, word in zip(used_ori_random, used_i_random, used_j_random, used_k_random, used_word_random):
-            w_len = len(word)
+        w_lens = np.vectorize(len)(used_word_random)
+        for ori, i, j, word, w_len in zip(used_ori_random, used_i_random, used_j_random, used_word_random, w_lens):
             # If '2' is aligned in the cover array, the word can not be dropped
             if ori == 0:
                 if not np.any(np.diff(np.where(self.cover[i:i + w_len, j] == 2)[0]) == 1):
-                    self._drop(ori, i, j, k)
+                    self._drop(ori, i, j, word)
             if ori == 1:
                 if not np.any(np.diff(np.where(self.cover[i, j:j + w_len] == 2)[0]) == 1):
-                    self._drop(ori, i, j, k)
+                    self._drop(ori, i, j, word)
             if self.component >= 2:
                 break
         return
@@ -775,7 +774,7 @@ class Puzzle:
         if mask is None:
             mask = np.full(self.cell.shape, True)
         json_dict = {"list": word_list, "mask": mask.tolist(), "name": self.name, "width": self.width, "height": self.height, "nwords": self.nwords,
-                       "dict_name": self.dic.name, "seed": int(self.seed), "epoch": self.epoch}
+                       "seed": int(self.seed), "epoch": self.epoch}
         return json_dict
 
     def export_json(self, name="out.json", indent=None):
@@ -809,10 +808,10 @@ class Puzzle:
         prev_used_ori = self.used_ori[:self.nwords][::-1]
         prev_used_i = self.used_i[:self.nwords][::-1]
         prev_used_j = self.used_j[:self.nwords][::-1]
-        prev_used_k = self.used_k[:self.nwords][::-1]
-        for ori, i, j, k in zip(prev_used_ori, prev_used_i, prev_used_j, prev_used_k):
+        prev_used_words = self.used_words[:self.nwords][::-1]
+        for ori, i, j, word in zip(prev_used_ori, prev_used_i, prev_used_j, prev_used_words):
             if label[i, j] != largest_ccl:
-                self._drop(ori, i, j, k, is_kick=True)
+                self._drop(ori, i, j, word, is_kick=True)
         return
 
     def solve(self, epoch, optimizer="local_search", objective_function=None, of=None, n=None, show=True, use_f=False):
@@ -945,11 +944,11 @@ class Puzzle:
 
         for hist in jumped_puzzle.base_history[:idx]:
             if hist[0] == History.ADD:
-                jumped_puzzle._add(hist[2], hist[3], hist[4], hist[1])
+                jumped_puzzle._add(hist[1], hist[2], hist[3], hist[4])
             elif hist[0] == History.DROP:
-                jumped_puzzle._drop(hist[2], hist[3], hist[4], hist[1], is_kick=False)
+                jumped_puzzle._drop(hist[1], hist[2], hist[3], hist[4], is_kick=False)
             elif hist[0] == History.DROP_KICK:
-                jumped_puzzle._drop(hist[2], hist[3], hist[4], hist[1], is_kick=True)
+                jumped_puzzle._drop(hist[1], hist[2], hist[3], hist[4], is_kick=True)
             elif hist[0] == History.MOVE:
                 jumped_puzzle.move(direction=hist[1], n=hist[2])
         return jumped_puzzle
@@ -1008,7 +1007,7 @@ class Puzzle:
         Save Puzzle object as Pickle
         """
         now = datetime.datetime.today().strftime("%Y%m%d%H%M%S")
-        name = name or f"{now}_{self.dic.name}_{self.width}_{self.height}_{self.seed}_{self.epoch}.pickle"
+        name = name or f"{now}_{self.width}_{self.height}_{self.seed}_{self.epoch}.pickle"
         with open(name, mode="wb") as f:
             pickle.dump(self, f)
 
@@ -1079,8 +1078,8 @@ class Puzzle:
         self.cover = np.roll(self.cover, num, axis=axis)
         self.label = np.roll(self.label, num, axis=axis)
         self.enable = np.roll(self.enable, num, axis=axis)
-        self.used_i[idx] += di
-        self.used_j[idx] += dj
+        self.used_i += di
+        self.used_j += dj
         self.history.append((History.MOVE, direction, n, None, None))
 
     def get_used_words_and_enable(self):

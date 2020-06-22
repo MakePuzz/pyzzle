@@ -16,9 +16,9 @@ width = 15
 height = 15
 mask = Mask.donut_s # 不要ならNone
 gravity = None # 不要ならNone
-dic = Dictionary.dataset["logo"]
+dic = Dictionary.dataset["hokkaido-population_ww"]
 name = "Pyzzle"
-epoch = 90
+epoch = 3
 
 seed = 0
 np.random.seed(seed=seed)
@@ -26,7 +26,8 @@ np.random.seed(seed=seed)
 # Make instances
 puzzle = Puzzle(width=width, height=height, mask=mask, name=name) #, gravity=gravity
 
-puzzle.import_dict(dic)
+# In[]
+puzzle.replace_dict(dic)
 
 # In[]
 obj_func = [
@@ -44,7 +45,7 @@ print(f"unique solution: {puzzle.is_unique}")
 
 # In[]
 base_dir = str(PurePath(__file__).parent)
-oname = f"{dic.name}_w{puzzle.width}_h{puzzle.height}_ep{puzzle.epoch}_seed{puzzle.seed}"
+oname = f"{puzzle.name}_w{puzzle.width}_h{puzzle.height}_ep{puzzle.epoch}_seed{puzzle.seed}"
 puzzle.save_answer_image(f"{base_dir}/fig/{oname}_answer.png")
 puzzle.save_problem_image(f"{base_dir}/fig/{oname}_problem.png")
 puzzle.export_json(f"{base_dir}/json/{oname}.json")

@@ -5,7 +5,7 @@ import collections
 
 import numpy as np
 
-from pyzzle import Word
+from pyzzle.Word import Word
 
 class Dictionary:
     class Dataset:
@@ -45,10 +45,10 @@ class Dictionary:
         return list(map(len, self.word))
 
     def __getitem__(self, key):
-        return {'word': self.word[key], 'weight': self.weight[key], 'len': self.w_len[key]}
+        return {'word': self.word[key], 'weight': self.word[key].weight, 'len': self.w_len[key]}
 
     def __str__(self):
-        return str({"name": self.name, "words": self.word, "weight": self.weight})
+        return str({"name": self.name, "words": self.word, "weight": self.word[key].weight})
 
     def __len__(self):
         return self.size
@@ -73,9 +73,9 @@ class Dictionary:
         if self._i == self.size:
             self._i = 0
             raise StopIteration()
-        word, weight = self.word[self._i], self.weight[self._i]
+        word = self.word[self._i]
         self._i += 1
-        return word, weight
+        return word, word.weight
     
     def get_k(self, word):
         return np.where(self.word == word)[0][0]

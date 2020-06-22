@@ -2,13 +2,14 @@ import numpy as np
 from collections import Counter
 
 class Placeable:
-    def __init__(self, width, height, dic, mask=None):
+    def __init__(self, width, height, words=None, mask=None):
         self.size = 0
         self.width = width
         self.height = height
         self.ori, self.i, self.j, self.k, self.word = [], [], [], [], []
 
-        self._compute(dic.word, mask=mask)
+        if words is not None:
+            self._compute(words, mask=mask)
 
     def _compute(self, word, mask=None, base_k=0):
         if isinstance(word, str):
@@ -33,8 +34,8 @@ class Placeable:
                         self.ori += [ori]*c
                         self.i += [i]*c
                         self.j += [j]*c
-                        self.k += (np.where(len_arr == l)[0]+base_k).tolist()
-                        self.word += np.array(word, dtype=object)[np.where(len_arr == l)[0]+base_k].tolist()
+                        self.k += (np.where(len_arr == l)[0] + base_k).tolist()
+                        self.word += np.array(word, dtype=object)[np.where(len_arr == l)[0]].tolist()
                         self.size += c
 
     def __len__(self):

@@ -10,15 +10,15 @@ from pyzzle import Puzzle, Dictionary, Mask, Gravity
 from pyzzle import utils
 
 utils.debug_on()
-# In[]
+
 # Set parameters
 width = 15
 height = 15
-mask = None #Mask.donut_s # 不要ならNone
+mask = Mask.donut_s # 不要ならNone
 gravity = None # 不要ならNone
-dic = Dictionary.dataset["nikoli105"]
-name = "Nikoli 105 contest"
-epoch = 50
+dic = Dictionary.dataset["logo"]
+name = "Pyzzle"
+epoch = 90
 
 seed = 0
 np.random.seed(seed=seed)
@@ -26,8 +26,6 @@ np.random.seed(seed=seed)
 # Make instances
 puzzle = Puzzle(width=width, height=height, mask=mask, name=name) #, gravity=gravity
 
-# In[]
-# Dictionary
 puzzle.import_dict(dic)
 
 # In[]
@@ -36,13 +34,12 @@ obj_func = [
 ]
 
 # In[]
-puzzle = puzzle.solve(epoch=epoch, n=3, optimizer="multi_start", of=obj_func, show=False, use_f=True)
-
-# In[]
+puzzle = puzzle.solve(epoch=epoch, n=1, optimizer="multi_start", of=obj_func, show=False, use_f=True)
 
 # In[]
 # puzzle.solve(epoch=300, optimizer="local_search", of=obj_func, show=False, use_f=True)
 # In[]
+print(f"component should be 1: {puzzle.component}")
 print(f"unique solution: {puzzle.is_unique}")
 
 # In[]
@@ -65,4 +62,3 @@ puzzle.show()
 # api = PyzzleAPI()
 # a = api.get_all_puzzles()
 # a.text
-# %%

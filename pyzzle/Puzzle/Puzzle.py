@@ -83,12 +83,14 @@ class Puzzle:
         self.weight = 0
         self.name = name
         self.cell = np.full([self.height, self.width], BLANK, dtype="unicode")
-        self.cover = np.zeros(self.cell.shape, dtype="int")
-        self.label = np.zeros(self.cell.shape, dtype="int")
+        self.cover = np.zeros(self.cell.shape, dtype=np.int32)
+        self.label = np.zeros(self.cell.shape, dtype=np.int32)
         self.enable = np.ones(self.cell.shape, dtype="bool")
-        self.used_words = np.full(self.width * self.height, BLANK, dtype=f"U{max(self.width, self.height)}")
-        self.used_plc_idx = np.full(self.used_words.size, -1, dtype="int")
-        self.used_k = np.full(self.used_words.size, -1, dtype="int")
+        self.used_ori = np.full(self.width * self.height, -1, dtype=np.int32)
+        self.used_i = np.full(self.used_ori.size, -1, dtype=np.int32)
+        self.used_j = np.full(self.used_ori.size, -1, dtype=np.int32)
+        self.used_words = np.full(self.used_ori.size, BLANK, dtype=f"U{max(self.width, self.height)}")
+        self.used_k = np.full(self.used_ori.size, -1, dtype=np.int32)
         self.nwords = 0
         self.history = []
         self.base_history = []
@@ -145,28 +147,22 @@ class Puzzle:
         """
         rtn_bool = True
         # Get word1
-        for s, p in enumerate(self.used_plc_idx[:self.nwords]):
-            i = self.plc.i[p]
-            j = self.plc.j[p]
-            word1 = self.used_words[s]
-            if self.plc.ori[p] == 0:
-                cross_idx1 = np.where(self.cover[i:i + len(word1), j] == 2)[0]
-            elif self.plc.ori[p] == 1:
-                cross_idx1 = np.where(self.cover[i, j:j + len(word1)] == 2)[0]
+        for s, (ori1, i1, j1, word1) in enumerate(zip(self.used_ori[:self.nwords], self.used_i[:self.nwords], self.used_j[:self.nwords], self.used_words[:self.nwords])):
+            if ori1 == 0:
+                cross_idx1 = np.where(self.cover[i1:i1 + len(word1), j1] == 2)[0]
+            elif ori1 == 1:
+                cross_idx1 = np.where(self.cover[i1, j1:j1 + len(word1)] == 2)[0]
             # Get word2
-            for t, q in enumerate(self.used_plc_idx[s + 1:self.nwords]):
-                i = self.plc.i[q]
-                j = self.plc.j[q]
-                word2 = self.used_words[s + t + 1]
+            for ori2, i2, j2, word2 in zip(self.used_ori[s+1:self.nwords], self.used_i[s+1:self.nwords], self.used_j[s+1:self.nwords], self.used_words[s+1:self.nwords]):
                 # If word1 and word2 have different lengths, they can not be replaced
                 if len(word1) != len(word2):
                     continue
-                if self.plc.ori[q] == 0:
+                if ori2 == 0:
                     cross_idx2 = np.where(
-                        self.cover[i:i + len(word2), j] == 2)[0]
-                if self.plc.ori[q] == 1:
+                        self.cover[i2:i2 + len(word2), j2] == 2)[0]
+                if ori2 == 1:
                     cross_idx2 = np.where(
-                        self.cover[i, j:j + len(word2)] == 2)[0]
+                        self.cover[i2, j2:j2 + len(word2)] == 2)[0]
                 replaceable = True
                 # Check cross part from word1
                 for w1idx in cross_idx1:
@@ -279,11 +275,14 @@ class Puzzle:
         self.weight = 0
         self.enable = np.ones(self.width * self.height, dtype="bool").reshape(self.height, self.width)
         self.cell = np.full(self.width * self.height, BLANK, dtype="unicode").reshape(self.height, self.width)
-        self.cover = np.zeros(self.width * self.height, dtype="int").reshape(self.height, self.width)
-        self.label = np.zeros(self.width * self.height, dtype="int").reshape(self.height, self.width)
+        self.cover = np.zeros(self.width * self.height, dtype=np.int32).reshape(self.height, self.width)
+        self.label = np.zeros(self.width * self.height, dtype=np.int32).reshape(self.height, self.width)
         self.enable = np.ones(self.width * self.height, dtype="bool").reshape(self.height, self.width)
-        self.used_words = np.full(self.width * self.height, BLANK, dtype=f"U{max(self.width, self.height)}")
-        self.used_plc_idx = np.full(self.width * self.height, -1, dtype="int")
+        self.used_ori = np.full(self.width * self.height, -1, dtype=np.int32)
+        self.used_i = np.full(self.used_ori.size, -1, dtype=np.int32)
+        self.used_j = np.full(self.used_ori.size, -1, dtype=np.int32)
+        self.used_words = np.full(self.used_ori.size, BLANK, dtype=f"U{max(self.width, self.height)}")
+        self.used_k = np.full(self.used_ori.size, -1, dtype=np.int32)
         self.nwords = 0
         self.history = []
         self.base_history = []
@@ -458,9 +457,11 @@ class Puzzle:
 
         # Update properties
         word_idx = self.dic.word.index(word)
-        self.used_plc_idx[self.nwords] = self.plc.inv_p[ori, i, j, word_idx]
-        self.used_words[self.nwords] = self.dic.word[k]
+        self.used_ori[self.nwords] = ori
+        self.used_i[self.nwords] = i
+        self.used_j[self.nwords] = j
         self.used_k[self.nwords] = k
+        self.used_words[self.nwords] = self.dic.word[k]
         self.nwords += 1
         self.weight += weight
         self.history.append((History.ADD, word_idx, ori, i, j))
@@ -499,19 +500,19 @@ class Puzzle:
         Adds the words as much as possible.
         """
         # Make a random index of plc
-        random_index = np.arange(self.plc.size)
-        np.random.shuffle(random_index)
+        random = np.arange(self.plc.size)
+        np.random.shuffle(random)
 
         # Add as much as possible
         nwords_tmp = None
         while self.nwords != nwords_tmp:
             nwords_tmp = self.nwords
             drop_idx = []
-            for i, r in enumerate(random_index):
+            for i, r in enumerate(random):
                 code = self._add(self.plc.ori[r], self.plc.i[r], self.plc.j[r], self.plc.k[r])
                 if code is not Judgement.AT_LEAST_ONE_PLACE_MUST_CROSS_OTHER_WORDS:
                     drop_idx.append(i)
-            random_index = np.delete(random_index, drop_idx)
+            random = np.delete(random, drop_idx)
         return
 
     def add_to_limit_f(self, blank="*"):
@@ -529,21 +530,21 @@ class Puzzle:
         k_s = np.array(self.plc.k)
         for used_k in self.used_k[self.used_k != 0]:
             not_used_words_idx[k_s == used_k] = False
-        random_index = np.arange(self.plc.size - np.count_nonzero(~not_used_words_idx))
-        np.random.shuffle(random_index)
+        random = np.arange(self.plc.size - np.count_nonzero(~not_used_words_idx))
+        np.random.shuffle(random)
 
         # Add as much as possible
-        n = random_index.size
+        n = random.size
         w_len_max = max(self.dic.w_len)
 
         cell = np.where(self.cell == BLANK, blank, self.cell)
         cell = np.array(list(map(lambda x: ord(x), cell.ravel()))).reshape(cell.shape)
         cell = np.asfortranarray(cell.astype(np.int32))
 
-        ori_s = np.array(self.plc.ori)[not_used_words_idx][random_index]
-        i_s = np.array(self.plc.i)[not_used_words_idx][random_index] + 1
-        j_s = np.array(self.plc.j)[not_used_words_idx][random_index] + 1
-        k_s = k_s[not_used_words_idx][random_index]
+        ori_s = np.array(self.plc.ori)[not_used_words_idx][random]
+        i_s = np.array(self.plc.i)[not_used_words_idx][random] + 1
+        j_s = np.array(self.plc.j)[not_used_words_idx][random] + 1
+        k_s = k_s[not_used_words_idx][random]
         
         w_lens = np.array(self.dic.w_len)[k_s]
         plc_words = np.array(self.dic.word)[k_s]
@@ -603,9 +604,8 @@ class Puzzle:
         into consideration, which may break the connectivity of the puzzle
         or cause LAOS / US / USA problems.
         """
-        # Get p, p_idx
-        p = self.plc.inv_p[ori, i, j, k]
-        p_idx = np.where(self.used_plc_idx == p)[0][0]
+        # Get p_idx
+        drop_idx = np.where(self.used_k == k)[0][0]
 
         w_len = self.dic.w_len[k]
         weight = self.dic.weight[k]
@@ -620,13 +620,17 @@ class Puzzle:
             where = np.where(self.cover[i, j:j + w_len] == 0)[0]
             i_all = np.full(where.size, i, dtype="int")
             self.cell[i_all, j + where] = BLANK
-        # Update used_words, used_plc_idx, nwords, weight
-        self.used_words = np.delete(self.used_words, p_idx)  # delete       self.used_words[p_idx:-1] = self.used_words[p_idx+1:]
-        self.used_words = np.append(self.used_words, BLANK)  # append	        self.used_words[-1] = BLANK
-        self.used_plc_idx = np.delete(self.used_plc_idx, p_idx)  # delete   self.used_plc_idx[p_idx:-1] = self.used_plc_idx[p_idx+1:]
-        self.used_plc_idx = np.append(self.used_plc_idx, -1)  # append      self.used_plc_idx[-1] = -1
-        self.used_k = np.delete(self.used_k, p_idx)  # delete	            self.used_k[p_idx:-1] = self.used_k[p_idx+1:]
-        self.used_k = np.append(self.used_k, -1)  # append                  self.used_k[-1] = -1
+        # Update        
+        self.used_ori[drop_idx:-1] = self.used_ori[drop_idx+1:]
+        self.used_ori[-1] = -1
+        self.used_i[drop_idx:-1] = self.used_i[drop_idx+1:]
+        self.used_i[-1] = -1
+        self.used_j[drop_idx:-1] = self.used_j[drop_idx+1:]
+        self.used_j[-1] = -1
+        self.used_k[drop_idx:-1] = self.used_k[drop_idx+1:]
+        self.used_k[-1] = -1
+        self.used_words[drop_idx:-1] = self.used_words[drop_idx+1:]
+        self.used_words[-1] = BLANK
         self.nwords -= 1
         self.weight -= weight
         # Insert data to history
@@ -702,21 +706,20 @@ class Puzzle:
                 k = self.dic.word.index(word)
             else:
                 raise TypeError("'word' must be int or str")
-            for p in self.used_plc_idx:
-                if self.plc.k[p] == k:
-                    ori, i, j = self.plc.ori[p], self.plc.i[p], self.plc.j[p]
-                    break
+            drop_idx = np.where(self.used_k == k)[0][0]
+            ori = self.used_ori[drop_idx]
+            i = self.used_i[drop_idx]
+            j = self.used_j[drop_idx]
         if ori_i_j is not None:
             if type(ori_i_j) not in (list, tuple):
                 raise TypeError(f"ori_i_j must be list or tuple")
             if len(ori_i_j) != 3:
                 raise ValueError(
                     f"Length of 'ori_i_j' must be 3, not {len(ori_i_j)}")
-            for p in self.used_plc_idx:
-                _ori, _i, _j = self.plc.ori[p], self.plc.i[p], self.plc.j[p]
-                if _ori == ori_i_j[0] and _i == ori_i_j[1] and _j == ori_i_j[2]:
-                    ori, i, j = _ori, _i, _j
-                    k = self.plc.k[p]
+            ori, i, j = ori_i_j
+            for _ori, _i, _j, _k in zip(self.used_ori, self.used_i, self.used_j, self.used_k):
+                if _ori == ori and _i == i and _j == j:
+                    k = _k
                     break
         self._drop(ori, i, j, k)
 
@@ -728,17 +731,16 @@ class Puzzle:
         if self.nwords == 0:
             return
         # Make a random index of nwords
-        random_index = np.arange(self.nwords)
-        np.random.shuffle(random_index)
+        random = np.arange(self.nwords)
+        np.random.shuffle(random)
         # Drop words until connectivity collapses
-        tmp_used_plc_idx = copy.deepcopy(self.used_plc_idx)
-        for p in tmp_used_plc_idx[random_index]:
-            # Get ori, i, j, k, w_len
-            ori = self.plc.ori[p]
-            i = self.plc.i[p]
-            j = self.plc.j[p]
-            k = self.plc.k[p]
-            w_len = self.dic.w_len[self.plc.k[p]]
+        used_ori_random = copy.deepcopy(self.used_ori[:self.nwords][random])
+        used_i_random = copy.deepcopy(self.used_i[:self.nwords][random])
+        used_j_random = copy.deepcopy(self.used_j[:self.nwords][random])
+        used_k_random = copy.deepcopy(self.used_k[:self.nwords][random])
+        used_word_random = copy.deepcopy(self.used_words[:self.nwords][random])
+        for ori, i, j, k, word in zip(used_ori_random, used_i_random, used_j_random, used_k_random, used_word_random):
+            w_len = len(word)
             # If '2' is aligned in the cover array, the word can not be dropped
             if ori == 0:
                 if not np.any(np.diff(np.where(self.cover[i:i + w_len, j] == 2)[0]) == 1):
@@ -767,11 +769,8 @@ class Puzzle:
             The json dictionary
         """
         word_list = []
-        for p in self.used_plc_idx:
-            if p == -1:
-                break
-            word_list.append(
-                {"i": self.plc.i[p], "j": self.plc.j[p], "ori": self.plc.ori[p], "word": self.dic.word[self.plc.k[p]]})
+        for ori, i, j, word in zip(self.used_ori[:self.nwords], self.used_i[:self.nwords], self.used_j[:self.nwords], self.used_words[:self.nwords]):
+            word_list.append({"i": int(i), "j": int(j), "ori": int(ori), "word": word})
         mask = self.mask
         if mask is None:
             mask = np.full(self.cell.shape, True)
@@ -796,7 +795,7 @@ class Puzzle:
 
     def kick(self):
         """
-        Remove words other than the maximum CCL from the board
+        Remove words other than the largest component from puzzle
         """
         # If nwords = 0, return
         if self.nwords == 0:
@@ -805,12 +804,15 @@ class Puzzle:
         label, nlabel = ndimage.label(mask)
         sizes = ndimage.sum(mask, label, range(nlabel + 1))
         largest_ccl = sizes.argmax()
-        # Erase elements except CCL ('kick' in C-program)
-        for _, p in enumerate(self.used_plc_idx[:self.nwords]):
-            if p == -1:
-                continue
-            if label[self.plc.i[p], self.plc.j[p]] != largest_ccl:
-                self._drop(self.plc.ori[p], self.plc.i[p], self.plc.j[p], self.plc.k[p], is_kick=True)
+        # Erase elements except largest component.
+        # In self._drop used_x will shrink, so pass prev_used_x in reverse order.
+        prev_used_ori = self.used_ori[:self.nwords][::-1]
+        prev_used_i = self.used_i[:self.nwords][::-1]
+        prev_used_j = self.used_j[:self.nwords][::-1]
+        prev_used_k = self.used_k[:self.nwords][::-1]
+        for ori, i, j, k in zip(prev_used_ori, prev_used_i, prev_used_j, prev_used_k):
+            if label[i, j] != largest_ccl:
+                self._drop(ori, i, j, k, is_kick=True)
         return
 
     def solve(self, epoch, optimizer="local_search", objective_function=None, of=None, n=None, show=True, use_f=False):
@@ -1077,9 +1079,8 @@ class Puzzle:
         self.cover = np.roll(self.cover, num, axis=axis)
         self.label = np.roll(self.label, num, axis=axis)
         self.enable = np.roll(self.enable, num, axis=axis)
-        for i, p in enumerate(self.used_plc_idx[:self.nwords]):
-            self.used_plc_idx[i] = self.plc.inv_p[self.plc.ori[p],
-                                                  self.plc.i[p] + di, self.plc.j[p] + dj, self.plc.k[p]]
+        self.used_i[idx] += di
+        self.used_j[idx] += dj
         self.history.append((History.MOVE, direction, n, None, None))
 
     def get_used_words_and_enable(self):
@@ -1093,15 +1094,13 @@ class Puzzle:
         # 縦
         head0 = (self.cell[ii[0, :], jj[0, :]] != BLANK) * \
             (self.cell[ii[0, :]+1, jj[0, :]] != BLANK)
-        body0 = (self.cell[ii[1:-1, :]-1, jj[1:-1, :]] == BLANK) * (self.cell[ii[1:-1, :],
-                                                                           jj[1:-1, :]] != BLANK) * (self.cell[ii[1:-1, :]+1, jj[1:-1, :]] != BLANK)
+        body0 = (self.cell[ii[1:-1, :]-1, jj[1:-1, :]] == BLANK) * (self.cell[ii[1:-1, :], jj[1:-1, :]] != BLANK) * (self.cell[ii[1:-1, :]+1, jj[1:-1, :]] != BLANK)
         start0 = np.vstack([head0, body0])
 
         # 横
         head1 = (self.cell[ii[:, 0], jj[:, 0]] != BLANK) * \
             (self.cell[ii[:, 0], jj[:, 0]+1] != BLANK)
-        body1 = (self.cell[ii[:, 1:-1], jj[:, 1:-1]-1] == BLANK) * (self.cell[ii[:, 1:-1],
-                                                                           jj[:, 1:-1]] != BLANK) * (self.cell[ii[:, 1:-1], jj[:, 1:-1]+1] != BLANK)
+        body1 = (self.cell[ii[:, 1:-1], jj[:, 1:-1]-1] == BLANK) * (self.cell[ii[:, 1:-1], jj[:, 1:-1]] != BLANK) * (self.cell[ii[:, 1:-1], jj[:, 1:-1]+1] != BLANK)
         start1 = np.hstack([head1.reshape(self.height, 1), body1])
 
         indices = {"vertical": np.where(

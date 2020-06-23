@@ -30,8 +30,8 @@ class TestPuzzle(unittest.TestCase):
             [True, False,  True,  True, False],
             [False,  True, False,  True,  True]
         ])
-        with mock.patch.object(puzzle, "dic"):
-            with mock.patch.object(puzzle, "plc"):
+        with mock.patch.object(puzzle, "_dic"):
+            with mock.patch.object(puzzle, "_plc"):
                 puzzle.add(0, 0, 0, "TEST")
                 puzzle.add(1, 1, 0, "ESTA")
                 puzzle.add(0, 0, 2, "STEM")

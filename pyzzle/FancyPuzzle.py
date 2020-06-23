@@ -116,8 +116,8 @@ class FancyPuzzle(Puzzle):
             Jumped Puzzle
         """
         tmp_puzzle = self.__class__(self.mask, self.name)
-        tmp_puzzle.dic = copy.deepcopy(self.dic)
-        tmp_puzzle.plc = Placeable(self.width, self.height, tmp_puzzle.dic)
+        tmp_puzzle._dic = copy.deepcopy(self.dic)
+        tmp_puzzle._plc = Placeable(self.width, self.height, tmp_puzzle._dic)
         tmp_puzzle.optimizer = copy.deepcopy(self.optimizer)
         tmp_puzzle.obj_func = copy.deepcopy(self.obj_func)
         tmp_puzzle.base_history = copy.deepcopy(self.base_history)

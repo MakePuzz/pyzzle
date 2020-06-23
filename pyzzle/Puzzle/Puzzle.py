@@ -94,8 +94,8 @@ class Puzzle:
         self.log = None
         self.epoch = 0
         self.seed = None
-        self.dic = Dictionary()
-        self.plc = Placeable(width=self.width, height=self.height)
+        self._dic = Dictionary()
+        self._plc = Placeable(width=self.width, height=self.height)
 
     def __str__(self):
         """
@@ -267,8 +267,8 @@ class Puzzle:
             If True, Reinitialize the Dictionary, ObjectiveFunction, and Optimizer as well.
         """
         if all is True:
-            self.dic = Dictionary()
-            self.plc = Placeable(width=self.width, height=self.height)
+            self._dic = Dictionary()
+            self._plc = Placeable(width=self.width, height=self.height)
             self.obj_func = None
             self.optimizer = None
         self.weight = 0
@@ -296,8 +296,8 @@ class Puzzle:
         dic : Dictionary
             Dictionary object imported to Puzzle
         """
-        self.dic += dic
-        self.plc = Placeable(self.width, self.height, self.dic.word, self.mask)
+        self._dic += dic
+        self._plc = Placeable(self.width, self.height, self._dic.word, self.mask)
         LOG.info(f"Dictionary imported")
 
     def replace_dict(self, dic):
@@ -309,8 +309,8 @@ class Puzzle:
         dic : Dictionary
             Dictionary object replaced in Puzzle
         """
-        self.dic = dic
-        self.plc = Placeable(self.width, self.height, self.dic.word, self.mask)
+        self._dic = dic
+        self._plc = Placeable(self.width, self.height, self._dic.word, self.mask)
         LOG.info(f"Dictionary replaced")
 
     def is_placeable(self, ori, i, j, word, w_len):
@@ -493,8 +493,8 @@ class Puzzle:
         """
         if not isinstance(word, str):
             raise TypeError("word must be Word or str")
-        self.dic.add(word, weight)
-        self.plc._compute([Word(word, weight)], mask=self.mask, base_k=self.dic.size - 1)
+        self._dic.add(word, weight)
+        self._plc._compute([Word(word, weight)], mask=self.mask, base_k=self._dic.size - 1)
         return self._add(ori, i, j, Word(word, weight))
 
     def add_to_limit(self):
@@ -502,7 +502,7 @@ class Puzzle:
         Adds the words as much as possible.
         """
         # Make a random index of plc
-        random = np.arange(self.plc.size)
+        random = np.arange(self._plc.size)
         np.random.shuffle(random)
 
         # Add as much as possible
@@ -511,7 +511,7 @@ class Puzzle:
             nwords_tmp = self.nwords
             drop_idx = []
             for i, r in enumerate(random):
-                code = self._add(self.plc.ori[r], self.plc.i[r], self.plc.j[r], self.plc.word[r])
+                code = self._add(self._plc.ori[r], self._plc.i[r], self._plc.j[r], self._plc.word[r])
                 if code is not Judgement.AT_LEAST_ONE_PLACE_MUST_CROSS_OTHER_WORDS:
                     drop_idx.append(i)
             random = np.delete(random, drop_idx)
@@ -528,27 +528,27 @@ class Puzzle:
             raise ImportError("Puzzle.add_to_limit is not installed.\
                             After installing GCC and GFortran, you need to reinstall pyzzle.")
         # Make a random index of plc
-        not_used_words_idx = np.ones(len(self.plc), dtype=bool)
-        plc_words = np.array(self.plc.word, dtype=object)
+        not_used_words_idx = np.ones(len(self._plc), dtype=bool)
+        plc_words = np.array(self._plc.word, dtype=object)
         for used_word in self.used_words[:self.nwords]:
             not_used_words_idx[plc_words == used_word] = False
-        random = np.arange(self.plc.size - np.count_nonzero(~not_used_words_idx))
+        random = np.arange(self._plc.size - np.count_nonzero(~not_used_words_idx))
         np.random.shuffle(random)
 
         # Add as much as possible
         n = random.size
-        w_len_max = max(self.dic.w_len)
+        w_len_max = max(self._dic.w_len)
 
         cell = np.where(self.cell == BLANK, blank, self.cell)
         cell = np.array(list(map(lambda x: ord(x), cell.ravel()))).reshape(cell.shape)
         cell = np.asfortranarray(cell.astype(np.int32))
 
-        ori_s = np.array(self.plc.ori)[not_used_words_idx][random]
-        i_s = np.array(self.plc.i)[not_used_words_idx][random] + 1
-        j_s = np.array(self.plc.j)[not_used_words_idx][random] + 1
-        k_s = np.array(self.plc.k)[not_used_words_idx][random]
+        ori_s = np.array(self._plc.ori)[not_used_words_idx][random]
+        i_s = np.array(self._plc.i)[not_used_words_idx][random] + 1
+        j_s = np.array(self._plc.j)[not_used_words_idx][random] + 1
+        k_s = np.array(self._plc.k)[not_used_words_idx][random]
         plc_words = plc_words[not_used_words_idx][random]
-        w_lens = np.array(self.dic.w_len)[k_s]
+        w_lens = np.array(self._dic.w_len)[k_s]
         # convert str to int
         str2int = lambda plc_word: list(map(ord, plc_word))
         words_int = list(map(str2int, plc_words))
@@ -934,8 +934,8 @@ class Puzzle:
         """
         jumped_puzzle = self.__class__(
             self.width, self.height, self.mask, self.name)
-        jumped_puzzle.dic = copy.deepcopy(self.dic)
-        jumped_puzzle.plc = Placeable(self.width, self.height, jumped_puzzle.dic, self.mask)
+        jumped_puzzle._dic = copy.deepcopy(self._dic)
+        jumped_puzzle._plc = Placeable(self.width, self.height, jumped_puzzle._dic, self.mask)
         jumped_puzzle.optimizer = copy.deepcopy(self.optimizer)
         jumped_puzzle.obj_func = copy.deepcopy(self.obj_func)
         jumped_puzzle.base_history = copy.deepcopy(self.base_history)

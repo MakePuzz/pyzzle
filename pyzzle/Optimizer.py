@@ -2,6 +2,7 @@ import copy, logging
 
 LOG = logging.getLogger(__name__)
 
+
 class Optimizer:
     method_list = ["local_search", "multi_start"]
 

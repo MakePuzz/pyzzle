@@ -14,6 +14,7 @@ def read_config(path):
                     config[k] = v.strip()
     return config
 
+
 class PyzzleAPI:
     def __init__(self,
                 url=os.environ.get('PYZZLEAPI_URL'),

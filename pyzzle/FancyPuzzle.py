@@ -1,16 +1,13 @@
 import copy
-import sys
 
-import math
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 from scipy import ndimage
 
 from pyzzle.Puzzle import Puzzle
 from pyzzle.Placeable import Placeable
 from pyzzle.Judgement import Judgement
 from pyzzle import utils
+
 
 class FancyPuzzle(Puzzle):
     def __init__(self, mask, name="Criss Cross"):

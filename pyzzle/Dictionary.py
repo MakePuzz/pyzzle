@@ -7,6 +7,7 @@ import numpy as np
 
 from pyzzle.Word import Word
 
+
 class Dictionary:
     class Dataset:
         dict_dir = str(PurePath(__file__).parent/PurePath("dict"))

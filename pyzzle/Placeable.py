@@ -1,6 +1,7 @@
 import numpy as np
 from collections import Counter
 
+
 class Placeable:
     def __init__(self, width, height, words=None, mask=None):
         self.size = 0

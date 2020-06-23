@@ -1,14 +1,11 @@
 import copy
-import math
 import pickle
 import datetime
 import logging
-from enum import Enum
 
 import numpy as np
 import pandas as pd
 from scipy import ndimage
-import matplotlib.pyplot as plt
 from matplotlib import rcParams
 
 from pyzzle.Word import Word
@@ -26,6 +23,7 @@ rcParams['font.sans-serif'] = ['Hiragino Maru Gothic Pro', 'Yu Gothic', 'Meiryo'
 
 LOG = logging.getLogger(__name__)
 BLANK = ""
+
 
 class Puzzle:
     """
@@ -496,7 +494,7 @@ class Puzzle:
         if not isinstance(word, str):
             raise TypeError("word must be Word or str")
         self.dic.add(word, weight)
-        self.plc._compute([Word(word, weight)], mask=self.mask, base_k = self.dic.size - 1)
+        self.plc._compute([Word(word, weight)], mask=self.mask, base_k=self.dic.size - 1)
         return self._add(ori, i, j, Word(word, weight))
 
     def add_to_limit(self):
@@ -551,10 +549,10 @@ class Puzzle:
         k_s = np.array(self.plc.k)[not_used_words_idx][random]
         plc_words = plc_words[not_used_words_idx][random]
         w_lens = np.array(self.dic.w_len)[k_s]
-        ### convert str to int
+        # convert str to int
         str2int = lambda plc_word: list(map(ord, plc_word))
         words_int = list(map(str2int, plc_words))
-        ### 0 padding
+        # 0 padding
         padding = lambda x: x + [0] * (w_len_max - len(x))
         words_int = np.asfortranarray(np.array(list(map(padding, words_int)), dtype=np.int32))
         enable = np.asfortranarray(self.enable.astype(np.int32))
@@ -771,8 +769,16 @@ class Puzzle:
         mask = self.mask
         if mask is None:
             mask = np.full(self.cell.shape, True)
-        json_dict = {"list": word_list, "mask": mask.tolist(), "name": self.name, "width": self.width, "height": self.height, "nwords": self.nwords,
-                       "seed": int(self.seed), "epoch": self.epoch}
+        json_dict = {
+            "list": word_list,
+            "mask": mask.tolist(),
+            "name": self.name,
+            "width": self.width,
+            "height": self.height,
+            "nwords": self.nwords,
+            "seed": int(self.seed),
+            "epoch": self.epoch,
+        }
         return json_dict
 
     def export_json(self, name="out.json", indent=None):

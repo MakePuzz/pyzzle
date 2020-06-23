@@ -44,6 +44,7 @@ print(f"component should be 1: {puzzle.component}")
 print(f"unique solution: {puzzle.is_unique}")
 
 # In[]
+utils.logging_off()
 base_dir = str(PurePath(__file__).parent)
 oname = f"{puzzle.name}_w{puzzle.width}_h{puzzle.height}_ep{puzzle.epoch}_seed{puzzle.seed}"
 puzzle.save_answer_image(f"{base_dir}/fig/{oname}_answer.png")

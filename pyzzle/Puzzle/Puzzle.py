@@ -85,7 +85,6 @@ class Puzzle:
         self.name = name
         self.cell = np.full([self.height, self.width], BLANK, dtype="unicode")
         self.cover = np.zeros(self.cell.shape, dtype=np.int32)
-        self.label = np.zeros(self.cell.shape, dtype=np.int32)
         self.enable = np.ones(self.cell.shape, dtype="bool")
         self.used_ori = np.full(self.width * self.height, -1, dtype=np.int32)
         self.used_i = np.full(self.used_ori.size, -1, dtype=np.int32)
@@ -278,7 +277,6 @@ class Puzzle:
         self.enable = np.ones(self.width * self.height, dtype="bool").reshape(self.height, self.width)
         self.cell = np.full(self.width * self.height, BLANK, dtype="unicode").reshape(self.height, self.width)
         self.cover = np.zeros(self.width * self.height, dtype=np.int32).reshape(self.height, self.width)
-        self.label = np.zeros(self.width * self.height, dtype=np.int32).reshape(self.height, self.width)
         self.enable = np.ones(self.width * self.height, dtype="bool").reshape(self.height, self.width)
         self.used_ori = np.full(self.width * self.height, -1, dtype=np.int32)
         self.used_i = np.full(self.used_ori.size, -1, dtype=np.int32)
@@ -1031,7 +1029,7 @@ class Puzzle:
         """
         r_min, r_max, c_min, c_max = utils.get_rect(self.cover)
         str2int = {'U': 1, 'D': 2, 'R': 3, 'L': 4}
-        if direction.upper() in ('U', 'D', 'R', 'L'):
+        if isinstance(direction, str) and direction.upper() in ('U', 'D', 'R', 'L'):
             direction = str2int[direction.upper()]
         if direction not in (1, 2, 3, 4):
             raise ValueError()
@@ -1040,8 +1038,7 @@ class Puzzle:
             direction = reverse[str(direction)]
             n = -n
 
-        n2limit = {1: r_min, 2: self.height -
-                   (r_max + 1), 3: c_min, 4: self.width - (c_max + 1)}
+        n2limit = {1: r_min, 2: self.height - (r_max + 1), 3: self.width - (c_max + 1), 4: c_min}
 
         if limit is True:
             n = n2limit[direction]
@@ -1049,38 +1046,35 @@ class Puzzle:
         if direction == 1:
             if r_min < n:
                 n = n2limit[direction]
-            num = -n
+            di_dj = (-1,0)
             axis = 0
-            di = num
-            dj = 0
         if direction == 2:
             if self.height - (r_max + 1) < n:
                 n = n2limit[direction]
-            num = n
+            di_dj = (1,0)
             axis = 0
-            di = num
-            dj = 0
         if direction == 3:
-            if c_min < n:
-                n = n2limit[direction]
-            num = -n
-            axis = 1
-            di = 0
-            dj = num
-        if direction == 4:
             if self.width - (c_max + 1) < n:
                 n = n2limit[direction]
-            num = n
+            di_dj = (0,1)
             axis = 1
-            di = 0
-            dj = num
-        self.cell = np.roll(self.cell, num, axis=axis)
-        self.cover = np.roll(self.cover, num, axis=axis)
-        self.label = np.roll(self.label, num, axis=axis)
-        self.enable = np.roll(self.enable, num, axis=axis)
-        self.used_i += di
-        self.used_j += dj
-        self.history.append((History.MOVE, direction, n, None, None))
+        if direction == 4:
+            if c_min < n:
+                n = n2limit[direction]
+            di_dj = (0,-1)
+            axis = 1
+
+        for _ in range(n):
+            if self.mask is not None:
+                if np.any(np.roll(self.cover, sum(di_dj), axis=axis)[self.mask == True] >= 1):
+                    break
+            self.cell = np.roll(self.cell, sum(di_dj), axis=axis)
+            self.cover = np.roll(self.cover, sum(di_dj), axis=axis)
+            self.used_i += di_dj[0]
+            self.used_j += di_dj[1]
+            self.history.append((History.MOVE, direction, 1, None, None))
+        _, self.enable = self.get_used_words_and_enable()
+        return
 
     def get_used_words_and_enable(self):
         """

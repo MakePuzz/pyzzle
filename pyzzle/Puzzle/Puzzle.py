@@ -257,36 +257,6 @@ class Puzzle:
     def component(self):
         return ndimage.label(self.cover)[1]
 
-    def reinit(self, all=False):
-        """
-        Reinitialize Puzzle information.
-
-        Parameters
-        ----------
-        all : bool default False
-            If True, Reinitialize the Dictionary, ObjectiveFunction, and Optimizer as well.
-        """
-        if all is True:
-            self._dic = Dictionary()
-            self._plc = Placeable(width=self.width, height=self.height)
-            self.obj_func = None
-            self.optimizer = None
-        self.weight = 0
-        self.enable = np.ones(self.width * self.height, dtype="bool").reshape(self.height, self.width)
-        self.cell = np.full(self.width * self.height, BLANK, dtype="unicode").reshape(self.height, self.width)
-        self.cover = np.zeros(self.width * self.height, dtype=np.int32).reshape(self.height, self.width)
-        self.enable = np.ones(self.width * self.height, dtype="bool").reshape(self.height, self.width)
-        self.used_ori = np.full(self.width * self.height, -1, dtype=np.int32)
-        self.used_i = np.full(self.used_ori.size, -1, dtype=np.int32)
-        self.used_j = np.full(self.used_ori.size, -1, dtype=np.int32)
-        self.used_words = np.full(self.used_ori.size, BLANK, dtype=f"U{max(self.width, self.height)}")
-        self.nwords = 0
-        self.history = []
-        self.base_history = []
-        self.log = None
-        self.epoch = 0
-        self.seed = None
-
     def import_dict(self, dic):
         """
         Import the Dictionary, and generate the Placeable internally.

@@ -16,14 +16,11 @@ Crossword Local Search by command line
 python main_cli.py ../dict/pokemon.txt 15 15 -s 1 -e 5
 """
 # In[]
-import os, sys
 import argparse
 
 import numpy as np
 
-#os.chdir("/Users/taiga/Crossword-LocalSearch/Python")
-sys.path.append("../")
-from pyzzle import Puzzle, Dictionary, ObjectiveFunction, Optimizer
+from pyzzle import Puzzle, Dictionary
 
 # In[]
 parser = argparse.ArgumentParser(description="make a puzzle with given parameters")
@@ -58,35 +55,24 @@ output = args.output
 np.random.seed(seed=seed)
 
 # In[]
-# Make instances
 puzzle = Puzzle(width, height)
 dic = Dictionary(dict_path)
-obj_func = ObjectiveFunction()
-optimizer = Optimizer()
 
 if name is None:
-    name = f"{dic.name}_w{width}_h{height}_r{seed}_ep{epoch}"
+    name = f"w{width}_h{height}_r{seed}_ep{epoch}"
 puzzle.puzzle_name = name
 if output is None:
     output = name + ".png"
-
-# In[]
-puzzle.import_dict(dic)
-# Register and set method and compile
 if with_weight is True:
-    obj_func.register(["weight","nwords", "cross_count", "fill_count", "max_connected_empties"])
+    obj_func = ["weight", "nwords"]
 else:
-    obj_func.register(["nwords", "cross_count", "fill_count", "max_connected_empties"])
-optimizer.set_method("local_search")
-puzzle.compile(obj_func=obj_func, optimizer=optimizer)
+    obj_func = ["nwords"]
 
-# In[]
-# Solve
-puzzle.first_solve()
-puzzle.solve(epoch=epoch)
-print(f"unique solution: {puzzle.is_unique}")
-print(puzzle.cell)
-print(f"単語リスト：{puzzle.used_words[:puzzle.nwords]}")
-puzzle.save_answer_image(f"fig/answer_{output}")
-puzzle.save_problem_image(f"fig/problem_{output}")
-puzzle.export_json(f"json/{dic.name}_w{width}_h{height}_r{seed}.json")
+puzzle.import_dict(dic)
+puzzle = puzzle.solve(epoch=epoch, optimizer="local_search", of=obj_func, use_f=False)
+puzzle.export_json(f"json/{puzzle.name}_w{width}_h{height}_r{seed}.json")
+
+
+# puzzle.save_answer_image(f"fig/answer_{output}")
+# puzzle.save_problem_image(f"fig/problem_{output}")
+# puzzle.export_json(f"json/w{width}_h{height}_r{seed}.json")

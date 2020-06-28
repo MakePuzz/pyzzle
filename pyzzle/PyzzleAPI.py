@@ -52,7 +52,7 @@ class PyzzleAPI:
     
     def get_puzzle(self, id):
         url = self.url+str(id)
-        return requests.post(url, headers=self.headers)
+        return requests.get(url, headers=self.headers)
     
     def edit_puzzle(self, id, data):
         url = self.url+str(id)

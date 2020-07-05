@@ -3,19 +3,20 @@ from scipy import ndimage
 
 
 class ObjectiveFunction:
+    flist = [
+        "weight",
+        "nwords",
+        "cross_count",
+        "cross_rate",
+        "fill_count",
+        "max_connected_empties",
+        "difficulty",
+        "ease",
+        "circulation",
+        "gravity",
+    ]
+
     def __init__(self, objective_function=["nwords"]):
-        self.flist = [
-            "weight",
-            "nwords",
-            "cross_count",
-            "cross_rate",
-            "fill_count",
-            "max_connected_empties",
-            "difficulty",
-            "ease",
-            "circulation",
-            "gravity",
-        ]
         if not isinstance(objective_function, (list, tuple, set)):
             raise TypeError("'objective_function' must be list or tuple or set")
         self.register(objective_function)
@@ -26,43 +27,43 @@ class ObjectiveFunction:
     def get_funcs(self):
         return self.registered_funcs
 
-    @staticmethod
-    def nwords(puzzle):
+    @classmethod
+    def nwords(self, puzzle):
         """
         This method returns the number of words used in the solution.
         """
         return puzzle.nwords
 
-    @staticmethod
-    def cross_count(puzzle):
+    @classmethod
+    def cross_count(self, puzzle):
         """
         This method returns the number of crosses of a word.
         """
         return np.sum(puzzle.cover == 2)
 
-    @staticmethod
-    def cross_rate(puzzle):
+    @classmethod
+    def cross_rate(self, puzzle):
         """
         This method returns the rate of crosses of a word.
         """
         return ObjectiveFunction.cross_count(puzzle)/ObjectiveFunction.nwords(puzzle)
 
-    @staticmethod
-    def fill_count(puzzle):
+    @classmethod
+    def fill_count(self, puzzle):
         """
         This method returns the number of character cells in the puzzle.
         """
         return np.sum(puzzle.cover >= 1)
 
-    @staticmethod
-    def weight(puzzle):
+    @classmethod
+    def weight(self, puzzle):
         """
         This method returns the sum of the word weights used for the solution.
         """
         return puzzle.weight
 
-    @staticmethod
-    def max_connected_empties(puzzle):
+    @classmethod
+    def max_connected_empties(self, puzzle):
         """
         This method returns the maximum number of concatenations for unfilled squares.
         """
@@ -73,20 +74,20 @@ class ObjectiveFunction:
         score = puzzle.width*puzzle.height - sizes.max()
         return score
 
-    @staticmethod
-    def difficulty(puzzle):
+    @classmethod
+    def difficulty(self, puzzle):
         return puzzle.difficulty
 
-    @staticmethod
-    def ease(puzzle):
+    @classmethod
+    def ease(self, puzzle):
         return 1 - puzzle.difficulty
 
-    @staticmethod
-    def circulation(puzzle):
+    @classmethod
+    def circulation(self, puzzle):
         return puzzle.circulation
 
-    @staticmethod
-    def gravity(puzzle):
+    @classmethod
+    def gravity(self, puzzle):
         return puzzle.gravity[puzzle.cover != 0].sum()
 
     def register(self, func_names):

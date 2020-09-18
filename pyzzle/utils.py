@@ -172,6 +172,8 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
     """
     words = np.array(sorted(words, key=len))
     w_lens = np.vectorize(len)(words)
+    for char_count in set(w_lens):
+        words[w_lens==char_count] = np.array(sorted(words[w_lens==char_count]))
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7.5), gridspec_kw=dict(width_ratios=[9,7], wspace=-0.1))
     ax1.axis("off")
@@ -179,7 +181,7 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
     ax1.set(aspect="equal", xlim=(0,wn), ylim=(0,wn))
 
     # Board creation
-    for i in range(wn): # 中の線
+    for i in range(wn):
         for j in range(wn):
             # Horizontal line params
             y = wn - 1 - j
@@ -296,7 +298,6 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
     ymax = 0.985
     label_x = 0.02
     w = 0
-    
     for n in range(row_num_at_col_1):
         # checkbox
         box_y = 0.965 - row_spacing * n

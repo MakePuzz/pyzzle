@@ -13,14 +13,14 @@ Crossword Local Search by command line
  8. 出力ファイル名（-oまたは--outputオプションで指定. デフォルトは{name}.png）
 
 実行例：
-python main_cli.py ../dict/pokemon.txt 15 15 -s 1 -e 5
+python main_cli.py ../pyzzle/dict/pokemon.txt 15 15 -s 1 -e 5
 """
 # In[]
 import argparse
 
 import numpy as np
 
-from pyzzle import Puzzle, Dictionary
+from pyzzle import Puzzle, Dictionary, utils
 
 # In[]
 parser = argparse.ArgumentParser(description="make a puzzle with given parameters")
@@ -71,8 +71,10 @@ else:
 puzzle.import_dict(dic)
 puzzle = puzzle.solve(epoch=epoch, optimizer="local_search", of=obj_func, use_f=False)
 puzzle.export_json(f"json/{puzzle.name}_w{width}_h{height}_r{seed}.json")
-
-
-# puzzle.save_answer_image(f"fig/answer_{output}")
-# puzzle.save_problem_image(f"fig/problem_{output}")
-# puzzle.export_json(f"json/w{width}_h{height}_r{seed}.json")
+if width == height == 15:
+    if name.isalnum(): # 英数字ならTrue
+        title = f"Theme：{name}"
+    else:
+        title = f"テーマ：{name}"
+    utils.export_image(puzzle.cell, puzzle.used_words[puzzle.used_words!=""], title=title, oname=f"fig/twitter_probrem_{puzzle.name}_w{width}_h{height}_r{seed}.png", dpi=144, answer=False)
+    utils.export_image(puzzle.cell, puzzle.used_words[puzzle.used_words!=""], title=title, oname=f"fig/twitter_answer_{puzzle.name}_w{width}_h{height}_r{seed}.png", dpi=144, answer=True)

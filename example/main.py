@@ -50,7 +50,10 @@ puzzle.save_problem_image(f"{base_dir}/fig/{oname}_problem.png")
 puzzle.export_json(f"{base_dir}/json/{oname}.json")
 
 if width == height == 15:
-    title = f"テーマ：{name}" # or f"Theme：{name}"
+    if name.isalnum(): # 英数字ならTrue
+        title = f"Theme：{name}"
+    else:
+        title = f"テーマ：{name}"
     utils.export_image(puzzle.cell, puzzle.used_words[puzzle.used_words!=""], title=title, oname=f"{base_dir}/fig/{oname}_for_twitter.png", answer=True)
 # puzzle.to_pickle(f"pickle/{oname}.pickle")
 

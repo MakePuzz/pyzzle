@@ -172,8 +172,8 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
     """
     words = np.array(sorted(words, key=len))
     w_lens = np.vectorize(len)(words)
-    for char_count in set(w_lens):
-        words[w_lens==char_count] = np.array(sorted(words[w_lens==char_count]))
+    for w_len in set(w_lens):
+        words[w_lens==w_len] = sorted(words[w_lens==w_len])
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7.5), gridspec_kw=dict(width_ratios=[9,7], wspace=-0.1))
     ax1.axis("off")

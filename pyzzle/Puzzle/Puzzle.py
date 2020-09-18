@@ -1,4 +1,5 @@
 import copy
+import json
 import pickle
 import datetime
 import logging
@@ -762,9 +763,19 @@ class Puzzle:
         indent : int, default None
             The indent in json output
         """
-        import json
         with open(name, "w", encoding="utf-8") as f:
             json.dump(self.to_json(), f, sort_keys=True, indent=indent, ensure_ascii=False)
+
+    @staticmethod
+    def from_json(name):
+        with open(name, "rb") as f:
+            data = json.load(f)
+        puzzle = Puzzle(width=data["width"], height=data["height"], mask=data["mask"], name=data["name"])
+        puzzle.seed = data["seed"]
+        word_list = data["list"]
+        for word_dict in word_list:
+            puzzle.add(word_dict["ori"], word_dict["i"], word_dict["j"], word_dict["word"])
+        return puzzle
 
     def kick(self):
         """
@@ -1152,3 +1163,5 @@ class Puzzle:
         self.enable = enable
         self.cover = cover
         return
+
+    

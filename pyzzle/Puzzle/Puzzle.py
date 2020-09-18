@@ -1124,7 +1124,7 @@ class Puzzle:
         """
         if cell is None:
             cell = self.cell
-        cell = np.pad(cell, [(1,1), (1,1)], mode="constant", constant_values="")
+        cell = np.pad(cell, [(1,1), (1,1)], mode="constant", constant_values=BLANK)
         upper = cell[:-2, 1:-1] != BLANK
         lower = cell[2:, 1:-1] != BLANK
         vertical = (upper + lower)
@@ -1151,3 +1151,4 @@ class Puzzle:
         cover = self.get_cover(cell)
         self.enable = enable
         self.cover = cover
+        return

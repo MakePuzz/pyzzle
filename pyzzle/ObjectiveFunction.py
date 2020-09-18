@@ -95,7 +95,7 @@ class ObjectiveFunction:
         This method registers an objective function in an instance
         """
         for func_name in func_names:
-            if func_name not in self.flist:
+            if func_name not in ObjectiveFunction.flist:
                 raise RuntimeError(f"ObjectiveFunction class does not have '{func_name}' function")
         self.registered_funcs = func_names
 

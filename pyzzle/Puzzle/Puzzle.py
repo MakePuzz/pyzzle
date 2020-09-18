@@ -1052,54 +1052,102 @@ class Puzzle:
         _, self.enable = self.get_used_words_and_enable()
         return
 
-    def get_used_words_and_enable(self):
+    def get_used_words_and_enable(self, cell=None):
         """
+        Get used_words and enable from cell
         Returns
         -------
         used_words : list
         enable : np.ndarray
         """
-        jj, ii = np.meshgrid(np.arange(self.width), np.arange(self.height))
-        # 縦
-        head0 = (self.cell[ii[0, :], jj[0, :]] != BLANK) * \
-            (self.cell[ii[0, :]+1, jj[0, :]] != BLANK)
-        body0 = (self.cell[ii[1:-1, :]-1, jj[1:-1, :]] == BLANK) * (self.cell[ii[1:-1, :], jj[1:-1, :]] != BLANK) * (self.cell[ii[1:-1, :]+1, jj[1:-1, :]] != BLANK)
+        if cell is None:
+            cell = self.cell
+        width = cell.shape[1]
+        height = cell.shape[0]
+        jj, ii = np.meshgrid(np.arange(width), np.arange(height))
+        # Vertical
+        head0 = (cell[ii[0, :], jj[0, :]] != BLANK) * \
+            (cell[ii[0, :]+1, jj[0, :]] != BLANK)
+        body0 = (cell[ii[1:-1, :]-1, jj[1:-1, :]] == BLANK) * (cell[ii[1:-1, :], jj[1:-1, :]] != BLANK) * (cell[ii[1:-1, :]+1, jj[1:-1, :]] != BLANK)
         start0 = np.vstack([head0, body0])
 
-        # 横
-        head1 = (self.cell[ii[:, 0], jj[:, 0]] != BLANK) * \
-            (self.cell[ii[:, 0], jj[:, 0]+1] != BLANK)
-        body1 = (self.cell[ii[:, 1:-1], jj[:, 1:-1]-1] == BLANK) * (self.cell[ii[:, 1:-1], jj[:, 1:-1]] != BLANK) * (self.cell[ii[:, 1:-1], jj[:, 1:-1]+1] != BLANK)
-        start1 = np.hstack([head1.reshape(self.height, 1), body1])
+        # Horizontal
+        head1 = (cell[ii[:, 0], jj[:, 0]] != BLANK) * \
+            (cell[ii[:, 0], jj[:, 0]+1] != BLANK)
+        body1 = (cell[ii[:, 1:-1], jj[:, 1:-1]-1] == BLANK) * (cell[ii[:, 1:-1], jj[:, 1:-1]] != BLANK) * (cell[ii[:, 1:-1], jj[:, 1:-1]+1] != BLANK)
+        start1 = np.hstack([head1.reshape(height, 1), body1])
 
-        indices = {"vertical": np.where(
-            start0), "horizontal": np.where(start1)}
+        indices = {"vertical": np.where(start0), "horizontal": np.where(start1)}
 
         used_words = []
-        enable = np.ones(self.cell.shape).astype(bool)
+        enable = np.ones(cell.shape).astype(bool)
         for i, j in zip(indices["vertical"][0], indices["vertical"][1]):
             # used_words
             try:
-                imax = i + np.where(self.cell[i:, j] == '')[0][0]
+                imax = i + np.where(cell[i:, j] == '')[0][0]
             except:
-                imax = self.height
-            used_words.append(''.join(self.cell[i:imax, j]))
+                imax = height
+            used_words.append(''.join(cell[i:imax, j]))
             # enable
             if i != 0:
                 enable[i-1, j] = False
-            if imax != self.height:
+            if imax != height:
                 enable[imax, j] = False
 
         for i, j in zip(indices["horizontal"][0], indices["horizontal"][1]):
             # used_words
             try:
-                jmax = j + np.where(self.cell[i, j:] == '')[0][0]
+                jmax = j + np.where(cell[i, j:] == '')[0][0]
             except:
-                jmax = self.width
-            used_words.append(''.join(self.cell[i, j:jmax]))
+                jmax = width
+            used_words.append(''.join(cell[i, j:jmax]))
             # enable
             if j != 0:
                 enable[i, j-1] = False
-            if jmax != self.height:
+            if jmax != height:
                 enable[i, jmax] = False
         return np.array(used_words), enable
+
+    def get_cover(self, cell=None):
+        """
+        Calculate the cover from the cell.
+
+        Parameters
+        ----------
+        cell : numpy ndarray
+            cell array
+        
+        Returns
+        -------
+        cover : numpy ndarray
+            cover array
+        """
+        if cell is None:
+            cell = self.cell
+        cell = np.pad(cell, [(1,1), (1,1)], mode="constant", constant_values="")
+        upper = cell[:-2, 1:-1] != BLANK
+        lower = cell[2:, 1:-1] != BLANK
+        vertical = (upper + lower)
+
+        left = cell[1:-1, :-2] != BLANK
+        right = cell[1:-1, 2:] != BLANK
+        horizontal = (left + right)
+        cover = vertical.astype(int) + horizontal.astype(int)
+        cover *= (cell[1:-1, 1:-1] != BLANK)
+        return cover
+
+    def update_board(self, cell=None):
+        """
+        Update the cover and enable to fit the cell.
+
+        Parameters
+        ----------
+        cell : numpy ndarray
+            cell array
+        """
+        if cell:
+            self.cell = cell
+        _, enable = self.get_used_words_and_enable(cell=self.cell)
+        cover = self.get_cover(cell)
+        self.enable = enable
+        self.cover = cover

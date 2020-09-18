@@ -9,8 +9,6 @@ import matplotlib.pyplot as plt
 from pyzzle import Puzzle, Dictionary, Mask, Gravity
 from pyzzle import utils
 
-utils.debug_on()
-
 # Set parameters
 width = 15
 height = 15
@@ -35,8 +33,9 @@ obj_func = [
 ]
 
 # In[]
+utils.debug_on()
 puzzle = puzzle.solve(epoch=epoch, n=1, optimizer="multi_start", of=obj_func, show=False, use_f=True)
-
+utils.logging_off()
 # In[]
 # puzzle.solve(epoch=300, optimizer="local_search", of=obj_func, show=False, use_f=True)
 # In[]
@@ -44,12 +43,12 @@ print(f"component should be 1: {puzzle.component}")
 print(f"unique solution: {puzzle.is_unique}")
 
 # In[]
-utils.logging_off()
 base_dir = str(PurePath(__file__).parent)
 oname = f"{puzzle.name}_w{puzzle.width}_h{puzzle.height}_ep{puzzle.epoch}_seed{puzzle.seed}"
 puzzle.save_answer_image(f"{base_dir}/fig/{oname}_answer.png")
 puzzle.save_problem_image(f"{base_dir}/fig/{oname}_problem.png")
 puzzle.export_json(f"{base_dir}/json/{oname}.json")
+utils.export_image(puzzle.cell, puzzle.used_words[puzzle.used_words!=""], title="テーマ：北海道の市町村", answer=True)
 # puzzle.to_pickle(f"pickle/{oname}.pickle")
 
 # In[]
@@ -64,3 +63,12 @@ puzzle.show()
 # api = PyzzleAPI()
 # a = api.get_all_puzzles()
 # a.text
+
+
+# %%
+from pyzzle import Puzzle
+puzzle = Puzzle.from_json(f"{base_dir}/json/{oname}.json")
+
+# %%
+puzzle.show()
+# %%

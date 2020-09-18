@@ -2,10 +2,11 @@ import copy
 import json
 import logging
 
-
 import numpy as np
 import pandas as pd
+import japanize_matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 _is_logging_on = False
 TRACE_LEVEL = 5
@@ -141,9 +142,297 @@ def decode_json(fpath):
     word_list.sort(key=len)
 
     attrs = {}
-    for key in ("dict_name", "name", "epoch", "nwords", "seed"):
+    for key in ("name", "epoch", "nwords", "seed"):
         attrs[key] = data[key]
     return cell, mask, word_list, attrs
+
+def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=0, dpi=300, answer=False):
+    """
+    export the image of puzzle boards
+    this fuction can be used when the board is square
+
+    Parameters
+    ----------
+    puzzle : ndarray
+        Array of words in the puzzle board
+    words : ndarray
+        The list of words in this puzzle
+    title : str, default ""
+        The name of this puzzle
+    wn : int, default 15
+        Square side length of the board
+    oname : str, "problem.png"
+        The name of output file
+    draw_type : int, default 0
+        The type of drawing (0:gray filling and outer frame  1:no filling and no outer frame)
+    dpi : int, default 300
+        The number of dpi
+    answer : bool, default False
+        Output the answer sheet or problem sheet (True:answer sheet  False:problem sheet)
+    """
+    words = np.array(sorted(words, key=len))
+    w_lens = np.vectorize(len)(words)
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7.5), gridspec_kw=dict(width_ratios=[9,7], wspace=-0.1))
+    ax1.axis("off")
+    ax2.axis("off")
+    ax1.set(aspect="equal", xlim=(0,wn), ylim=(0,wn))
+
+    # Board creation
+    for i in range(wn): # 中の線
+        for j in range(wn):
+            # Horizontal line params
+            y = wn - 1 - j
+            xmin = i / wn
+            xmax = (i+1) / wn
+            # Vertical line params
+            x = i + 1
+            ymin = (wn-1-j) / wn
+            ymax = (wn-1-j+1) / wn
+
+            # thin lines
+            if j <= wn-2 and puzzle[j,i] != '' and puzzle[j+1,i] != '':
+                ax1.axhline(y=y, xmin=xmin, xmax=xmax, color='#EBEBEB', ls='-', lw=1)     
+            if i <= wn-2 and puzzle[j,i] != '' and puzzle[j,i+1] !='':
+                ax1.axvline(x=x, ymin=ymin, ymax=ymax, color='#EBEBEB', ls='-', lw=1)
+
+            #　bold lines
+            if j <= wn-2 and puzzle[j,i] != '' and puzzle[j+1,i] == '':
+                ax1.axhline(y=y, xmin=xmin, xmax=xmax, color='k', ls='-',lw=1, zorder=4)
+            if j <= wn-2 and puzzle[j,i] == '' and puzzle[j+1,i] != '':
+                ax1.axhline(y=y, xmin=xmin, xmax=xmax, color='k', ls='-',lw=1, zorder=4)    
+            if i <= wn-2 and puzzle[j,i] != '' and puzzle[j,i+1] == '':
+                ax1.axvline(x=x, ymin=ymin, ymax=ymax, color='k', ls='-', lw=1, zorder=4)
+            if i <= wn-2 and puzzle[j,i] == '' and puzzle[j,i+1] != '':
+                ax1.axvline(x=i+1, ymin=ymin, ymax=ymax, color='k', ls='-', lw=1, zorder=4)
+
+    if draw_type == 0:
+        # Outer lines
+        ax1.plot([0, 0, wn, wn, 0], [0, wn, wn, 0, 0], color='k', ls='-', lw=4, zorder=4)
+        # Fill empty cells
+        cmap = plt.cm.viridis
+        cmap.set_over("#f5efe6", alpha=1)
+        cmap.set_under("white", alpha=0)
+        ax1.imshow(puzzle=="", extent=[0,wn,0,wn], cmap=cmap, vmin=0.5, vmax=0.6)
+    
+    if draw_type == 1:
+        for j in range(wn):
+            ymin = (wn-1-j+0.05) / wn
+            ymax = (wn-1-j+1-0.05) / wn
+            if puzzle[0,j] != '':
+                ax1.axvline(x=0, ymin=ymin, ymax=ymax, color='k', ls='-', lw=4, zorder=4)
+            if puzzle[wn-1,j] != '':
+                ax1.axvline(x=wn, ymin=ymin, ymax=ymax, color='k', ls='-', lw=4, zorder=4)
+        for i in range(wn):
+            xmin = (i+0.05) / wn
+            xmax = (i+1-0.05) / wn
+            if puzzle[i,wn-1] != '':
+                ax1.axhline(y=0, xmin=xmin, xmax=xmax, color='k', ls='-',lw=4, zorder=4)
+            if puzzle[i,0] != '':
+                ax1.axhline(y=wn, xmin=xmin, xmax=xmax, color='k', ls='-',lw=4, zorder=4)
+
+    # puzzle title and copyright
+    w_num = len(words)
+    ax1.text(0.1, 15.2, f'{title}', size=16, ha='left', color='#1a1a1a')
+    ax1.text(15, 15.1, f'{w_num}語', size=12, ha='right', color='#1a1a1a')
+    ax2.text(0.95, -0.01, '© MakePuzz', size=18, ha='right', fontname='Yu Gothic', alpha=0.5, fontweight='bold')
+
+    # Word list creation
+    col_num = 3
+    char_max_per_row = 21
+    row_num = np.ceil(w_num/col_num).astype(int) # row_num = np.ceil(w_num/20)
+    char_num_per_row = w_lens[row_num-1] + w_lens[2*row_num-1] + w_lens[w_num-1] + 2 + 4
+
+    # penetrate check
+    pene_words_count = 0
+    if char_num_per_row > char_max_per_row:
+        char_num_at_row_2to3 = (char_max_per_row - 2 - w_lens[row_num-1]) # Subtract the left column from the whole
+        peneall = bool(char_num_at_row_2to3 < w_lens[w_num-1])
+        while char_num_per_row > char_max_per_row:
+            pene_words_count += 1
+            char_num_per_row = w_lens[row_num-1] + w_lens[2*row_num-1] + w_lens[w_num-1-pene_words_count] + 2 + 4
+
+    # no penetration
+    if pene_words_count == 0:
+        # row spacing
+        if row_num <= 10:
+            row_spacing = 0.05 + 0.05
+        if row_num <= 15:
+            row_spacing = 0.015 + 0.05
+        if row_num > 15:
+            row_spacing = 0.05
+        row_num_at_col_1 = row_num
+        row_num_at_col_3 = w_num - 2 * row_num
+
+    # penetration
+    if pene_words_count > 0:
+        if peneall is True: # all penetration
+            # row spacing
+            row_num_plus_pene_num = row_num + pene_words_count
+            if row_num_plus_pene_num <= 10:
+                row_spacing = 0.05 + 0.05
+            if row_num_plus_pene_num <= 15:
+                row_spacing = 0.015 + 0.05
+            if row_num_plus_pene_num > 15:
+                row_spacing = 0.05
+            
+            if pene_words_count > (20-row_num): # row_num adjust
+                row_num = 20 - pene_words_count
+            row_num_at_col_1 = row_num
+            row_num_at_col_3 = w_num - 2 * row_num - pene_words_count
+        if peneall is False: # Penetration appears in the right two columns
+            row_spacing = 0.05
+            if pene_words_count > (20-row_num):
+                row_num = 20 - pene_words_count # row_num adjust
+            row_num_at_col_1 = 20
+            row_num_at_col_3 = w_num - 20 - row_num - pene_words_count
+
+    # checkbox params
+    width = 0.015
+    height = 0.015
+
+    # 1st column
+    box_x = 0.047
+    ymax = 0.985
+    label_x = 0.02
+    w = 0
+    
+    for n in range(row_num_at_col_1):
+        # checkbox
+        box_y = 0.965 - row_spacing * n
+        fancybox = mpatches.FancyBboxPatch((box_x,box_y), width, height, boxstyle=mpatches.BoxStyle("Round", pad=0.005), fc="#f5efe6", ec="darkgray", alpha=1)
+        ax2.add_patch(fancybox)
+        # word
+        word_y = 0.97 - row_spacing * n
+        ax2.text(0.08, word_y, words[w], size=18, ha='left', va='center')
+        # label
+        if w == 0 or w_lens[w] > w_lens[w-1]:
+            ax2.text(label_x, word_y, str(w_lens[w]), fontsize=10, color='dimgray', ha='right')
+        # label line
+        if w_lens[w] > w_lens[w-1]:
+            ax2.axvline(x=label_x+0.01, color='lightgray', ymin=0.96-row_spacing*(n-1), ymax=ymax, lw=2)
+            ymax = 0.985 - row_spacing * n
+        # end of label line
+        elif n == row_num_at_col_1-1:
+            ax2.axvline(x=label_x+0.01, color='lightgray', ymin=0.96-row_spacing*n, ymax=ymax, lw=2)
+        w += 1
+
+    # 2nd column
+    col_spacing = (w_lens[row_num_at_col_1]-3) * 0.05
+    box_x = 0.277 + col_spacing
+    ymax = 0.985
+    label_x = 0.25 + col_spacing
+    for n in range(row_num):
+        # checkbox
+        box_y = 0.965 - row_spacing * n
+        fancybox = mpatches.FancyBboxPatch((box_x,box_y), width, height, boxstyle=mpatches.BoxStyle("Round", pad=0.005), fc="#f5efe6", ec="darkgray", alpha=1)
+        ax2.add_patch(fancybox)
+        # word
+        word_y = 0.97 - row_spacing * n
+        ax2.text(0.31+col_spacing, word_y, words[w], size=18, ha='left', va='center')
+        # label
+        if w == 0 or w_lens[w] > w_lens[w-1]:
+            ax2.text(label_x, word_y, str(w_lens[w]), fontsize=10, color='dimgray', ha='right')
+        # label line
+        if w_lens[w] > w_lens[w-1]:
+            ax2.axvline(x=label_x+0.01, color='lightgray', ymin=0.96-row_spacing*(n-1), ymax=ymax, lw=2)
+            ymax = 0.985 - row_spacing * n
+        # end of label line
+        elif n == row_num-1:
+            ax2.axvline(x=label_x+0.01, color='lightgray', ymin=0.96-row_spacing*n, ymax=ymax, lw=2)
+        w += 1
+
+    # 3rd column
+    col_spacing = (w_lens[w]-5) * 0.05
+    box_x = 0.597 + col_spacing
+    ymax = 0.985
+    label_x = 0.57+col_spacing
+    for n in range(row_num_at_col_3):
+        # checkbox
+        box_y = 0.965 - row_spacing * n
+        fancybox = mpatches.FancyBboxPatch((box_x,box_y), width, height, boxstyle=mpatches.BoxStyle("Round", pad=0.005), fc="#f5efe6", ec="darkgray", alpha=1)
+        ax2.add_patch(fancybox)
+        # word
+        word_y = 0.97 - row_spacing * n
+        ax2.text(0.63+col_spacing, word_y, words[w], size=18, ha='left', va='center')
+        # label
+        if w == 0 or w_lens[w] > w_lens[w-1]:
+            ax2.text(label_x, word_y, str(w_lens[w]), fontsize=10, color='dimgray', ha='right')
+        if w_lens[w] > w_lens[w-1]:
+            ax2.axvline(x=label_x+0.01, color='lightgray', ymin=0.96-row_spacing*(n-1), ymax=ymax, lw=2)
+            ymax = 0.985 - row_spacing * n
+        elif n == (row_num_at_col_3 - 1):
+            ax2.axvline(x=label_x+0.01, color='lightgray', ymin=0.96-row_spacing*n, ymax=ymax, lw=2)
+        w += 1
+
+    # penetrating column
+    if pene_words_count > 0 and peneall is True:
+        box_x = 0.047
+        col_spacing = 0
+        ymax = 0.985 - row_spacing * row_num - 0.025
+        label_x = 0.02
+        for n in range(pene_words_count):
+            # checkbox
+            box_y = 0.965 - row_spacing * (row_num+n) - 0.025
+            fancybox = mpatches.FancyBboxPatch((box_x,box_y), width, height, boxstyle=mpatches.BoxStyle("Round", pad=0.005),fc="#f5efe6", ec="darkgray", alpha=1)
+            ax2.add_patch(fancybox)
+            # word
+            word_y = 0.97-row_spacing*(row_num+n)-0.025
+            ax2.text(0.08, word_y, words[w], size=18, ha='left', va='center')
+            # label
+            if n == 0 or w_lens[w] > w_lens[w-1]:
+                ax2.text(label_x, word_y, str(w_lens[w]), fontsize=10, color='dimgray',  ha='right')
+            # label line
+            if n != 0 and w_lens[w] > w_lens[w-1]:
+                ax2.axvline(x=label_x+0.01, color='lightgray', ymin=0.96-row_spacing*(row_num+n-1)-0.025, ymax=ymax, lw=2)
+                ymax = 0.985 - row_spacing * n - 0.025
+            # end of label line
+            elif n == pene_words_count-1:
+                ax2.axvline(x=label_x+0.01, color='lightgray', ymin=0.96-row_spacing*(row_num+n)-0.025, ymax=ymax, lw=2)
+            w += 1
+
+    if pene_words_count > 0 and peneall is False:
+        col_spacing = (w_lens[row_num_at_col_1]-3) * 0.05
+        box_x = 0.277 + col_spacing
+        ymax = 0.985 - row_spacing * row_num - 0.025
+        label_x = 0.25+col_spacing
+        for n in range(pene_words_count):
+            # checkbox
+            box_y = 0.965 - row_spacing * (row_num+n) - 0.025
+            fancybox = mpatches.FancyBboxPatch((box_x,box_y), width, height, boxstyle=mpatches.BoxStyle("Round", pad=0.005), fc="#f5efe6", ec="darkgray", alpha=1)
+            ax2.add_patch(fancybox)
+            # word
+            word_y = 0.97-row_spacing*(row_num+n)-0.025
+            ax2.text(0.31+col_spacing, word_y, words[w], size=18, ha='left', va='center')
+            # label
+            if n == 0 or w_lens[w] > w_lens[w-1]:
+                ax2.text(label_x, word_y, str(w_lens[w]), fontsize=10, color='dimgray', ha='right')
+            if n != 0 and w_lens[w] > w_lens[w-1]:
+                ax2.axvline(x=label_x+0.01, color='lightgray', ymin=0.96-row_spacing*(row_num+n-1)-0.025, ymax=ymax, lw=2)
+                ymax = 0.985 - row_spacing * n - 0.025
+            elif n == pene_words_count-1:
+                ax2.axvline(x=label_x+0.01, color='lightgray', ymin=0.96-row_spacing*(row_num+n)-0.025, ymax=ymax, lw=2)
+            w += 1
+
+    if answer is False:
+        fig.savefig(oname, dpi=dpi, bbox_inches='tight')
+        return
+    
+    # Answer image
+    # alphabet .35 .25, Hiwagana .15 .25
+    for i in range(wn):
+        for j in range(wn):
+            x = i + 0.5
+            y = wn - j - 0.6
+            rotation = 0
+            # The rotation process for vertical long tones
+            if puzzle[j,i] == 'ー' and i >= 1 and puzzle[j,i-1] == '':
+                x += 0.01
+                y += 0.15
+                rotation = 90
+            ax1.text(x, y, puzzle[j,i], size=18, ha="center", va="center", rotation=rotation)
+    fig.savefig(oname, dpi=dpi, bbox_inches='tight')
+    return
 
 def show_json(fpath):
     cell, mask, _, _ = decode_json(fpath)

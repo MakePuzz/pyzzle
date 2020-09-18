@@ -50,7 +50,8 @@ puzzle.save_problem_image(f"{base_dir}/fig/{oname}_problem.png")
 puzzle.export_json(f"{base_dir}/json/{oname}.json")
 
 if width == height == 15:
-    utils.export_image(puzzle.cell, puzzle.used_words[puzzle.used_words!=""], oname=f"{base_dir}/fig/{oname}_for_twitter.png", title="テーマ：北海道の市町村", answer=True)
+    title = f"テーマ：{name}" # or f"Theme：{name}"
+    utils.export_image(puzzle.cell, puzzle.used_words[puzzle.used_words!=""], title=title, oname=f"{base_dir}/fig/{oname}_for_twitter.png", answer=True)
 # puzzle.to_pickle(f"pickle/{oname}.pickle")
 
 # In[]

@@ -48,7 +48,9 @@ oname = f"{puzzle.name}_w{puzzle.width}_h{puzzle.height}_ep{puzzle.epoch}_seed{p
 puzzle.save_answer_image(f"{base_dir}/fig/{oname}_answer.png")
 puzzle.save_problem_image(f"{base_dir}/fig/{oname}_problem.png")
 puzzle.export_json(f"{base_dir}/json/{oname}.json")
-utils.export_image(puzzle.cell, puzzle.used_words[puzzle.used_words!=""], title="テーマ：北海道の市町村", answer=True)
+
+if width == height == 15:
+    utils.export_image(puzzle.cell, puzzle.used_words[puzzle.used_words!=""], oname=f"{base_dir}/fig/{oname}_for_twitter.png", title="テーマ：北海道の市町村", answer=True)
 # puzzle.to_pickle(f"pickle/{oname}.pickle")
 
 # In[]

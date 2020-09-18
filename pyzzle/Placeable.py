@@ -50,3 +50,6 @@ class Placeable:
 
     def __str__(self):
         return f"ori:{self.ori}, i:{self.i}, j:{self.j}, word:{self.word}"
+
+    def __repr__(self):
+        return f"ori:{self.ori}, i:{self.i}, j:{self.j}, word:{self.word}"

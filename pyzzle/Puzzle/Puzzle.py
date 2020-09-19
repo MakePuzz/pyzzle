@@ -1065,7 +1065,8 @@ class Puzzle:
 
     def get_used_words_and_enable(self, cell=None):
         """
-        Get used_words and enable from cell
+        Get used_words and enable from the cell.
+        
         Returns
         -------
         used_words : list

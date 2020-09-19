@@ -29,7 +29,7 @@ puzzle.replace_dict(dic)
 
 # In[]
 obj_func = [
-    "weight", "nwords", "ease_r"
+    "uniqueness", "weight", "nwords", "ease_r"
 ]
 
 # In[]

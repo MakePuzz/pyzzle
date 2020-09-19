@@ -14,6 +14,7 @@ class ObjectiveFunction:
         "ease",
         "circulation",
         "gravity",
+        "uniqueness",
         "weight_r",
         "nwords_r",
         "cross_count_r",
@@ -23,7 +24,8 @@ class ObjectiveFunction:
         "difficulty_r",
         "ease_r",
         "circulation_r",
-        "gravity_r"
+        "gravity_r",
+        "uniqueness_r",
     ]
 
     def __init__(self, objective_function=["nwords"]):
@@ -89,6 +91,10 @@ class ObjectiveFunction:
         return puzzle.gravity[puzzle.cover != 0].sum()
 
     @classmethod
+    def uniqueness(self, puzzle):
+        return int(puzzle.is_unique)
+
+    @classmethod
     def nwords_r(self, puzzle):
         """This method returns the number of words used in the solution."""
         return -ObjectiveFunction.nwords(puzzle)
@@ -133,6 +139,10 @@ class ObjectiveFunction:
     @classmethod
     def gravity_r(self, puzzle):
         return -ObjectiveFunction.gravity(puzzle)
+    
+    @classmethod
+    def uniqueness_r(self, puzzle):
+        return -ObjectiveFunction.uniqueness(puzzle)
 
     def register(self, func_names):
         """

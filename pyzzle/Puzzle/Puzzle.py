@@ -1067,7 +1067,7 @@ class Puzzle:
         self.enable = self.get_enable()
         return
 
-    def get_word_indices(self, cell=None):
+    def _get_word_indices(self, cell=None):
         """
         Returns the indices of the head of the word on the board.
 
@@ -1100,53 +1100,6 @@ class Puzzle:
         indices = {"vertical": np.where(start_0), "horizontal": np.where(start_1)}
         return indices
 
-    def get_used_words_and_enable(self, cell=None):
-        """
-        Get used_words and enable from the cell.
-
-        Parameters
-        ----------
-        cell : numpy ndarray
-            cell array
-        
-        Returns
-        -------
-        used_words : list
-        enable : np.ndarray
-        """
-        if cell is None:
-            cell = self.cell
-        indices = self.get_word_indices(cell=cell)
-
-        used_words = []
-        enable = np.ones(cell.shape).astype(bool)
-        for i, j in zip(indices["vertical"][0], indices["vertical"][1]):
-            # used_words
-            try:
-                imax = i + np.where(cell[i:, j] == '')[0][0]
-            except:
-                imax = self.height
-            used_words.append(''.join(cell[i:imax, j]))
-            # enable
-            if i != 0:
-                enable[i-1, j] = False
-            if imax != self.height:
-                enable[imax, j] = False
-
-        for i, j in zip(indices["horizontal"][0], indices["horizontal"][1]):
-            # used_words
-            try:
-                jmax = j + np.where(cell[i, j:] == '')[0][0]
-            except:
-                jmax = self.width
-            used_words.append(''.join(cell[i, j:jmax]))
-            # enable
-            if j != 0:
-                enable[i, j-1] = False
-            if jmax != self.width:
-                enable[i, jmax] = False
-        return np.array(used_words), enable
-
     def get_used_words(self, cell=None):
         """
         Get used_words from the cell.
@@ -1163,7 +1116,7 @@ class Puzzle:
         """
         if cell is None:
             cell = self.cell
-        indices = self.get_word_indices(cell=cell)
+        indices = self._get_word_indices(cell=cell)
         used_words = []
         for i, j in zip(indices["vertical"][0], indices["vertical"][1]):
             try:
@@ -1195,7 +1148,7 @@ class Puzzle:
         """
         if cell is None:
             cell = self.cell
-        indices = self.get_word_indices(cell=cell)
+        indices = self._get_word_indices(cell=cell)
         enable = np.ones(cell.shape).astype(bool)
         for i, j in zip(indices["vertical"][0], indices["vertical"][1]):
             # enable

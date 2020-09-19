@@ -77,4 +77,8 @@ puzzle = Puzzle.from_json(f"{base_dir}/json/{oname}.json")
 
 # %%
 puzzle.show()
+
 # %%
+# from pyzzle import Puzzle, utils
+# puzzle = Puzzle.from_json(f"json/ファイル名.json")
+# utils.export_image(puzzle.cell, puzzle.used_words[puzzle.used_words!=""], title="テーマ：テスト", oname=f"fig/twitter_test.png", answer=True)

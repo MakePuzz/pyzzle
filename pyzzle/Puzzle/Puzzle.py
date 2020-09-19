@@ -139,6 +139,10 @@ class Puzzle:
 
     def __ge__(self, other):
         return not self.__lt__(other)
+    
+    @property
+    def dic(self):
+        return self._dic
 
     @property
     def is_unique(self):
@@ -1060,12 +1064,50 @@ class Puzzle:
             self.used_i += di_dj[0]
             self.used_j += di_dj[1]
             self.history.append((History.MOVE, direction, 1, None, None))
-        _, self.enable = self.get_used_words_and_enable()
+        self.enable = self.get_enable()
         return
+
+    def get_word_indices(self, cell=None):
+        """
+        Returns the indices of the head of the word on the board.
+
+        Parameters
+        ----------
+        cell : numpy ndarray
+            cell array
+
+        Returns
+        -------
+        indices : dict
+            Indices of the head of the words on the board in a dictionary with "vertical" and "horizontal" keys
+        """
+        if cell is None:
+            cell = self.cell
+        width = cell.shape[1]
+        height = cell.shape[0]
+        jj, ii = np.meshgrid(np.arange(width), np.arange(height))
+
+        # Vertical
+        head_0 = (cell[ii[0, :], jj[0, :]] != BLANK) * (cell[ii[0, :]+1, jj[0, :]] != BLANK)
+        body_0 = (cell[ii[1:-1, :]-1, jj[1:-1, :]] == BLANK) * (cell[ii[1:-1, :], jj[1:-1, :]] != BLANK) * (cell[ii[1:-1, :]+1, jj[1:-1, :]] != BLANK)
+        start_0 = np.vstack([head_0, body_0])
+
+        # Horizontal
+        head_1 = (cell[ii[:, 0], jj[:, 0]] != BLANK) * (cell[ii[:, 0], jj[:, 0]+1] != BLANK)
+        body_1 = (cell[ii[:, 1:-1], jj[:, 1:-1]-1] == BLANK) * (cell[ii[:, 1:-1], jj[:, 1:-1]] != BLANK) * (cell[ii[:, 1:-1], jj[:, 1:-1]+1] != BLANK)
+        start_1 = np.hstack([head_1.reshape(height, 1), body_1])
+
+        indices = {"vertical": np.where(start_0), "horizontal": np.where(start_1)}
+        return indices
 
     def get_used_words_and_enable(self, cell=None):
         """
         Get used_words and enable from the cell.
+
+        Parameters
+        ----------
+        cell : numpy ndarray
+            cell array
         
         Returns
         -------
@@ -1074,22 +1116,7 @@ class Puzzle:
         """
         if cell is None:
             cell = self.cell
-        width = cell.shape[1]
-        height = cell.shape[0]
-        jj, ii = np.meshgrid(np.arange(width), np.arange(height))
-        # Vertical
-        head0 = (cell[ii[0, :], jj[0, :]] != BLANK) * \
-            (cell[ii[0, :]+1, jj[0, :]] != BLANK)
-        body0 = (cell[ii[1:-1, :]-1, jj[1:-1, :]] == BLANK) * (cell[ii[1:-1, :], jj[1:-1, :]] != BLANK) * (cell[ii[1:-1, :]+1, jj[1:-1, :]] != BLANK)
-        start0 = np.vstack([head0, body0])
-
-        # Horizontal
-        head1 = (cell[ii[:, 0], jj[:, 0]] != BLANK) * \
-            (cell[ii[:, 0], jj[:, 0]+1] != BLANK)
-        body1 = (cell[ii[:, 1:-1], jj[:, 1:-1]-1] == BLANK) * (cell[ii[:, 1:-1], jj[:, 1:-1]] != BLANK) * (cell[ii[:, 1:-1], jj[:, 1:-1]+1] != BLANK)
-        start1 = np.hstack([head1.reshape(height, 1), body1])
-
-        indices = {"vertical": np.where(start0), "horizontal": np.where(start1)}
+        indices = self.get_word_indices(cell=cell)
 
         used_words = []
         enable = np.ones(cell.shape).astype(bool)
@@ -1098,12 +1125,12 @@ class Puzzle:
             try:
                 imax = i + np.where(cell[i:, j] == '')[0][0]
             except:
-                imax = height
+                imax = self.height
             used_words.append(''.join(cell[i:imax, j]))
             # enable
             if i != 0:
                 enable[i-1, j] = False
-            if imax != height:
+            if imax != self.height:
                 enable[imax, j] = False
 
         for i, j in zip(indices["horizontal"][0], indices["horizontal"][1]):
@@ -1111,14 +1138,86 @@ class Puzzle:
             try:
                 jmax = j + np.where(cell[i, j:] == '')[0][0]
             except:
-                jmax = width
+                jmax = self.width
             used_words.append(''.join(cell[i, j:jmax]))
             # enable
             if j != 0:
                 enable[i, j-1] = False
-            if jmax != height:
+            if jmax != self.width:
                 enable[i, jmax] = False
         return np.array(used_words), enable
+
+    def get_used_words(self, cell=None):
+        """
+        Get used_words from the cell.
+
+        Parameters
+        ----------
+        cell : numpy ndarray
+            cell array
+        
+        Returns
+        -------
+        used_words : list
+            used_words
+        """
+        if cell is None:
+            cell = self.cell
+        indices = self.get_word_indices(cell=cell)
+        used_words = []
+        for i, j in zip(indices["vertical"][0], indices["vertical"][1]):
+            try:
+                imax = i + np.where(cell[i:, j] == '')[0][0]
+            except:
+                imax = self.height
+            used_words.append(''.join(cell[i:imax, j]))
+        for i, j in zip(indices["horizontal"][0], indices["horizontal"][1]):
+            try:
+                jmax = j + np.where(cell[i, j:] == '')[0][0]
+            except:
+                jmax = self.width
+            used_words.append(''.join(cell[i, j:jmax]))
+        return np.array(used_words)
+    
+    def get_enable(self, cell=None):
+        """
+        Get enable from the cell.
+
+        Parameters
+        ----------
+        cell : numpy ndarray
+            cell array
+        
+        Returns
+        -------
+        enable : numpy ndarray
+            enable
+        """
+        if cell is None:
+            cell = self.cell
+        indices = self.get_word_indices(cell=cell)
+        enable = np.ones(cell.shape).astype(bool)
+        for i, j in zip(indices["vertical"][0], indices["vertical"][1]):
+            # enable
+            try:
+                imax = i + np.where(cell[i:, j] == '')[0][0]
+            except:
+                imax = self.height
+            if i != 0:
+                enable[i-1, j] = False
+            if imax != self.height:
+                enable[imax, j] = False
+        for i, j in zip(indices["horizontal"][0], indices["horizontal"][1]):
+            # enable
+            try:
+                jmax = j + np.where(cell[i, j:] == '')[0][0]
+            except:
+                jmax = self.width
+            if j != 0:
+                enable[i, j-1] = False
+            if jmax != self.height:
+                enable[i, jmax] = False
+        return enable
 
     def get_cover(self, cell=None):
         """
@@ -1159,7 +1258,7 @@ class Puzzle:
         """
         if cell:
             self.cell = cell
-        _, enable = self.get_used_words_and_enable(cell=self.cell)
+        enable = self.get_enable(cell=self.cell)
         cover = self.get_cover(cell)
         self.enable = enable
         self.cover = cover

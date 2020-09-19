@@ -184,6 +184,44 @@ class TestPuzzle(unittest.TestCase):
         self.assertTrue(np.all(puzzle.enable == moved_enable))
         self.assertTrue(np.all(puzzle.used_i[:puzzle.nwords] == [0, 1, 0, 3, 3]))
         self.assertTrue(np.all(puzzle.used_j[:puzzle.nwords] == [1, 1, 3, 3, 4]))
+    
+    def test_get_cover(self, *mocks):
+        from pyzzle import Puzzle
+        puzzle = Puzzle(5, 5)
+        cell = np.array([
+            ['T', '', 'S', '', ''],
+            ['E', 'S', 'T', 'A', ''],
+            ['S', '', 'E', '', ''],
+            ['T', '', 'M', 'E', ''],
+            ['', '', '', 'T', '']
+        ])
+        cover = np.array([
+            [1, 0, 1, 0, 0],
+            [2, 1, 2, 1, 0],
+            [1, 0, 1, 0, 0],
+            [1, 0, 2, 2, 0],
+            [0, 0, 0, 1, 0]
+        ])
+        self.assertTrue(np.all(puzzle.get_cover(cell) == cover))
+        
+    def test_get_enable(self, *mocks):
+        from pyzzle import Puzzle
+        puzzle = Puzzle(5, 5)
+        cell = np.array([
+            ['T', '', 'S', '', ''],
+            ['E', 'S', 'T', 'A', ''],
+            ['S', '', 'E', '', ''],
+            ['T', '', 'M', 'E', ''],
+            ['', '', '', 'T', '']
+        ])
+        enable = np.array([
+            [True,  True,  True,  True,  True],
+            [True,  True,  True,  True, False],
+            [True,  True,  True, False,  True],
+            [True, False,  True,  True, False],
+            [False,  True, False,  True,  True]
+        ])
+        self.assertTrue(np.all(puzzle.get_enable(cell) == enable))
 
 if __name__ == '__main__':
     unittest.main()

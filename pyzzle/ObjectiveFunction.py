@@ -14,6 +14,16 @@ class ObjectiveFunction:
         "ease",
         "circulation",
         "gravity",
+        "weight_r",
+        "nwords_r",
+        "cross_count_r",
+        "cross_rate_r",
+        "fill_count_r",
+        "max_connected_empties_r",
+        "difficulty_r",
+        "ease_r",
+        "circulation_r",
+        "gravity_r"
     ]
 
     def __init__(self, objective_function=["nwords"]):
@@ -29,44 +39,32 @@ class ObjectiveFunction:
 
     @classmethod
     def nwords(self, puzzle):
-        """
-        This method returns the number of words used in the solution.
-        """
+        """This method returns the number of words used in the solution."""
         return puzzle.nwords
 
     @classmethod
     def cross_count(self, puzzle):
-        """
-        This method returns the number of crosses of a word.
-        """
+        """This method returns the number of crosses of a word."""
         return np.sum(puzzle.cover == 2)
 
     @classmethod
     def cross_rate(self, puzzle):
-        """
-        This method returns the rate of crosses of a word.
-        """
+        """This method returns the rate of crosses of a word."""
         return ObjectiveFunction.cross_count(puzzle)/ObjectiveFunction.nwords(puzzle)
 
     @classmethod
     def fill_count(self, puzzle):
-        """
-        This method returns the number of character cells in the puzzle.
-        """
+        """This method returns the number of character cells in the puzzle."""
         return np.sum(puzzle.cover >= 1)
 
     @classmethod
     def weight(self, puzzle):
-        """
-        This method returns the sum of the word weights used for the solution.
-        """
+        """This method returns the sum of the word weights used for the solution."""
         return puzzle.weight
 
     @classmethod
     def max_connected_empties(self, puzzle):
-        """
-        This method returns the maximum number of concatenations for unfilled squares.
-        """
+        """This method returns the maximum number of concatenations for unfilled squares."""
         reverse_cover = puzzle.cover < 1
         zero_label, n_label = ndimage.label(reverse_cover)
         mask = zero_label > 0
@@ -89,6 +87,52 @@ class ObjectiveFunction:
     @classmethod
     def gravity(self, puzzle):
         return puzzle.gravity[puzzle.cover != 0].sum()
+
+    @classmethod
+    def nwords_r(self, puzzle):
+        """This method returns the number of words used in the solution."""
+        return -ObjectiveFunction.nwords(puzzle)
+
+    @classmethod
+    def cross_count_r(self, puzzle):
+        """This method returns the number of crosses of a word."""
+        return -ObjectiveFunction.cross_count(puzzle)
+
+    @classmethod
+    def cross_rate_r(self, puzzle):
+        """This method returns the rate of crosses of a word."""
+        return -ObjectiveFunction.cross_rate(puzzle)
+
+    @classmethod
+    def fill_count_r(self, puzzle):
+        """This method returns the number of character cells in the puzzle."""
+        return -ObjectiveFunction.fill_count(puzzle)
+
+    @classmethod
+    def weight_r(self, puzzle):
+        """This method returns the sum of the word weights used for the solution."""
+        return -ObjectiveFunction.weight(puzzle)
+
+    @classmethod
+    def max_connected_empties_r(self, puzzle):
+        """This method returns the maximum number of concatenations for unfilled squares."""
+        return -ObjectiveFunction.max_connected_empties(puzzle)
+
+    @classmethod
+    def difficulty_r(self, puzzle):
+        return -ObjectiveFunction.difficulty(puzzle)
+
+    @classmethod
+    def ease_r(self, puzzle):
+        return -ObjectiveFunction.ease(puzzle)
+
+    @classmethod
+    def circulation_r(self, puzzle):
+        return -ObjectiveFunction.circulation(puzzle)
+
+    @classmethod
+    def gravity_r(self, puzzle):
+        return -ObjectiveFunction.gravity(puzzle)
 
     def register(self, func_names):
         """

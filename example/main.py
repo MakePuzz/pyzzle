@@ -12,11 +12,11 @@ from pyzzle import utils
 # Set parameters
 width = 15
 height = 15
-mask = Mask.donut_s # 不要ならNone
+mask = None # Mask.donut_s # 不要ならNone
 gravity = None # 不要ならNone
-dic = Dictionary.dataset["hokkaido-population_ww"]
+dic = Dictionary.dataset["animals"]
 name = "Pyzzle"
-epoch = 3
+epoch = 30
 
 seed = 0
 np.random.seed(seed=seed)
@@ -29,7 +29,7 @@ puzzle.replace_dict(dic)
 
 # In[]
 obj_func = [
-    "weight", "nwords"
+    "weight", "nwords", "ease_r"
 ]
 
 # In[]
@@ -54,7 +54,7 @@ if width == height == 15:
         title = f"Theme：{name}"
     else:
         title = f"テーマ：{name}"
-    utils.export_image(puzzle.cell, puzzle.used_words[puzzle.used_words!=""], title=title, oname=f"{base_dir}/fig/{oname}_for_twitter.png", answer=True)
+    utils.export_image(puzzle.cell, puzzle.used_words[puzzle.used_words!=""], title=title, oname=f"{base_dir}/fig/twitter_answer_{oname}.png", answer=True)
 # puzzle.to_pickle(f"pickle/{oname}.pickle")
 
 # In[]

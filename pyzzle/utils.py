@@ -170,15 +170,13 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
     answer : bool, default False
         Output the answer sheet or problem sheet (True:answer sheet  False:problem sheet)
     """
-    words = np.array(sorted(words, key=len))
+    words = np.array(sorted(words, key=lambda word: (len(word), word)))
     w_lens = np.vectorize(len)(words)
-    for w_len in set(w_lens):
-        words[w_lens==w_len] = sorted(words[w_lens==w_len])
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7.5), gridspec_kw=dict(width_ratios=[9,7], wspace=-0.1))
     ax1.axis("off")
-    ax2.axis("off")
     ax1.set(aspect="equal", xlim=(0,wn), ylim=(0,wn))
+    ax2.axis("off")
 
     # Board creation
     for i in range(wn):

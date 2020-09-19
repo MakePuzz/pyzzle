@@ -4,7 +4,6 @@ import logging
 
 import numpy as np
 import pandas as pd
-import japanize_matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
@@ -170,6 +169,7 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
     answer : bool, default False
         Output the answer sheet or problem sheet (True:answer sheet  False:problem sheet)
     """
+    import japanize_matplotlib
     words = np.array(sorted(words, key=lambda word: (len(word), word)))
     w_lens = np.vectorize(len)(words)
 

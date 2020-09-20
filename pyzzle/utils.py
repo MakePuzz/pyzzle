@@ -293,7 +293,7 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
     def draw_column(ax, words, row_spacing, label_x=0.02, word_y_initial=0.97):
         # dot line
         if word_y_initial != 0.97:
-            ax.axhline(y = word_y_initial+0.038, color='lightgray', xmin=label_x, xmax=0.99, lw=2, ls=':')
+            ax.axhline(y = word_y_initial+0.038, color='lightgray', xmin=label_x-0.02, xmax=0.99, lw=2, ls=':')
         # parameters
         row_num_at_col = len(words)
         box_x = 0.027 + label_x

@@ -55,7 +55,7 @@ class Puzzle:
         puzzle.export_json("out.json")
     """
 
-    def __init__(self, width=None, height=None, mask=None, gravity=None, name="Criss Cross"):
+    def __init__(self, width, height, mask=None, gravity=None, name="Criss Cross"):
         """
         Initialize the puzzle object.
 
@@ -150,14 +150,15 @@ class Puzzle:
         This method deter_mines whether it is the unique solution
         """
         rtn_bool = True
+        nw = self.nwords
         # Get word1
-        for s, (ori1, i1, j1, word1) in enumerate(zip(self.used_ori[:self.nwords], self.used_i[:self.nwords], self.used_j[:self.nwords], self.used_words[:self.nwords])):
+        for s, (ori1, i1, j1, word1) in enumerate(zip(self.used_ori[:nw], self.used_i[:nw], self.used_j[:nw], self.used_words[:nw])):
             if ori1 == 0:
                 cross_idx1 = np.where(self.cover[i1:i1 + len(word1), j1] == 2)[0]
             elif ori1 == 1:
                 cross_idx1 = np.where(self.cover[i1, j1:j1 + len(word1)] == 2)[0]
             # Get word2
-            for ori2, i2, j2, word2 in zip(self.used_ori[s+1:self.nwords], self.used_i[s+1:self.nwords], self.used_j[s+1:self.nwords], self.used_words[s+1:self.nwords]):
+            for ori2, i2, j2, word2 in zip(self.used_ori[s+1:nw], self.used_i[s+1:nw], self.used_j[s+1:nw], self.used_words[s+1:nw]):
                 # If word1 and word2 have different lengths, they can not be replaced
                 if len(word1) != len(word2):
                     continue

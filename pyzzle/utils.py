@@ -304,7 +304,7 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
         boxstyle = mpatches.BoxStyle("Round", pad=0.005)
         for n in range(row_num_at_col):
             # checkbox
-            box_y = word_y_initial -　0.005 - row_spacing * n
+            box_y = word_y_initial - 0.005 - row_spacing * n
             fancybox = mpatches.FancyBboxPatch((box_x,box_y), width, height, boxstyle=boxstyle, fc="#f5efe6", ec="darkgray", alpha=1)
             ax.add_patch(fancybox)
             # word
@@ -334,11 +334,11 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
     ax2 = draw_column(ax2, words[row_start:row_finish], row_spacing, label_x=0.25+col_spacing)
     # 3rd column
     row_start = row_num_at_col_1 + row_num
-    row_finish = row_num_at_col_1 + row_num+row_num_at_col_3
+    row_finish = row_num_at_col_1 + row_num + row_num_at_col_3
     col_spacing = (w_lens[row_num_at_col_1+row_num]-5) * 0.05
     ax2 = draw_column(ax2, words[row_start:row_finish], row_spacing, label_x=0.57+col_spacing)
     # penetrating column
-    if pene_words_count > 0
+    if pene_words_count > 0:
         row_start = row_num_at_col_1 + row_num+row_num_at_col_3
         row_finish = row_num_at_col_1 + row_num+row_num_at_col_3 + pene_words_count
         if peneall is True:

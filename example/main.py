@@ -83,3 +83,4 @@ puzzle.show()
 # puzzle = Puzzle.from_json(f"json/ファイル名.json")
 # utils.export_image(puzzle.cell, puzzle.uwords[puzzle.uwords!=""], title="テーマ：テスト", oname=f"fig/twitter_test.png", answer=True)
 # %%
+# %%

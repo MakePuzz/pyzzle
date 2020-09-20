@@ -23,7 +23,7 @@ rcParams['font.sans-serif'] = ['Hiragino Maru Gothic Pro', 'Yu Gothic', 'Meiryo'
                                'Takao', 'IPAexGothic', 'IPAPGothic', 'VL PGothic', 'Noto Sans CJK JP']
 
 LOG = logging.getLogger(__name__)
-BLANK = ""
+BLANK = Word("", weight=0)
 
 
 class Puzzle:
@@ -110,7 +110,6 @@ class Puzzle:
         if gravity is None:
             gravity = np.zeros([self.height, self.width])
         self.gravity = np.array(gravity)
-        self.weight = 0
         self.name = name
         self.cell = np.full([self.height, self.width], BLANK, dtype="unicode")
         self.cover = np.zeros(self.cell.shape, dtype=np.int32)
@@ -170,6 +169,12 @@ class Puzzle:
     def __ge__(self, other):
         return not self.__lt__(other)
     
+    @property
+    def weight(self):
+        weight = 0
+        for uw in self.uwords[self.uwords!=BLANK]:
+            weight += uw.weight
+        return weight
     @property
     def dic(self):
         return self._dic
@@ -475,7 +480,6 @@ class Puzzle:
         self.uj[self.nwords] = j
         self.uwords[self.nwords] = word
         self.nwords += 1
-        self.weight += word.weight
         self.history.append((History.ADD, ori, i, j, word))
         return code
 
@@ -636,7 +640,6 @@ class Puzzle:
         self.uwords[drop_idx:-1] = self.uwords[drop_idx+1:]
         self.uwords[-1] = BLANK
         self.nwords -= 1
-        self.weight -= word.weight
         # Insert data to history
         code = History.DROP_KICK if is_kick else History.DROP
         self.history.append((code, ori, i, j, word))
@@ -1104,7 +1107,7 @@ class Puzzle:
             self.ui += di_dj[0]
             self.uj += di_dj[1]
             self.history.append((History.MOVE, direction, 1, None, None))
-        self.enable = self.get_enable()
+        self.enable = self.get_enable(self.cell)
         return
 
     @classmethod
@@ -1142,7 +1145,7 @@ class Puzzle:
         return indices
 
     @classmethod
-    def get_uwords(self, cell=None):
+    def get_uwords(self, cell):
         """
         Get uwords from the cell.
 
@@ -1156,26 +1159,24 @@ class Puzzle:
         uwords : list
             uwords
         """
-        if cell is None:
-            cell = self.cell
         indices = self._get_word_indices(cell=cell)
         uwords = []
         for i, j in zip(indices["vertical"][0], indices["vertical"][1]):
             try:
                 imax = i + np.where(cell[i:, j] == '')[0][0]
             except:
-                imax = self.height
+                imax = cell.shape[0]
             uwords.append(''.join(cell[i:imax, j]))
         for i, j in zip(indices["horizontal"][0], indices["horizontal"][1]):
             try:
                 jmax = j + np.where(cell[i, j:] == '')[0][0]
             except:
-                jmax = self.width
+                jmax = cell.shape[1]
             uwords.append(''.join(cell[i, j:jmax]))
         return np.array(uwords)
     
     @classmethod
-    def get_enable(self, cell=None):
+    def get_enable(self, cell):
         """
         Get enable from the cell.
 
@@ -1189,8 +1190,6 @@ class Puzzle:
         enable : numpy ndarray
             enable
         """
-        if cell is None:
-            cell = self.cell
         indices = self._get_word_indices(cell=cell)
         enable = np.ones(cell.shape).astype(bool)
         for i, j in zip(indices["vertical"][0], indices["vertical"][1]):
@@ -1198,25 +1197,25 @@ class Puzzle:
             try:
                 imax = i + np.where(cell[i:, j] == '')[0][0]
             except:
-                imax = self.height
+                imax = cell.shape[0]
             if i != 0:
                 enable[i-1, j] = False
-            if imax != self.height:
+            if imax != cell.shape[0]:
                 enable[imax, j] = False
         for i, j in zip(indices["horizontal"][0], indices["horizontal"][1]):
             # enable
             try:
                 jmax = j + np.where(cell[i, j:] == '')[0][0]
             except:
-                jmax = self.width
+                jmax = cell.shape[1]
             if j != 0:
                 enable[i, j-1] = False
-            if jmax != self.height:
+            if jmax != cell.shape[1]:
                 enable[i, jmax] = False
         return enable
 
     @classmethod
-    def get_cover(self, cell=None):
+    def get_cover(self, cell):
         """
         Calculate the cover from the cell.
 
@@ -1230,8 +1229,6 @@ class Puzzle:
         cover : numpy ndarray
             cover array
         """
-        if cell is None:
-            cell = self.cell
         cell = np.pad(cell, [(1,1), (1,1)], mode="constant", constant_values=BLANK)
         upper = cell[:-2, 1:-1] != BLANK
         lower = cell[2:, 1:-1] != BLANK
@@ -1245,7 +1242,7 @@ class Puzzle:
         return cover
     
     @classmethod
-    def get_word_properties(self, cell=None):
+    def get_word_properties(self, cell):
         """
         Calculate the word properties from the cell.
 
@@ -1258,8 +1255,6 @@ class Puzzle:
         -------
         uori, ui, uj, uwords: numpy ndarray
         """
-        if cell is None:
-            cell = self.cell
         indices = self._get_word_indices(cell)
         uori = np.concatenate([np.zeros_like(indices["vertical"][0]), np.ones_like(indices["horizontal"][0])])
         ui = np.concatenate([indices["vertical"][0], indices["horizontal"][0]])
@@ -1280,7 +1275,7 @@ class Puzzle:
         if cell:
             self.cell = cell
         enable = self.get_enable(cell=self.cell)
-        cover = self.get_cover(cell)
+        cover = self.get_cover(cell=self.cell)
         self.enable = enable
         self.cover = cover
         return

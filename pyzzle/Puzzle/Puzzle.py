@@ -175,6 +175,7 @@ class Puzzle:
         for uw in self.uwords[self.uwords!=BLANK]:
             weight += uw.weight
         return weight
+
     @property
     def dic(self):
         return self._dic
@@ -818,10 +819,14 @@ class Puzzle:
     @staticmethod
     def from_cell(cell, mask=None, gravity=None, name=None):
         cell = np.array(cell)
-        uori, uj, uj, uwords = Puzzle.get_word_properties(cell)
+        uori, ui, uj, uwords = Puzzle.get_word_properties(cell)
         puzzle = Puzzle(width=cell.shape[1], height=cell.shape[0], mask=mask, gravity=gravity, name=name)
-        for ori, i, j, word in zip(uori, uj, uj, uwords):
-            puzzle.add(ori, i, j, word)
+        
+        nwords = 0
+        while(nwords < len(uwords)):
+            for ori, i, j, word in zip(uori, ui, uj, uwords):
+                puzzle.add(ori, i, j, word)
+            nwords = puzzle.nwords
         return puzzle
 
     def kick(self):

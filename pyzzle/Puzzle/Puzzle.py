@@ -85,7 +85,7 @@ class Puzzle:
         puzzle.export_json("example.json")
     """
 
-    def __init__(self, width, height, mask=None, gravity=None, name="Criss Cross"):
+    def __init__(self, width=None, height=None, mask=None, gravity=None, name="Criss Cross"):
         """
         Initialize the puzzle object.
 
@@ -100,6 +100,10 @@ class Puzzle:
         name : str, default "Criss Cross"
             Title of the puzzle.
         """
+        self.name = name
+        self.nwords = 0
+        self.epoch = 0
+        self.seed = None
         self.width = width
         self.height = height
         self.mask = mask
@@ -110,7 +114,6 @@ class Puzzle:
         if gravity is None:
             gravity = np.zeros([self.height, self.width])
         self.gravity = np.array(gravity)
-        self.name = name
         self.cell = np.full([self.height, self.width], BLANK, dtype="unicode")
         self.cover = np.zeros(self.cell.shape, dtype=np.int32)
         self.enable = np.ones(self.cell.shape, dtype="bool")
@@ -118,12 +121,9 @@ class Puzzle:
         self.ui = np.full(self.uori.size, -1, dtype=np.int32)
         self.uj = np.full(self.uori.size, -1, dtype=np.int32)
         self.uwords = np.full(self.uori.size, BLANK, dtype=object)
-        self.nwords = 0
+        self.log = None
         self.history = []
         self.base_history = []
-        self.log = None
-        self.epoch = 0
-        self.seed = None
         self._dic = Dictionary()
         self._plc = Placeable(width=self.width, height=self.height)
 

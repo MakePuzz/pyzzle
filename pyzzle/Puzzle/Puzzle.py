@@ -39,20 +39,50 @@ class Puzzle:
         puzzle.show()
         puzzle.save_problem_image("problem.png")
         puzzle.save_answer_image("answer.png")
-        puzzle.export_json("out.json")
+        puzzle.export_json("example.json")
 
     Example usage (using dictionary)::
         from pyzzle import Puzzle
         puzzle = Puzzle(8,8)
+
         dic = Dictionary("path_to_dict")
         puzzle.import_dict(dic)
-
         obj_func = ["weight", "nwords", "cross_count", "fill_count", "max_connected_empties"]
         puzzle = puzzle.solve(epoch=5, optimizer="local_search", objective_function=obj_func)
-
         puzzle.save_problem_image("problem.png")
         puzzle.save_answer_image("answer.png")
-        puzzle.export_json("out.json")
+        puzzle.export_json("example.json")
+
+    Example usage (from cell)::
+        from pyzzle import Puzzle
+        cell = np.array([
+            ['T', '', 'S', '', ''],
+            ['E', 'S', 'T', 'A', ''],
+            ['S', '', 'E', '', ''],
+            ['T', '', 'M', 'E', ''],
+            ['', '', '', 'T', '']
+        ])
+        puzzle = Puzzle.from_cell(cell, name="TEST")
+
+        dic = Dictionary("path_to_dict")
+        puzzle.import_dict(dic)
+        obj_func = ["weight", "nwords", "cross_count", "fill_count", "max_connected_empties"]
+        puzzle = puzzle.solve(epoch=5, optimizer="local_search", objective_function=obj_func)
+        puzzle.save_problem_image("problem.png")
+        puzzle.save_answer_image("answer.png")
+        puzzle.export_json("example.json")
+
+    Example usage (from json)::
+        from pyzzle import Puzzle
+        puzzle = Puzzle.from_json("example.json")
+
+        dic = Dictionary("path_to_dict")
+        puzzle.import_dict(dic)
+        obj_func = ["weight", "nwords", "cross_count", "fill_count", "max_connected_empties"]
+        puzzle = puzzle.solve(epoch=5, optimizer="local_search", objective_function=obj_func)
+        puzzle.save_problem_image("problem.png")
+        puzzle.save_answer_image("answer.png")
+        puzzle.export_json("example.json")
     """
 
     def __init__(self, width, height, mask=None, gravity=None, name="Criss Cross"):

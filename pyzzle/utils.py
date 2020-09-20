@@ -336,7 +336,6 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
     row_finish = row_num_at_col_1+row_num+row_num_at_col_3
     col_spacing = (w_lens[row_num_at_col_1+row_num]-5) * 0.05
     ax2 = draw_column(ax2, words[row_start:row_finish], row_spacing, label_x=0.57+col_spacing)
-
     # penetrating column
     if pene_words_count > 0 and peneall is True:
         row_start = row_num_at_col_1+row_num+row_num_at_col_3

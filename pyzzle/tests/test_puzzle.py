@@ -187,7 +187,6 @@ class TestPuzzle(unittest.TestCase):
     
     def test_get_cover(self, *mocks):
         from pyzzle import Puzzle
-        puzzle = Puzzle(5, 5)
         cell = np.array([
             ['T', '', 'S', '', ''],
             ['E', 'S', 'T', 'A', ''],
@@ -202,11 +201,10 @@ class TestPuzzle(unittest.TestCase):
             [1, 0, 2, 2, 0],
             [0, 0, 0, 1, 0]
         ])
-        self.assertTrue(np.all(puzzle.get_cover(cell) == cover))
+        self.assertTrue(np.all(Puzzle.get_cover(cell) == cover))
         
     def test_get_enable(self, *mocks):
         from pyzzle import Puzzle
-        puzzle = Puzzle(5, 5)
         cell = np.array([
             ['T', '', 'S', '', ''],
             ['E', 'S', 'T', 'A', ''],
@@ -221,7 +219,41 @@ class TestPuzzle(unittest.TestCase):
             [True, False,  True,  True, False],
             [False,  True, False,  True,  True]
         ])
-        self.assertTrue(np.all(puzzle.get_enable(cell) == enable))
+        self.assertTrue(np.all(Puzzle.get_enable(cell) == enable))
+
+    def test_get_uwords(self, *mocks):
+        from pyzzle import Puzzle, Word
+        cell = np.array([
+            ['T', '', 'S', '', ''],
+            ['E', 'S', 'T', 'A', ''],
+            ['S', '', 'E', '', ''],
+            ['T', '', 'M', 'E', ''],
+            ['', '', '', 'T', '']
+        ])
+        uwords = np.array([Word("TEST"), Word("ESTA"), Word("STEM"), Word("ME"), Word("ET")], dtype=object)
+        self.assertTrue(np.all(sorted(Puzzle.get_uwords(cell)) == sorted(uwords)))
+
+    def test_is_unique(self, *mocks):
+        from pyzzle import Puzzle
+        puzzle = Puzzle(5, 5)
+        cell = np.array([
+            ['T', '', 'S', '', ''],
+            ['E', 'S', 'T', 'A', ''],
+            ['S', '', 'E', '', ''],
+            ['T', '', 'M', 'E', ''],
+            ['', '', '', 'T', '']
+        ])
+        puzzle = Puzzle.from_cell(cell)
+        self.assertTrue(puzzle.is_unique)
+        cell = np.array([
+            ['T', '', 'S', '', ''],
+            ['E', 'S', 'T', 'A', ''],
+            ['S', '', 'E', '', ''],
+            ['T', '', 'M', 'E', ''],
+            ['E', 'A', '', 'T', '']
+        ])
+        puzzle = Puzzle.from_cell(cell)
+        self.assertFalse(puzzle.is_unique)
 
 if __name__ == '__main__':
     unittest.main()

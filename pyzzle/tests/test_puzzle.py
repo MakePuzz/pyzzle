@@ -40,10 +40,10 @@ class TestPuzzle(unittest.TestCase):
                 self.assertTrue(np.all(puzzle.cell == added_cell))
                 self.assertTrue(np.all(puzzle.cover == added_cover))
                 self.assertTrue(np.all(puzzle.enable == added_enable))
-                self.assertTrue(np.all(puzzle.used_ori[:puzzle.nwords] == [0, 1, 0, 1, 0]))
-                self.assertTrue(np.all(puzzle.used_i[:puzzle.nwords] == [0, 1, 0, 3, 3]))
-                self.assertTrue(np.all(puzzle.used_j[:puzzle.nwords] == [0, 0, 2, 2, 3]))
-                self.assertTrue(np.all(puzzle.used_words[:puzzle.nwords] == ["TEST", "ESTA", "STEM", "ME", "ET"]))
+                self.assertTrue(np.all(puzzle.uori[:puzzle.nwords] == [0, 1, 0, 1, 0]))
+                self.assertTrue(np.all(puzzle.ui[:puzzle.nwords] == [0, 1, 0, 3, 3]))
+                self.assertTrue(np.all(puzzle.uj[:puzzle.nwords] == [0, 0, 2, 2, 3]))
+                self.assertTrue(np.all(puzzle.uwords[:puzzle.nwords] == ["TEST", "ESTA", "STEM", "ME", "ET"]))
 
     def test_drop(self, *mocks):
         from pyzzle import Puzzle, Word
@@ -70,10 +70,10 @@ class TestPuzzle(unittest.TestCase):
             [True, False,  True,  True, False],
             [False,  True, False,  True,  True]
         ])
-        puzzle.used_ori = np.array([0, 1, 0, 1, 0])
-        puzzle.used_i = np.array([0, 1, 0, 3, 3])
-        puzzle.used_j = np.array([0, 0, 2, 2, 3])
-        puzzle.used_words = np.array([Word("TEST"), Word("ESTA"), Word("STEM"), Word("ME"), Word("ET")], dtype=object)
+        puzzle.uori = np.array([0, 1, 0, 1, 0])
+        puzzle.ui = np.array([0, 1, 0, 3, 3])
+        puzzle.uj = np.array([0, 0, 2, 2, 3])
+        puzzle.uwords = np.array([Word("TEST"), Word("ESTA"), Word("STEM"), Word("ME"), Word("ET")], dtype=object)
 
         puzzle.drop("TEST")
         puzzle.drop("ME")
@@ -101,10 +101,10 @@ class TestPuzzle(unittest.TestCase):
         self.assertTrue(np.all(puzzle.cell == dropped_cell))
         self.assertTrue(np.all(puzzle.cover == dropped_cover))
         self.assertTrue(np.all(puzzle.enable == dropped_enable))
-        self.assertTrue(np.all(puzzle.used_ori[:puzzle.nwords] == [1, 0, 0]))
-        self.assertTrue(np.all(puzzle.used_i[:puzzle.nwords] == [1, 0, 3]))
-        self.assertTrue(np.all(puzzle.used_j[:puzzle.nwords] == [0, 2, 3]))
-        self.assertTrue(np.all(puzzle.used_words[:puzzle.nwords] == ["ESTA", "STEM", "ET"]))
+        self.assertTrue(np.all(puzzle.uori[:puzzle.nwords] == [1, 0, 0]))
+        self.assertTrue(np.all(puzzle.ui[:puzzle.nwords] == [1, 0, 3]))
+        self.assertTrue(np.all(puzzle.uj[:puzzle.nwords] == [0, 2, 3]))
+        self.assertTrue(np.all(puzzle.uwords[:puzzle.nwords] == ["ESTA", "STEM", "ET"]))
 
     def test_move(self, *mocks):
         import copy
@@ -132,8 +132,8 @@ class TestPuzzle(unittest.TestCase):
             [True, False,  True,  True, False],
             [False,  True, False,  True,  True]
         ])
-        puzzle.used_i = np.array([0, 1, 0, 3, 3])
-        puzzle.used_j = np.array([0, 0, 2, 2, 3])
+        puzzle.ui = np.array([0, 1, 0, 3, 3])
+        puzzle.uj = np.array([0, 0, 2, 2, 3])
 
         moved_cell = np.array([
             ['', 'T', '', 'S', ''],
@@ -164,26 +164,26 @@ class TestPuzzle(unittest.TestCase):
         self.assertTrue(np.all(puzzle.cell == init_cell))
         self.assertTrue(np.all(puzzle.cover == init_cover))
         self.assertTrue(np.all(puzzle.enable == init_enable))
-        self.assertTrue(np.all(puzzle.used_i[:puzzle.nwords] == [0, 1, 0, 3, 3]))
-        self.assertTrue(np.all(puzzle.used_j[:puzzle.nwords] == [0, 0, 2, 2, 3]))
+        self.assertTrue(np.all(puzzle.ui[:puzzle.nwords] == [0, 1, 0, 3, 3]))
+        self.assertTrue(np.all(puzzle.uj[:puzzle.nwords] == [0, 0, 2, 2, 3]))
         puzzle.move("R", 1)
         self.assertTrue(np.all(puzzle.cell == moved_cell))
         self.assertTrue(np.all(puzzle.cover == moved_cover))
         self.assertTrue(np.all(puzzle.enable == moved_enable))
-        self.assertTrue(np.all(puzzle.used_i[:puzzle.nwords] == [0, 1, 0, 3, 3]))
-        self.assertTrue(np.all(puzzle.used_j[:puzzle.nwords] == [1, 1, 3, 3, 4]))
+        self.assertTrue(np.all(puzzle.ui[:puzzle.nwords] == [0, 1, 0, 3, 3]))
+        self.assertTrue(np.all(puzzle.uj[:puzzle.nwords] == [1, 1, 3, 3, 4]))
         puzzle.move("U", 1)
         self.assertTrue(np.all(puzzle.cell == moved_cell))
         self.assertTrue(np.all(puzzle.cover == moved_cover))
         self.assertTrue(np.all(puzzle.enable == moved_enable))
-        self.assertTrue(np.all(puzzle.used_i[:puzzle.nwords] == [0, 1, 0, 3, 3]))
-        self.assertTrue(np.all(puzzle.used_j[:puzzle.nwords] == [1, 1, 3, 3, 4]))
+        self.assertTrue(np.all(puzzle.ui[:puzzle.nwords] == [0, 1, 0, 3, 3]))
+        self.assertTrue(np.all(puzzle.uj[:puzzle.nwords] == [1, 1, 3, 3, 4]))
         puzzle.move("D", 1)
         self.assertTrue(np.all(puzzle.cell == moved_cell))
         self.assertTrue(np.all(puzzle.cover == moved_cover))
         self.assertTrue(np.all(puzzle.enable == moved_enable))
-        self.assertTrue(np.all(puzzle.used_i[:puzzle.nwords] == [0, 1, 0, 3, 3]))
-        self.assertTrue(np.all(puzzle.used_j[:puzzle.nwords] == [1, 1, 3, 3, 4]))
+        self.assertTrue(np.all(puzzle.ui[:puzzle.nwords] == [0, 1, 0, 3, 3]))
+        self.assertTrue(np.all(puzzle.uj[:puzzle.nwords] == [1, 1, 3, 3, 4]))
     
     def test_get_cover(self, *mocks):
         from pyzzle import Puzzle

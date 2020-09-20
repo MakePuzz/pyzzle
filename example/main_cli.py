@@ -76,5 +76,5 @@ if width == height == 15:
         title = f"Theme：{name}"
     else:
         title = f"テーマ：{name}"
-    utils.export_image(puzzle.cell, puzzle.used_words[puzzle.used_words!=""], title=title, oname=f"fig/twitter_probrem_{puzzle.name}_w{width}_h{height}_r{seed}.png", dpi=144, answer=False)
-    utils.export_image(puzzle.cell, puzzle.used_words[puzzle.used_words!=""], title=title, oname=f"fig/twitter_answer_{puzzle.name}_w{width}_h{height}_r{seed}.png", dpi=144, answer=True)
+    utils.export_image(puzzle.cell, puzzle.uwords[puzzle.uwords!=""], title=title, oname=f"fig/twitter_probrem_{puzzle.name}_w{width}_h{height}_r{seed}.png", dpi=144, answer=False)
+    utils.export_image(puzzle.cell, puzzle.uwords[puzzle.uwords!=""], title=title, oname=f"fig/twitter_answer_{puzzle.name}_w{width}_h{height}_r{seed}.png", dpi=144, answer=True)

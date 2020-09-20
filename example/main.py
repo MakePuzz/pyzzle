@@ -54,7 +54,7 @@ if width == height == 15:
         title = f"Theme：{name}"
     else:
         title = f"テーマ：{name}"
-    utils.export_image(puzzle.cell, puzzle.used_words[puzzle.used_words!=""], title=title, oname=f"{base_dir}/fig/twitter_answer_{oname}.png", answer=True)
+    utils.export_image(puzzle.cell, puzzle.uwords[puzzle.uwords!=""], title=title, oname=f"{base_dir}/fig/twitter_answer_{oname}.png", answer=True)
 # puzzle.to_pickle(f"pickle/{oname}.pickle")
 
 # In[]
@@ -81,5 +81,5 @@ puzzle.show()
 # %%
 # from pyzzle import Puzzle, utils
 # puzzle = Puzzle.from_json(f"json/ファイル名.json")
-# utils.export_image(puzzle.cell, puzzle.used_words[puzzle.used_words!=""], title="テーマ：テスト", oname=f"fig/twitter_test.png", answer=True)
+# utils.export_image(puzzle.cell, puzzle.uwords[puzzle.uwords!=""], title="テーマ：テスト", oname=f"fig/twitter_test.png", answer=True)
 # %%

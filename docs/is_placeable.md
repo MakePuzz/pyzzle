@@ -93,7 +93,7 @@ def is_placeable(self, ori, i, j, word, w_len):
             return Judgement.NOT_A_CORRECT_INTERSECTION
 
     # If the same word is in use, return False
-    if word in self.used_words:
+    if word in self.uwords:
         return Judgement.THE_SAME_WORD_IS_IN_USE
 
     # If neighbor cells are filled except at the intersection, return False
@@ -238,7 +238,7 @@ if ori == 1:
 
 ```python
 # If the same word is in use, return False
-if word in self.used_words:
+if word in self.uwords:
     return Judgement.THE_SAME_WORD_IS_IN_USE
 ```
 

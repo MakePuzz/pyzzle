@@ -290,11 +290,10 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
     width = 0.015
     height = 0.015
 
-    def draw_column(words, row_spacing, label_x=0.02, word_y_initial=0.97):
+    def draw_column(ax, words, row_spacing, label_x=0.02, word_y_initial=0.97):
         # dot line
         if word_y_initial != 0.97:
-            ax2.axhline(y = word_y_initial+0.038, color='lightgray', xmin=label_x, xmax=0.99, lw=2, ls=':')
-
+            ax.axhline(y = word_y_initial+0.038, color='lightgray', xmin=label_x, xmax=0.99, lw=2, ls=':')
         # parameters
         row_num_at_col = len(words)
         box_x = 0.027 + label_x
@@ -306,50 +305,48 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
             # checkbox
             box_y = word_y_initial -0.005 - row_spacing * n
             fancybox = mpatches.FancyBboxPatch((box_x,box_y), width, height, boxstyle=mpatches.BoxStyle("Round", pad=0.005), fc="#f5efe6", ec="darkgray", alpha=1)
-            ax2.add_patch(fancybox)
+            ax.add_patch(fancybox)
             # word
             word_y = word_y_initial - row_spacing * n
-            ax2.text(word_x, word_y, words[w], size=18, ha='left', va='center')
+            ax.text(word_x, word_y, words[w], size=18, ha='left', va='center')
             # label
             if w == 0 or w_lens[w] > w_lens[w-1]:
-                ax2.text(label_x, word_y, str(w_lens[w]), fontsize=10, color='dimgray', ha='right')
+                ax.text(label_x, word_y, str(w_lens[w]), fontsize=10, color='dimgray', ha='right')
             # label line
             if w_lens[w] > w_lens[w-1]:
-                ax2.axvline(x=label_x+0.01, color='lightgray', ymin=word_y_initial - 0.01 -row_spacing*(n-1), ymax=ymax, lw=2)
+                ax.axvline(x=label_x+0.01, color='lightgray', ymin=word_y_initial - 0.01 -row_spacing*(n-1), ymax=ymax, lw=2)
                 ymax = word_y_initial + 0.01 - row_spacing * n
             # end of label line
             elif n == row_num_at_col-1:
-                ax2.axvline(x=label_x+0.01, color='lightgray', ymin=word_y_initial - 0.01 -row_spacing*n, ymax=ymax, lw=2)
+                ax.axvline(x=label_x+0.01, color='lightgray', ymin=word_y_initial - 0.01 -row_spacing*n, ymax=ymax, lw=2)
             w += 1
-        return
+        return ax
 
     # 1st column
     row_start = 0
     row_finish = row_num_at_col_1
-    draw_column(words[row_start:row_finish], row_spacing)
+    ax2 = draw_column(ax2, words[row_start:row_finish], row_spacing)
     # 2nd column
     row_start = row_num_at_col_1
     row_finish = row_num_at_col_1+row_num
     col_spacing = (w_lens[row_num_at_col_1]-3) * 0.05
-    draw_column(words[row_start:row_finish], row_spacing, label_x=0.25+col_spacing)
+    ax2 = draw_column(ax2, words[row_start:row_finish], row_spacing, label_x=0.25+col_spacing)
     # 3rd column
     row_start = row_num_at_col_1+row_num
     row_finish = row_num_at_col_1+row_num+row_num_at_col_3
     col_spacing = (w_lens[row_num_at_col_1+row_num]-5) * 0.05
-    draw_column(words[row_start:row_finish], row_spacing, label_x=0.57+col_spacing)
+    ax2 = draw_column(ax2, words[row_start:row_finish], row_spacing, label_x=0.57+col_spacing)
 
     # penetrating column
     if pene_words_count > 0 and peneall is True:
         row_start = row_num_at_col_1+row_num+row_num_at_col_3
         row_finish = row_num_at_col_1+row_num+row_num_at_col_3+pene_words_count
-        draw_column(words[row_start:row_finish], row_spacing, label_x=0.02, word_y_initial=0.97-row_spacing*(row_num)-0.025)
-
+        ax2 = draw_column(ax2, words[row_start:row_finish], row_spacing, label_x=0.02, word_y_initial=0.97-row_spacing*(row_num)-0.025)
     if pene_words_count > 0 and peneall is False:
         row_start = row_num_at_col_1+row_num+row_num_at_col_3
         row_finish = row_num_at_col_1+row_num+row_num_at_col_3+pene_words_count
         col_spacing = (w_lens[row_num_at_col_1]-3) * 0.05
-        draw_column(words[row_start:row_finish], row_spacing, label_x=0.25+col_spacing, word_y_initial=0.97-row_spacing*(row_num)-0.025)
-
+        ax2 = draw_column(ax2, words[row_start:row_finish], row_spacing, label_x=0.25+col_spacing, word_y_initial=0.97-row_spacing*(row_num)-0.025)
 
     if answer is False:
         fig.savefig(oname, dpi=dpi, bbox_inches='tight')

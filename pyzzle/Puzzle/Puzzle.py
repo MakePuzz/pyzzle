@@ -781,6 +781,15 @@ class Puzzle:
             puzzle.add(word_dict["ori"], word_dict["i"], word_dict["j"], word_dict["word"])
         return puzzle
 
+    @staticmethod
+    def from_cell(cell, mask=None, gravity=None, name=None):
+        cell = np.array(cell)
+        used_ori, used_j, used_j, used_words = Puzzle.get_word_properties(cell)
+        puzzle = Puzzle(width=cell.shape[1], height=cell.shape[0], mask=mask, gravity=gravity, name=name)
+        for ori, i, j, word in zip(used_ori, used_j, used_j, used_words):
+            puzzle.add(ori, i, j, word)
+        return puzzle
+
     def kick(self):
         """
         Remove words other than the largest component from puzzle
@@ -1067,6 +1076,7 @@ class Puzzle:
         self.enable = self.get_enable()
         return
 
+    @classmethod
     def _get_word_indices(self, cell=None):
         """
         Returns the indices of the head of the word on the board.
@@ -1100,6 +1110,7 @@ class Puzzle:
         indices = {"vertical": np.where(start_0), "horizontal": np.where(start_1)}
         return indices
 
+    @classmethod
     def get_used_words(self, cell=None):
         """
         Get used_words from the cell.
@@ -1132,6 +1143,7 @@ class Puzzle:
             used_words.append(''.join(cell[i, j:jmax]))
         return np.array(used_words)
     
+    @classmethod
     def get_enable(self, cell=None):
         """
         Get enable from the cell.
@@ -1172,6 +1184,7 @@ class Puzzle:
                 enable[i, jmax] = False
         return enable
 
+    @classmethod
     def get_cover(self, cell=None):
         """
         Calculate the cover from the cell.
@@ -1200,6 +1213,7 @@ class Puzzle:
         cover *= (cell[1:-1, 1:-1] != BLANK)
         return cover
     
+    @classmethod
     def get_word_properties(self, cell=None):
         """
         Calculate the word properties from the cell.

@@ -147,11 +147,11 @@ def decode_json(fpath):
 
 def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=0, dpi=300, answer=False):
     """
-    export the image of puzzle boards
-    this fuction can be used when the board is square
+    Export a puzzle image. This can be used for square puzzles only.
+
     Parameters
     ----------
-    puzzle : ndarray
+    puzzle : numpy ndarray
         Array of words in the puzzle board
     words : ndarray
         The list of words in this puzzle
@@ -177,6 +177,12 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
     ax1.set(aspect="equal", xlim=(0,wn), ylim=(0,wn))
     ax2.axis("off")
 
+    # puzzle title and copyright
+    w_num = len(words)
+    ax1.text(0.1, 15.2, f'{title}', size=16, ha='left', color='#1a1a1a')
+    ax1.text(15, 15.1, f'{w_num}語', size=12, ha='right', color='#1a1a1a')
+    ax2.text(0.95, -0.01, '© MakePuzz', size=18, ha='right', fontname='Yu Gothic', alpha=0.5, fontweight='bold')
+
     # Board creation
     # draw inner lines
     left = (puzzle[:,:-1] != '')
@@ -185,30 +191,23 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
     bottom = (puzzle[1:,:] != '')
     # thin line
     thin_vline_x = np.where(left * right)[1] + 1
-    thin_vline_y1 = wn - 1 - np.where(left * right)[0]
-    thin_vline_y2 = thin_vline_y1 + 1
-    thin_hline_x1 = np.where(top * bottom)[1]
-    thin_hline_x2 = thin_hline_x1 + 1
+    thin_vline_y = wn - 1 - np.where(left * right)[0]
+    thin_hline_x = np.where(top * bottom)[1]
     thin_hline_y = wn - 1 - np.where(top * bottom)[0]
-    ax1.plot([thin_vline_x,thin_vline_x], [thin_vline_y1,thin_vline_y2], color="#EBEBEB", ls="-", lw=1)
-    ax1.plot([thin_hline_x1,thin_hline_x2], [thin_hline_y,thin_hline_y], color="#EBEBEB", ls="-", lw=1)
-
+    ax1.plot([thin_vline_x,thin_vline_x], [thin_vline_y,thin_vline_y+1], color="#EBEBEB", ls="-", lw=1)
+    ax1.plot([thin_hline_x,thin_hline_x+1], [thin_hline_y,thin_hline_y], color="#EBEBEB", ls="-", lw=1)
     # bold line
     draw_bold_vline = np.logical_or(~left * right, left * ~right)
     bold_vline_x = np.where(draw_bold_vline)[1] + 1
-    bold_vline_y1 = wn - 1 - np.where(draw_bold_vline)[0]
-    bold_vline_y2 = bold_vline_y1 + 1
+    bold_vline_y = wn - 1 - np.where(draw_bold_vline)[0]
     draw_bold_hline = np.logical_or(~top * bottom, top * ~bottom)
-    bold_hline_x1 = np.where(draw_bold_hline)[1]
-    bold_hline_x2 = bold_hline_x1 + 1
+    bold_hline_x = np.where(draw_bold_hline)[1]
     bold_hline_y = wn - 1 - np.where(draw_bold_hline)[0]
-    ax1.plot([bold_vline_x,bold_vline_x], [bold_vline_y1,bold_vline_y2], color="k", ls="-", lw=1, zorder=4)
-    ax1.plot([bold_hline_x1,bold_hline_x2], [bold_hline_y,bold_hline_y], color="k", ls="-", lw=1, zorder=4)
+    ax1.plot([bold_vline_x,bold_vline_x], [bold_vline_y,bold_vline_y+1], color="k", ls="-", lw=1, zorder=4)
+    ax1.plot([bold_hline_x,bold_hline_x+1], [bold_hline_y,bold_hline_y], color="k", ls="-", lw=1, zorder=4)
 
     if draw_type == 0:
-        # draw outer lines
         ax1.plot([0, 0, wn, wn, 0], [0, wn, wn, 0, 0], color='k', ls='-', lw=4, zorder=4)
-        # fill empty cells
         cmap = plt.cm.viridis
         cmap.set_over("#f5efe6", alpha=1)
         cmap.set_under("white", alpha=0)
@@ -230,19 +229,12 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
             if puzzle[i,0] != '':
                 ax1.axhline(y=wn, xmin=xmin, xmax=xmax, color='k', ls='-',lw=4, zorder=4)
 
-    # puzzle title and copyright
-    w_num = len(words)
-    ax1.text(0.1, 15.2, f'{title}', size=16, ha='left', color='#1a1a1a')
-    ax1.text(15, 15.1, f'{w_num}語', size=12, ha='right', color='#1a1a1a')
-    ax2.text(0.95, -0.01, '© MakePuzz', size=18, ha='right', fontname='Yu Gothic', alpha=0.5, fontweight='bold')
-
     # Word list creation
     col_num = 3
     char_max_per_row = 21
     row_num = np.ceil(w_num/col_num).astype(int) # row_num = np.ceil(w_num/20)
     char_num_per_row = w_lens[row_num-1] + w_lens[2*row_num-1] + w_lens[w_num-1] + 2 + 4
-
-    # penetrate check
+    # check penetration
     pene_words_count = 0
     if char_num_per_row > char_max_per_row:
         char_num_at_row_2to3 = (char_max_per_row - 2 - w_lens[row_num-1]) # Subtract the left column from the whole
@@ -252,15 +244,14 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
             char_num_per_row = w_lens[row_num-1] + w_lens[2*row_num-1] + w_lens[w_num-1-pene_words_count] + 2 + 4
 
     # no penetration
-    if pene_words_count == 0:
-        if row_num <= 10:
-            row_spacing = 0.05 + 0.05
-        if row_num <= 15:
-            row_spacing = 0.015 + 0.05
-        if row_num > 15:
-            row_spacing = 0.05
-        row_num_at_col_1 = row_num
-        row_num_at_col_3 = w_num - 2 * row_num
+    if row_num <= 10:
+        row_spacing = 0.05 + 0.05
+    if row_num <= 15:
+        row_spacing = 0.015 + 0.05
+    if row_num > 15:
+        row_spacing = 0.05
+    row_num_at_col_1 = row_num
+    row_num_at_col_3 = w_num - 2 * row_num
     # penetration
     if pene_words_count > 0:
         if peneall is True: # all penetration
@@ -284,10 +275,9 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
 
     def draw_column(ax, words, row_spacing, label_x=0.02, y_offset=0.97, separate_space=False, label_labelline_spacing=0.01, label_box_spacing=0.027, label_word_spacing=0.06,
                     label_color="dimgray", box_size=0.015, box_fc="#f5efe6", box_ec="darkgray", box_pad=0.005, labelline_color="lightgray"):
-        # dot line
+        """draw a words column on plt.ax"""
         if separate_space is True:
             ax.axhline(y = y_offset+0.038, color=labelline_color, xmin=label_x-0.02, xmax=0.99, lw=2, ls=':')
-        # parameters
         nwords = len(words)
         w_lens = np.vectorize(len)(words)
         labelline_x = label_x + label_labelline_spacing
@@ -333,17 +323,16 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
         first_w = row_num_at_col_1 + row_num + row_num_at_col_3
         last_w = row_num_at_col_1 + row_num + row_num_at_col_3 + pene_words_count
         if peneall is True:
-            ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.02, y_offset=0.97-row_spacing*(row_num)-0.025)
+            ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.02, y_offset=0.97-row_spacing*(row_num)-0.025, separate_space=True)
         if peneall is False:
             col_spacing = (w_lens[row_num_at_col_1]-3) * 0.05
-            ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.25+col_spacing, y_offset=0.97-row_spacing*(row_num)-0.025)
+            ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.25+col_spacing, y_offset=0.97-row_spacing*(row_num)-0.025, separate_space=True)
 
     if answer is False:
         fig.savefig(oname, dpi=dpi, bbox_inches='tight')
         return
     
-    # Answer image
-    # alphabet .35 .25, Hiwagana .15 .25
+    # Answer image (developper's memo: alphabet .35 .25, Hiwagana .15 .25)
     for i in range(wn):
         for j in range(wn):
             x = j + 0.5

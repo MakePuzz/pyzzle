@@ -11,9 +11,10 @@ Crossword Local Search by command line
  6. パズルのタイトル（-n,または--nameオプションで指定. デフォルトは{辞書名}_w{width}_h{height}_r{seed}_ep{epoch}）
  7. 重みを考慮するかどうか（-wまたは--weightオプションでフラグとして指定. デフォルトはFalse）
  8. 出力ファイル名（-oまたは--outputオプションで指定. デフォルトは{name}.png）
-
+ 9. ツイートするテキスト (-tまたは--textオプションで指定. ) 
+10. Twitter API key (-kまたは--keyオプションで指定. 形式は，CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_SECREの順にカンマで繋ぐ. )
 実行例：
-python main_cli.py ../pyzzle/dict/pokemon.txt 15 15 -s 1 -e 5
+python main_cli.py ../pyzzle/dict/pokemon.txt 15 15 -s 1 -e 5 -t 'Hello World!' -k CONSUMER_KEY,CONSUMER_SECRET,ACCESS_TOKEN,ACCESS_SECRE
 """
 # In[]
 import argparse
@@ -34,12 +35,17 @@ parser.add_argument("-s", "--seed", type=int, default=66666,
                     help="random seed value, default=66666")
 parser.add_argument("-e", "--epoch", type=int, default=10,
                     help="epoch number of local search, default=10")
-parser.add_argument("-t", "--name", type=str,
+parser.add_argument("-n", "--name", type=str,
                     help="name of the puzzle")
 parser.add_argument("-w", "--weight", action="store_true",
                     help="flag of consider the weight, default=False")
 parser.add_argument("-o", "--output", type=str,
                     help="name of the output image file")
+parser.add_argument("-t", "--text", type=str,
+                    help="Tweet text")
+parser.add_argument("-k", "--key", type=str,
+                    help="Tweitter API keys: CONSUMER_KEY,CONSUMER_SECRET,ACCESS_TOKEN,ACCESS_SECRET")
+
 args = parser.parse_args()
 
 # settings
@@ -78,3 +84,44 @@ if width == height == 15:
         title = f"テーマ：{name}"
     utils.export_image(puzzle.cell, puzzle.uwords[puzzle.uwords!=""], title=title, oname=f"fig/twitter_probrem_{puzzle.name}_w{width}_h{height}_r{seed}.png", dpi=144, answer=False)
     utils.export_image(puzzle.cell, puzzle.uwords[puzzle.uwords!=""], title=title, oname=f"fig/twitter_answer_{puzzle.name}_w{width}_h{height}_r{seed}.png", dpi=144, answer=True)
+    
+    
+## Twitter below: To post a tweet with images.
+import sys
+import json
+import requests
+from requests_oauthlib import OAuth1
+
+api_key = args.key.split(",")
+text = args.text
+image_path_list = [f"fig/twitter_probrem_{puzzle.name}_w{width}_h{height}_r{seed}.png", f"fig/twitter_answer_{puzzle.name}_w{width}_h{height}_r{seed}.png"]
+twitter_oauth = OAuth1(api_key[0], api_key[1], api_key[2], api_key[3])  # Consumer Key, Consumer Secret, Access Token, Access Token Secert
+url_media = "https://upload.twitter.com/1.1/media/upload.json"
+url_text = "https://api.twitter.com/1.1/statuses/update.json"
+media_ids = ""
+
+for image_path in image_path_list:
+    files = {"media":open(image_path, "rb")}
+    # Post a image
+    request = requests.post(url_media, files=files, auth=twitter_oauth)
+    # Check the response to image
+    if request.status_code != 200:
+        # Upload failed
+        print("Upload failed.")
+        sys.exit(0)
+
+    media_id = json.loads(request.text)["media_id"]
+    media_id_string = json.loads(request.text)["media_id_string"]
+
+    if media_ids == "":
+        media_ids += media_id_string
+    else:
+        media_ids = media_ids + "," + media_id_string
+
+
+params = {"status": text, "media_ids": [media_ids]}
+# Post a tweet with images
+request = requests.post(url_text, params = params, auth = twitter_oauth)
+
+# Check the response to tweet text. Success = 200
+print(request.status_code)

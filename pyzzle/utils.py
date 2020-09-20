@@ -290,7 +290,7 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
     width = 0.015
     height = 0.015
 
-    def write_colomn(words, row_spacing, label_x=0.02, word_y_initial=0.97):
+    def draw_column(words, row_spacing, label_x=0.02, word_y_initial=0.97):
         # dot line
         if word_y_initial != 0.97:
             ax2.axhline(y = word_y_initial+0.038, color='lightgray', xmin=label_x, xmax=0.99, lw=2, ls=':')
@@ -326,29 +326,29 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
     # 1st column
     row_start = 0
     row_finish = row_num_at_col_1
-    write_colomn(words[row_start:row_finish], row_spacing)
+    draw_column(words[row_start:row_finish], row_spacing)
     # 2nd column
     row_start = row_num_at_col_1
     row_finish = row_num_at_col_1+row_num
     col_spacing = (w_lens[row_num_at_col_1]-3) * 0.05
-    write_colomn(words[row_start:row_finish], row_spacing, label_x=0.25+col_spacing)
+    draw_column(words[row_start:row_finish], row_spacing, label_x=0.25+col_spacing)
     # 3rd column
     row_start = row_num_at_col_1+row_num
     row_finish = row_num_at_col_1+row_num+row_num_at_col_3
     col_spacing = (w_lens[row_num_at_col_1+row_num]-5) * 0.05
-    write_colomn(words[row_start:row_finish], row_spacing, label_x=0.57+col_spacing)
+    draw_column(words[row_start:row_finish], row_spacing, label_x=0.57+col_spacing)
 
     # penetrating column
     if pene_words_count > 0 and peneall is True:
         row_start = row_num_at_col_1+row_num+row_num_at_col_3
         row_finish = row_num_at_col_1+row_num+row_num_at_col_3+pene_words_count
-        write_colomn(words[row_start:row_finish], row_spacing, label_x=0.02, word_y_initial=0.97-row_spacing*(row_num)-0.025)
+        draw_column(words[row_start:row_finish], row_spacing, label_x=0.02, word_y_initial=0.97-row_spacing*(row_num)-0.025)
 
     if pene_words_count > 0 and peneall is False:
         row_start = row_num_at_col_1+row_num+row_num_at_col_3
         row_finish = row_num_at_col_1+row_num+row_num_at_col_3+pene_words_count
         col_spacing = (w_lens[row_num_at_col_1]-3) * 0.05
-        write_colomn(words[row_start:row_finish], row_spacing, label_x=0.25+col_spacing, word_y_initial=0.97-row_spacing*(row_num)-0.025)
+        draw_column(words[row_start:row_finish], row_spacing, label_x=0.25+col_spacing, word_y_initial=0.97-row_spacing*(row_num)-0.025)
 
 
     if answer is False:

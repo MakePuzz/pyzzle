@@ -1199,6 +1199,29 @@ class Puzzle:
         cover = vertical.astype(int) + horizontal.astype(int)
         cover *= (cell[1:-1, 1:-1] != BLANK)
         return cover
+    
+    def get_word_properties(self, cell=None):
+        """
+        Calculate the word properties from the cell.
+
+        Parameters
+        ----------
+        cell : numpy ndarray
+            cell array
+        
+        Returns
+        -------
+        used_ori, used_i, used_j, used_words: numpy ndarray
+        """
+        if cell is None:
+            cell = self.cell
+        indices = self._get_word_indices(cell)
+        used_ori = np.concatenate([np.zeros_like(indices["vertical"][0]), np.ones_like(indices["horizontal"][0])])
+        used_i = np.concatenate([indices["vertical"][0], indices["horizontal"][0]])
+        used_j = np.concatenate([indices["vertical"][1], indices["horizontal"][1]])
+        used_words = self.get_used_words(cell)
+        return used_ori, used_i, used_j, used_words
+
 
     def update_board(self, cell=None):
         """

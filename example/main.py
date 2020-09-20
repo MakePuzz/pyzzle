@@ -16,7 +16,7 @@ mask = None # Mask.donut_s # 不要ならNone
 gravity = None # 不要ならNone
 dic = Dictionary.dataset["animals"]
 name = "Pyzzle"
-epoch = 30
+epoch = 3
 
 seed = 0
 np.random.seed(seed=seed)
@@ -82,3 +82,4 @@ puzzle.show()
 # from pyzzle import Puzzle, utils
 # puzzle = Puzzle.from_json(f"json/ファイル名.json")
 # utils.export_image(puzzle.cell, puzzle.used_words[puzzle.used_words!=""], title="テーマ：テスト", oname=f"fig/twitter_test.png", answer=True)
+# %%

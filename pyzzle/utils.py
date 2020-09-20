@@ -335,6 +335,8 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
     # Answer image (developper's memo: alphabet .35 .25, Hiwagana .15 .25)
     for i in range(wn):
         for j in range(wn):
+            if puzzle[i,j] == "":
+                continue
             x = j + 0.5
             y = wn - i - 0.6
             rotation = 0

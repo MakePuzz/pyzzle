@@ -178,37 +178,37 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
     ax2.axis("off")
 
     # Board creation
-    for i in range(wn):
-        for j in range(wn):
-            # Horizontal line params
-            y = wn - 1 - i
-            xmin = j / wn
-            xmax = (j+1) / wn
-            # Vertical line params
-            x = j + 1
-            ymin = (wn-1-i) / wn
-            ymax = (wn-1-i+1) / wn
+    # draw inner lines
+    left = (puzzle[:,:-1] != '')
+    right = (puzzle[:,1:] != '')
+    top = (puzzle[:-1,:] != '')
+    bottom = (puzzle[1:,:] != '')
+    # thin line
+    thin_vline_x = np.where(left * right)[1] + 1
+    thin_vline_y1 = wn - 1 - np.where(left * right)[0]
+    thin_vline_y2 = thin_vline_y1 + 1
+    thin_hline_x1 = np.where(top * bottom)[1]
+    thin_hline_x2 = thin_hline_x1 + 1
+    thin_hline_y = wn - 1 - np.where(top * bottom)[0]
+    ax1.plot([thin_vline_x,thin_vline_x], [thin_vline_y1,thin_vline_y2], color="#EBEBEB", ls="-", lw=1)
+    ax1.plot([thin_hline_x1,thin_hline_x2], [thin_hline_y,thin_hline_y], color="#EBEBEB", ls="-", lw=1)
 
-            # thin lines
-            if i <= wn-2 and puzzle[i,j] != '' and puzzle[i+1,j] != '':
-                ax1.axhline(y=y, xmin=xmin, xmax=xmax, color='#EBEBEB', ls='-', lw=1)     
-            if j <= wn-2 and puzzle[i,j] != '' and puzzle[i,j+1] !='':
-                ax1.axvline(x=x, ymin=ymin, ymax=ymax, color='#EBEBEB', ls='-', lw=1)
-
-            #　bold lines
-            if i <= wn-2 and puzzle[i,j] != '' and puzzle[i+1,j] == '':
-                ax1.axhline(y=y, xmin=xmin, xmax=xmax, color='k', ls='-',lw=1, zorder=4)
-            if i <= wn-2 and puzzle[i,j] == '' and puzzle[i+1,j] != '':
-                ax1.axhline(y=y, xmin=xmin, xmax=xmax, color='k', ls='-',lw=1, zorder=4)    
-            if j <= wn-2 and puzzle[i,j] != '' and puzzle[i,j+1] == '':
-                ax1.axvline(x=x, ymin=ymin, ymax=ymax, color='k', ls='-', lw=1, zorder=4)
-            if j <= wn-2 and puzzle[i,j] == '' and puzzle[i,j+1] != '':
-                ax1.axvline(x=j+1, ymin=ymin, ymax=ymax, color='k', ls='-', lw=1, zorder=4)
+    # bold line
+    draw_bold_vline = np.logical_or(~left * right, left * ~right)
+    bold_vline_x = np.where(draw_bold_vline)[1] + 1
+    bold_vline_y1 = wn - 1 - np.where(draw_bold_vline)[0]
+    bold_vline_y2 = bold_vline_y1 + 1
+    draw_bold_hline = np.logical_or(~top * bottom, top * ~bottom)
+    bold_hline_x1 = np.where(draw_bold_hline)[1]
+    bold_hline_x2 = bold_hline_x1 + 1
+    bold_hline_y = wn - 1 - np.where(draw_bold_hline)[0]
+    ax1.plot([bold_vline_x,bold_vline_x], [bold_vline_y1,bold_vline_y2], color="k", ls="-", lw=1, zorder=4)
+    ax1.plot([bold_hline_x1,bold_hline_x2], [bold_hline_y,bold_hline_y], color="k", ls="-", lw=1, zorder=4)
 
     if draw_type == 0:
-        # Outer lines
+        # draw outer lines
         ax1.plot([0, 0, wn, wn, 0], [0, wn, wn, 0, 0], color='k', ls='-', lw=4, zorder=4)
-        # Fill empty cells
+        # fill empty cells
         cmap = plt.cm.viridis
         cmap.set_over("#f5efe6", alpha=1)
         cmap.set_under("white", alpha=0)
@@ -253,7 +253,6 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
 
     # no penetration
     if pene_words_count == 0:
-        # row spacing
         if row_num <= 10:
             row_spacing = 0.05 + 0.05
         if row_num <= 15:
@@ -262,11 +261,9 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
             row_spacing = 0.05
         row_num_at_col_1 = row_num
         row_num_at_col_3 = w_num - 2 * row_num
-
     # penetration
     if pene_words_count > 0:
         if peneall is True: # all penetration
-            # row spacing
             row_num_plus_pene_num = row_num + pene_words_count
             if row_num_plus_pene_num <= 10:
                 row_spacing = 0.05 + 0.05
@@ -274,7 +271,6 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
                 row_spacing = 0.015 + 0.05
             if row_num_plus_pene_num > 15:
                 row_spacing = 0.05
-            
             if pene_words_count > (20-row_num): # row_num adjust
                 row_num = 20 - pene_words_count
             row_num_at_col_1 = row_num
@@ -286,66 +282,61 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
             row_num_at_col_1 = 20
             row_num_at_col_3 = w_num - 20 - row_num - pene_words_count
 
-    # checkbox params
-    width = 0.015
-    height = 0.015
-
-    def draw_column(ax, words, row_spacing, label_x=0.02, y_offset=0.97):
+    def draw_column(ax, words, row_spacing, label_x=0.02, y_offset=0.97, separate_space=False, label_labelline_spacing=0.01, label_box_spacing=0.027, label_word_spacing=0.06,
+                    label_color="dimgray", box_size=0.015, box_fc="#f5efe6", box_ec="darkgray", box_pad=0.005, labelline_color="lightgray"):
         # dot line
-        if y_offset != 0.97:
-            ax.axhline(y = y_offset+0.038, color='lightgray', xmin=label_x-0.02, xmax=0.99, lw=2, ls=':')
+        if separate_space is True:
+            ax.axhline(y = y_offset+0.038, color=labelline_color, xmin=label_x-0.02, xmax=0.99, lw=2, ls=':')
         # parameters
         nwords = len(words)
-        box_x = 0.027 + label_x
-        word_x = 0.06 + label_x
-        ymax = y_offset + 0.01
         w_lens = np.vectorize(len)(words)
-        boxstyle = mpatches.BoxStyle("Round", pad=0.005)
-        prev_wlen = max(w_lens)
-        for n, (word, w_len) in enumerate(zip(words, w_lens)):
+        labelline_x = label_x + label_labelline_spacing
+        box_x = label_x + label_box_spacing
+        word_x = label_x + label_word_spacing
+        ymax = y_offset + 0.01
+        boxstyle = mpatches.BoxStyle("Round", pad=box_pad)
+        for n, word in enumerate(words):
             # checkbox
-            box_y = y_offset - 0.005 - row_spacing * n
-            fancybox = mpatches.FancyBboxPatch((box_x,box_y), width, height, boxstyle=boxstyle, fc="#f5efe6", ec="darkgray", alpha=1)
+            box_y = y_offset - row_spacing * n - box_pad
+            fancybox = mpatches.FancyBboxPatch((box_x,box_y), box_size, box_size, boxstyle=boxstyle, fc=box_fc, ec=box_ec, alpha=1)
             ax.add_patch(fancybox)
             # word
-            word_y = y_offset - row_spacing * n
+            word_y = box_y + box_pad
             ax.text(word_x, word_y, word, size=18, ha='left', va='center')
             # label
-            if n == 0 or w_len > prev_wlen:
-                ax.text(label_x, word_y, str(w_len), fontsize=10, color='dimgray', ha='right')
+            if n == 0 or w_lens[n] > w_lens[n-1]:
+                ax.text(label_x, word_y, str(w_lens[n]), fontsize=10, color=label_color, ha='right')
             # label line
-            if w_len > prev_wlen:
-                ax.axvline(x=label_x+0.01, color='lightgray', ymin=y_offset-0.01-row_spacing*(n-1), ymax=ymax, lw=2)
+            if w_lens[n] > w_lens[n-1]:
+                ax.axvline(x=labelline_x, color=labelline_color, ymin=y_offset-0.01-row_spacing*(n-1), ymax=ymax, lw=2)
                 ymax = y_offset + 0.01 - row_spacing * n
-            # label line to lower edge
-            if n == nwords-1:
-                ax.axvline(x=label_x+0.01, color='lightgray', ymin=y_offset-0.01-row_spacing*n, ymax=ymax, lw=2)
-            prev_wlen = w_len
+        # label line to lower edge
+        ax.axvline(x=labelline_x, color=labelline_color, ymin=y_offset-0.01-row_spacing*n, ymax=ymax, lw=2)
         return ax
 
     # 1st column
-    row_start = 0
-    row_finish = row_num_at_col_1
-    ax2 = draw_column(ax2, words[row_start:row_finish], row_spacing)
+    first_w = 0
+    last_w = row_num_at_col_1
+    ax2 = draw_column(ax2, words[first_w:last_w], row_spacing)
     # 2nd column
-    row_start = row_num_at_col_1
-    row_finish = row_num_at_col_1 + row_num
+    first_w = row_num_at_col_1
+    last_w = row_num_at_col_1 + row_num
     col_spacing = (w_lens[row_num_at_col_1]-3) * 0.05
-    ax2 = draw_column(ax2, words[row_start:row_finish], row_spacing, label_x=0.25+col_spacing)
+    ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.25+col_spacing)
     # 3rd column
-    row_start = row_num_at_col_1 + row_num
-    row_finish = row_num_at_col_1 + row_num + row_num_at_col_3
+    first_w = row_num_at_col_1 + row_num
+    last_w = row_num_at_col_1 + row_num + row_num_at_col_3
     col_spacing = (w_lens[row_num_at_col_1+row_num]-5) * 0.05
-    ax2 = draw_column(ax2, words[row_start:row_finish], row_spacing, label_x=0.57+col_spacing)
+    ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.57+col_spacing)
     # penetrating column
     if pene_words_count > 0:
-        row_start = row_num_at_col_1 + row_num + row_num_at_col_3
-        row_finish = row_num_at_col_1 + row_num + row_num_at_col_3 + pene_words_count
+        first_w = row_num_at_col_1 + row_num + row_num_at_col_3
+        last_w = row_num_at_col_1 + row_num + row_num_at_col_3 + pene_words_count
         if peneall is True:
-            ax2 = draw_column(ax2, words[row_start:row_finish], row_spacing, label_x=0.02, y_offset=0.97-row_spacing*(row_num)-0.025)
+            ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.02, y_offset=0.97-row_spacing*(row_num)-0.025)
         if peneall is False:
             col_spacing = (w_lens[row_num_at_col_1]-3) * 0.05
-            ax2 = draw_column(ax2, words[row_start:row_finish], row_spacing, label_x=0.25+col_spacing, y_offset=0.97-row_spacing*(row_num)-0.025)
+            ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.25+col_spacing, y_offset=0.97-row_spacing*(row_num)-0.025)
 
     if answer is False:
         fig.savefig(oname, dpi=dpi, bbox_inches='tight')

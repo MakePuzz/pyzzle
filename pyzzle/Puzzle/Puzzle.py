@@ -128,10 +128,12 @@ class Puzzle:
         self._plc = Placeable(width=self.width, height=self.height)
 
     def __str__(self):
-        """
-        Return the puzzle's name.
-        """
+        """Return the puzzle's name."""
         return self.name
+    
+    def __repr__(self):
+        print(self.name)
+        puzzle.show()
 
     def __lt__(self, other):
         if not isinstance(other, Puzzle):

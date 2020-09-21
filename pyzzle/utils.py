@@ -145,28 +145,28 @@ def decode_json(fpath):
         attrs[key] = data[key]
     return cell, mask, word_list, attrs
 
-def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=0, dpi=300, answer=False):
+def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0, dpi=300, answer=False):
     """
     Export a puzzle image. This can be used for square puzzles only.
 
     Parameters
     ----------
-    puzzle : numpy ndarray
-        Array of words in the puzzle board
+    cell : numpy ndarray
+        Puzzle board.
     words : ndarray
-        The list of words in this puzzle
+        Word list.
     title : str, default ""
-        The name of this puzzle
+        Puzzle name.
     wn : int, default 15
-        Square side length of the board
+        Square side length of the board.
     oname : str, "problem.png"
-        The name of output file
+        Output file name.
     draw_type : int, default 0
-        The type of drawing (0:gray filling and outer frame  1:no filling and no outer frame)
+        Draw type (0: empty filling and outer frame  1:no filling and no outer frame).
     dpi : int, default 300
-        The number of dpi
+        Dot per Inch.
     answer : bool, default False
-        Output the answer sheet or problem sheet (True:answer sheet  False:problem sheet)
+        If True, export with the answer.
     """
     import japanize_matplotlib
     words = np.array(sorted(words, key=lambda word: (len(word), word)))
@@ -185,10 +185,10 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
 
     # Board creation
     # draw inner lines
-    left = (puzzle[:,:-1] != '')
-    right = (puzzle[:,1:] != '')
-    top = (puzzle[:-1,:] != '')
-    bottom = (puzzle[1:,:] != '')
+    left = (cell[:,:-1] != '')
+    right = (cell[:,1:] != '')
+    top = (cell[:-1,:] != '')
+    bottom = (cell[1:,:] != '')
     # thin line
     thin_vline_x = np.where(left * right)[1] + 1
     thin_vline_y = wn - 1 - np.where(left * right)[0]
@@ -211,22 +211,22 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
         cmap = plt.cm.viridis
         cmap.set_over("#f5efe6", alpha=1)
         cmap.set_under("white", alpha=0)
-        ax1.imshow(puzzle=="", extent=[0,wn,0,wn], cmap=cmap, vmin=0.5, vmax=0.6)
+        ax1.imshow(cell=="", extent=[0,wn,0,wn], cmap=cmap, vmin=0.5, vmax=0.6)
     
     if draw_type == 1:
         for j in range(wn):
             ymin = (wn-1-j+0.05) / wn
             ymax = (wn-1-j+1-0.05) / wn
-            if puzzle[0,j] != '':
+            if cell[0,j] != '':
                 ax1.axvline(x=0, ymin=ymin, ymax=ymax, color='k', ls='-', lw=4, zorder=4)
-            if puzzle[wn-1,j] != '':
+            if cell[wn-1,j] != '':
                 ax1.axvline(x=wn, ymin=ymin, ymax=ymax, color='k', ls='-', lw=4, zorder=4)
         for i in range(wn):
             xmin = (i+0.05) / wn
             xmax = (i+1-0.05) / wn
-            if puzzle[i,wn-1] != '':
+            if cell[i,wn-1] != '':
                 ax1.axhline(y=0, xmin=xmin, xmax=xmax, color='k', ls='-',lw=4, zorder=4)
-            if puzzle[i,0] != '':
+            if cell[i,0] != '':
                 ax1.axhline(y=wn, xmin=xmin, xmax=xmax, color='k', ls='-',lw=4, zorder=4)
 
     # Word list creation
@@ -335,17 +335,17 @@ def export_image(puzzle, words, title="", wn=15, oname='problem.png', draw_type=
     # Answer image (developper's memo: alphabet .35 .25, Hiwagana .15 .25)
     for i in range(wn):
         for j in range(wn):
-            if puzzle[i,j] == "":
+            if cell[i,j] == "":
                 continue
             x = j + 0.5
             y = wn - i - 0.6
             rotation = 0
             # The rotation process for vertical long tones
-            if puzzle[i,j] == 'ー' and j >= 1 and puzzle[i,j-1] == '':
+            if cell[i,j] == 'ー' and j >= 1 and cell[i,j-1] == '':
                 x += 0.01
                 y += 0.15
                 rotation = 90
-            ax1.text(x, y, puzzle[i,j], size=18, ha="center", va="center", rotation=rotation)
+            ax1.text(x, y, cell[i,j], size=18, ha="center", va="center", rotation=rotation)
     fig.savefig(oname, dpi=dpi, bbox_inches='tight')
     return
 

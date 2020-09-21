@@ -4,15 +4,19 @@ from collections import Counter
 
 class Placeable:
     def __init__(self, width, height, words=None, mask=None):
-        self.size = 0
         self.width = width
         self.height = height
-        self.ori, self.i, self.j, self.k, self.word = [], [], [], [], []
+        self.ori = []
+        self.i = []
+        self.j = []
+        self.k = []
+        self.word = []
+        self.mask = mask
 
         if words is not None:
-            self._compute(words, mask=mask)
+            self.add(words, mask=mask)
 
-    def _compute(self, word, mask=None, base_k=0):
+    def add(self, word, mask=None, base_k=0):
         if isinstance(word, str):
             word = [word]
         len_arr = np.vectorize(len)(word)
@@ -37,7 +41,10 @@ class Placeable:
                         self.j += [j]*c
                         self.k += (np.where(len_arr == l)[0] + base_k).tolist()
                         self.word += np.array(word, dtype=object)[np.where(len_arr == l)[0]].tolist()
-                        self.size += c
+    
+    @property
+    def size(self):
+        return len(self.word)
 
     def __len__(self):
         return self.size

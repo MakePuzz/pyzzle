@@ -3,6 +3,9 @@ from collections import Counter
 
 
 class Placeable:
+    """
+    Placeable class stores the positions where words can be placed.
+    """
     def __init__(self, width, height, words=None, mask=None):
         self.width = width
         self.height = height
@@ -12,6 +15,10 @@ class Placeable:
         self.k = []
         self.word = []
         self.mask = mask
+        if isinstance(mask, list):
+            self.mask = np.array(mask)
+            if mask.shape != (self.height, self.width):
+                raise ValueError("The shape of the mask must be the same as (height, width)")
 
         if words is not None:
             self.add(words, mask=mask)
@@ -19,6 +26,12 @@ class Placeable:
     def add(self, word, mask=None, base_k=0):
         if isinstance(word, str):
             word = [word]
+        if mask is None:
+            mask = self.mask
+        if isinstance(mask, list):
+            mask = np.array(mask)
+            if mask.shape != (self.height, self.width):
+                raise ValueError("The shape of the mask must be the same as (height, width)")
         len_arr = np.vectorize(len)(word)
         len_count = Counter(len_arr)
         for ori in (0, 1):

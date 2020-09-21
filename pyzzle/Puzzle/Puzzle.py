@@ -507,7 +507,7 @@ class Puzzle:
         if not isinstance(word, str):
             raise TypeError("word must be Word or str")
         self._dic.add(word, weight)
-        self._plc._compute([Word(word, weight)], mask=self.mask, base_k=self._dic.size - 1)
+        self._plc.add([Word(word, weight)], mask=self.mask, base_k=self._dic.size - 1)
         return self._add(ori, i, j, Word(word, weight))
 
     def add_to_limit(self):

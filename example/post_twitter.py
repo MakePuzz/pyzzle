@@ -13,8 +13,10 @@ python post_twitter.py CONSUMER_KEY,CONSUMER_SECRET,ACCESS_TOKEN,ACCESS_SECRE -t
 import sys
 import json
 import argparse
+
 import requests
 from requests_oauthlib import OAuth1
+
 
 parser = argparse.ArgumentParser(description='tweet with images from the given arguments')
 parser.add_argument('api_key', type=str,

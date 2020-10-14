@@ -853,7 +853,7 @@ class Puzzle:
                 self._drop(ori, i, j, word, is_kick=True)
         return
 
-    def solve(self, epoch, optimizer="local_search", objective_function=None, of=None, n=None, show=True, use_f=False):
+    def solve(self, epoch, optimizer="local_search", objective_function=None, of=None, time_limit=None, time_offset=0, n=None, show=True, use_f=False):
         """
         This method repeats the solution improvement by the specified number of epoch.
 
@@ -884,9 +884,9 @@ class Puzzle:
         if isinstance(objective_function, ObjectiveFunction):
             self.obj_func = objective_function
         if self.optimizer.method == "local_search":
-            return self.optimizer.optimize(self, epoch, show=show, use_f=use_f)
+            return self.optimizer.optimize(self, epoch, time_limit=time_limit, time_offset=time_offset, show=show, use_f=use_f)
         if self.optimizer.method == "multi_start":
-            return self.optimizer.optimize(self, epoch, n=n, show=show, use_f=use_f)
+            return self.optimizer.optimize(self, epoch, time_limit=time_limit, time_offset=time_offset, n=n, show=show, use_f=use_f)
 
     def show_log(self, name="Objective Function's epoch series", grid=True, figsize=None, **kwargs):
         """

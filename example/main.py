@@ -34,7 +34,7 @@ obj_func = [
 
 # In[]
 utils.debug_on()
-puzzle = puzzle.solve(epoch=epoch, n=1, optimizer="multi_start", of=obj_func, show=False, use_f=True)
+puzzle = puzzle.solve(epoch=epoch, time_limit=None, n=1, optimizer="multi_start", of=obj_func, show=False, use_f=True)
 utils.logging_off()
 # In[]
 # puzzle.solve(epoch=300, optimizer="local_search", of=obj_func, show=False, use_f=True)

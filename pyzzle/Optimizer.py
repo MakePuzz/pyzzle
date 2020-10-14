@@ -1,4 +1,4 @@
-import copy, logging
+import copy, logging, time
 
 LOG = logging.getLogger(__name__)
 
@@ -32,8 +32,7 @@ class Optimizer:
             _puzzle.add_to_limit()
         return _puzzle
 
-    @classmethod
-    def local_search(self, puzzle, epoch, show=True, move=False, use_f=False):
+    def local_search(self, puzzle, epoch, time_limit=None, time_offset=0, show=True, move=False, use_f=False):
         """
         This method performs a local search
         """
@@ -46,7 +45,18 @@ class Optimizer:
             LOG.info(">>> Interim solution")
             _puzzle.show()
         goal_epoch = _puzzle.epoch + epoch
-        for _ in range(epoch):
+
+        if time_limit is not None:
+            start_time = time.time()
+
+        for ep in range(epoch):
+            if time_limit is not None:
+                performance_time = time.time() - start_time
+                duration_per_1ep = performance_time/(ep+1)
+                if performance_time + duration_per_1ep + time_offset >= time_limit:
+                    LOG.info(f"End with time limit. {performance_time + time_offset} sec (> {time_limit} sec)")
+                    break
+                LOG.info(f"{round(performance_time + time_offset,3)} sec (< {round(time_limit,3)} sec)")
             _puzzle.epoch += 1
             LOG.info(f">>> Epoch {_puzzle.epoch}/{goal_epoch}")
             # Get neighbor solution by drop->kick->add
@@ -76,12 +86,18 @@ class Optimizer:
                     _puzzle.show()
         return _puzzle
 
-    def multi_start(self, puzzle, epoch, n=1, unique=False, show=True, use_f=False):
+    def multi_start(self, puzzle, epoch, time_limit=None, time_offset=0, n=1, unique=False, show=True, use_f=False):
         puzzles = []
+        if time_limit is not None:
+            start_time = time.time()
         for _n in range(n):
+            if time_limit is not None:
+                performance_time = time.time() - start_time
+                if performance_time >= time_limit:
+                    break
             LOG.info(f"> Node: {_n+1}")
             _puzzle = copy.deepcopy(puzzle)
-            _puzzle = _puzzle.solve(epoch=epoch, optimizer="local_search", show=show, use_f=use_f)
+            _puzzle = _puzzle.solve(epoch=epoch, optimizer="local_search", time_limit=time_limit, time_offset=performance_time+time_offset, show=show, use_f=use_f)
             puzzles.append(_puzzle)
         for i, _puzzle in enumerate(puzzles):
             if i == 0:

@@ -77,7 +77,7 @@ def show_2Darray(cell, mask=None, blank="", stdout=False):
     array = copy.deepcopy(cell)
     if mask is not None:
         array[mask == True] = "■"
-    if stdout is True or in_ipynb() is False:
+    if stdout or not in_ipynb():
         array = np.where(array == blank, " ", array)
         print(array)
     else:
@@ -254,7 +254,7 @@ def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0,
     row_num_at_col_3 = w_num - 2 * row_num
     # penetration
     if pene_words_count > 0:
-        if peneall is True: # all penetration
+        if peneall:  # all penetration
             row_num_plus_pene_num = row_num + pene_words_count
             if row_num_plus_pene_num <= 10:
                 row_spacing = 0.05 + 0.05
@@ -266,7 +266,7 @@ def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0,
                 row_num = 20 - pene_words_count
             row_num_at_col_1 = row_num
             row_num_at_col_3 = w_num - 2 * row_num - pene_words_count
-        if peneall is False: # Penetration appears in the right two columns
+        if not peneall:  # Penetration appears in the right two columns
             row_spacing = 0.05
             if pene_words_count > (20-row_num):
                 row_num = 20 - pene_words_count # row_num adjust
@@ -276,7 +276,7 @@ def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0,
     def draw_column(ax, words, row_spacing, label_x=0.02, y_offset=0.97, separate_space=False, label_labelline_spacing=0.01, label_box_spacing=0.027, label_word_spacing=0.06,
                     label_color="dimgray", box_size=0.015, box_fc="#f5efe6", box_ec="darkgray", box_pad=0.005, labelline_color="lightgray"):
         """draw a words column on plt.ax"""
-        if separate_space is True:
+        if separate_space:
             ax.axhline(y = y_offset+0.038, color=labelline_color, xmin=label_x-0.02, xmax=0.99, lw=2, ls=':')
         nwords = len(words)
         w_lens = np.vectorize(len)(words)
@@ -322,13 +322,13 @@ def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0,
     if pene_words_count > 0:
         first_w = row_num_at_col_1 + row_num + row_num_at_col_3
         last_w = row_num_at_col_1 + row_num + row_num_at_col_3 + pene_words_count
-        if peneall is True:
+        if peneall:
             ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.02, y_offset=0.97-row_spacing*(row_num)-0.025, separate_space=True)
-        if peneall is False:
+        if not peneall:
             col_spacing = (w_lens[row_num_at_col_1]-3) * 0.05
             ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.25+col_spacing, y_offset=0.97-row_spacing*(row_num)-0.025, separate_space=True)
 
-    if answer is False:
+    if not answer:
         fig.savefig(oname, dpi=dpi, bbox_inches='tight')
         return
     

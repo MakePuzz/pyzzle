@@ -157,7 +157,7 @@ class ObjectiveFunction:
         """
         This method returns any objective function value
         """
-        if all is True:
+        if all:
             scores = {}
             # scores = np.zeros(len(self.registered_funcs), dtype="float")
             for func_name in self.registered_funcs:

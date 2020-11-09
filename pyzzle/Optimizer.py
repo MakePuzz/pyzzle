@@ -26,7 +26,7 @@ class Optimizer:
             # Kick
             _puzzle.kick()
         # Add as much as possible
-        if use_f is True:
+        if use_f:
             _puzzle.add_to_limit_f()
         else:
             _puzzle.add_to_limit()
@@ -41,7 +41,7 @@ class Optimizer:
             puzzle.logging()
         # Copy
         _puzzle = copy.deepcopy(puzzle)
-        if show is True:
+        if show:
             LOG.info(">>> Interim solution")
             _puzzle.show()
         goal_epoch = _puzzle.epoch + epoch
@@ -71,7 +71,7 @@ class Optimizer:
                     LOG.info(f"        --> {new_puzzle.obj_func.get_score(new_puzzle, all=True)}")
                     _puzzle = copy.deepcopy(new_puzzle)
                     _puzzle.logging()
-                    if show is True:
+                    if show:
                         _puzzle.show()
                     break
                 if new_score < prev_score:
@@ -82,7 +82,7 @@ class Optimizer:
                 _puzzle = copy.deepcopy(new_puzzle)
                 _puzzle.logging()
                 LOG.info(f"- Replaced: {_puzzle.obj_func.get_score(_puzzle, all=True)}")
-                if show is True:
+                if show:
                     _puzzle.show()
         return _puzzle
 
@@ -103,7 +103,7 @@ class Optimizer:
             if i == 0:
                 prime_puzzle = _puzzle
             else:
-                if unique is True and _puzzle.is_unique is False:
+                if unique and not _puzzle.is_unique:
                     continue
                 if _puzzle >= prime_puzzle:
                     prime_puzzle = _puzzle

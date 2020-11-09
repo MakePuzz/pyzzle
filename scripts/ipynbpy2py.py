@@ -77,7 +77,7 @@ for line in lines:
         class_num += 1
     elif line[0] not in (" ", "\n"):
         class_flag = False
-    if class_flag is True:
+    if class_flag:
         class_lines[class_num].append(line)
 # get class lines written by def fuga ... setattr(Hoge, "fuga", fuga)
 def_flag = False
@@ -88,12 +88,12 @@ for line in lines:
         def_flag = True
     elif line[0] not in (" ", "\n", "setattr"):
         def_flag = False
-    if def_flag is True:
+    if def_flag:
         def_lines.append(line)
     if line[:7] == "setattr":
         def_end_flag = True
         setattr_class = line.split(",")[0][8:]
-    if def_end_flag is True:
+    if def_end_flag:
         class_num = class_names.index(setattr_class)
         for def_line in def_lines:
             if def_line[0] not in ("\n"):
@@ -154,6 +154,6 @@ for class_num, class_name in enumerate(class_names):
         for class_line in class_lines[class_num]:
             of.write(class_line)
 # .gitignore
-if not_ignore is False:
+if not not_ignore:
     with open(f'{package_path}/.gitignore', 'w', encoding='utf-8') as of:
         of.write(f"__pycache__/\n")

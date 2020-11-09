@@ -213,13 +213,13 @@ class Puzzle:
                         replaceable = False
                         break
                 # Check cross part from word2
-                if replaceable is True:
+                if replaceable:
                     for w2idx in cross_idx2:
                         if word2[w2idx] != word1[w2idx]:
                             replaceable = False
                             break
                 # If word1 and word2 are replaceable, this puzzle doesn't have a simple solution -> return False
-                if replaceable is True:
+                if replaceable:
                     LOG.info(f" - Words '{word1}' and '{word2}' are replaceable")
                     rtn_bool = False
         return rtn_bool
@@ -656,7 +656,7 @@ class Puzzle:
                     remove_flag = False
                 if j < self.width - 2 and np.all(self.cell[[i - 1, i - 1], [j + 1, j + 2]] != BLANK):
                     remove_flag = False
-                if remove_flag == True:
+                if remove_flag:
                     self.enable[i - 1, j] = True
             if i + w_len < self.height:
                 if i + w_len < self.height - 2 and np.all(self.cell[[i + w_len + 1, i + w_len + 2], [j, j]] != BLANK):
@@ -665,7 +665,7 @@ class Puzzle:
                     remove_flag = False
                 if j < self.width - 2 and np.all(self.cell[[i + w_len, i + w_len], [j + 1, j + 2]] != BLANK):
                     remove_flag = False
-                if remove_flag == True:
+                if remove_flag:
                     self.enable[i + w_len, j] = True
         if ori == 1:
             if j > 0:
@@ -675,7 +675,7 @@ class Puzzle:
                     remove_flag = False
                 if i < self.height - 2 and np.all(self.cell[[i + 1, i + 2], [j - 1, j - 1]] != BLANK):
                     remove_flag = False
-                if remove_flag == True:
+                if remove_flag:
                     self.enable[i, j - 1] = True
             if j + w_len < self.width:
                 if j + w_len < self.width - 2 and np.all(self.cell[[i, i], [j + w_len + 1, j + w_len + 2]] != BLANK):
@@ -684,7 +684,7 @@ class Puzzle:
                     remove_flag = False
                 if i < self.height - 2 and np.all(self.cell[[i + 1, i + 2], [j + w_len, j + w_len]] != BLANK):
                     remove_flag = False
-                if remove_flag == True:
+                if remove_flag:
                     self.enable[i, j + w_len] = True
         return
 
@@ -975,7 +975,7 @@ class Puzzle:
         jumped_puzzle.obj_func = copy.deepcopy(self.obj_func)
         jumped_puzzle.base_history = copy.deepcopy(self.base_history)
 
-        if set(self.history).issubset(self.base_history) is False:
+        if not set(self.history).issubset(self.base_history):
             if idx <= len(self.history):
                 jumped_puzzle.base_history = copy.deepcopy(self.history)
             else:
@@ -1081,7 +1081,7 @@ class Puzzle:
 
         n2limit = {1: r_min, 2: self.height - (r_max + 1), 3: self.width - (c_max + 1), 4: c_min}
 
-        if limit is True:
+        if limit:
             n = n2limit[direction]
 
         if direction == 1:

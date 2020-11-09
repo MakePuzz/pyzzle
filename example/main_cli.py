@@ -62,7 +62,7 @@ if name is None:
 puzzle.puzzle_name = name
 if output is None:
     output = name + ".png"
-if with_weight is True:
+if with_weight:
     obj_func = ["weight", "nwords"]
 else:
     obj_func = ["nwords"]

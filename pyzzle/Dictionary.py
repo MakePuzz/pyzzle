@@ -1,4 +1,5 @@
-import os, copy
+import os
+import copy
 from glob import glob
 from pathlib import PurePath
 import collections
@@ -11,13 +12,13 @@ from pyzzle.Word import Word
 class Dictionary:
     class Dataset:
         dict_dir = str(PurePath(__file__).parent/PurePath("dict"))
-        dict_list = list(map(lambda x: PurePath(x).stem, glob(f"{dict_dir}/*.txt")))           
+        dict_list = list(map(lambda x: PurePath(x).stem, glob(f"{dict_dir}/*.txt")))
 
         def __getattr__(self, key):
-            if key not in (self.dict_list):
+            if key not in self.dict_list:
                 raise AttributeError(f"{key} must be an element of the 'dict_list'")
             return Dictionary(f"{self.dict_dir}/{key}.txt")
-        
+
         def __getitem__(self, key):
             return Dictionary(f"{self.dict_dir}/{key}.txt")
 
@@ -38,7 +39,7 @@ class Dictionary:
     @property
     def size(self):
         return len(self.word)
-    
+
     @property
     def weight(self):
         return list(map(lambda x: x.weight, self.word))
@@ -79,7 +80,7 @@ class Dictionary:
         word = self.word[self._i]
         self._i += 1
         return word, word.weight
-    
+
     def get_k(self, word):
         return np.where(self.word == word)[0][0]
 
@@ -117,7 +118,7 @@ class Dictionary:
         def removed_new_line_code(word):
             line = word.rstrip(os.linesep).split(" ")
             if len(line) == 1:
-                line.append(0) # weight = 0
+                line.append(0)  # weight = 0
             line[1] = int(line[1])
             return line
 

@@ -1,4 +1,6 @@
-import copy, logging, time
+import copy
+import logging
+import time
 
 LOG = logging.getLogger(__name__)
 

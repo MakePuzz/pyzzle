@@ -18,13 +18,16 @@ def in_ipynb():
     except NameError:
         return False
 
+
 def debug_on():
     """Turn debugging logging on."""
     logging_on(logging.DEBUG)
 
+
 def trace_on():
     """Turn trace logging on."""
     logging_on(TRACE_LEVEL)
+
 
 def logging_on(level=logging.WARNING):
     """Turn logging on."""
@@ -44,6 +47,7 @@ def logging_on(level=logging.WARNING):
     for h in log.handlers:
         h.setLevel(level)
 
+
 def get_logger(name):
     """Return logger with null handler added if needed."""
     if not hasattr(logging.Logger, 'trace'):
@@ -59,9 +63,11 @@ def get_logger(name):
     log = logging.getLogger(name)
     return log
 
+
 def logging_off():
     """Turn logging off."""
     logging.getLogger('').handlers = [logging.NullHandler()]
+
 
 def show_2Darray(cell, mask=None, blank="", stdout=False):
     """
@@ -73,6 +79,8 @@ def show_2Darray(cell, mask=None, blank="", stdout=False):
         Numpy.ndarray for display
     mask : ndarray, optional
         Numpy.ndarray for mask
+    blank : str
+    stdout: bool
     """
     array = copy.deepcopy(cell)
     if mask is not None:
@@ -84,24 +92,25 @@ def show_2Darray(cell, mask=None, blank="", stdout=False):
         from IPython.display import display
         styles = [
             dict(selector="th", props=[("font-size", "90%"),
-                                        ("text-align", "center"),
-                                        ("color", "#ffffff"),
-                                        ("background", "#777777"),
-                                        ("border", "solid 1px white"),
-                                        ("width", "30px"),
-                                        ("height", "30px")]),
+                                       ("text-align", "center"),
+                                       ("color", "#ffffff"),
+                                       ("background", "#777777"),
+                                       ("border", "solid 1px white"),
+                                       ("width", "30px"),
+                                       ("height", "30px")]),
             dict(selector="td", props=[("font-size", "105%"),
-                                        ("text-align", "center"),
-                                        ("color", "#161616"),
-                                        ("background", "#dddddd"),
-                                        ("border", "solid 1px white"),
-                                        ("width", "30px"),
-                                        ("height", "30px")]),
+                                       ("text-align", "center"),
+                                       ("color", "#161616"),
+                                       ("background", "#dddddd"),
+                                       ("border", "solid 1px white"),
+                                       ("width", "30px"),
+                                       ("height", "30px")]),
             dict(selector="caption", props=[("caption-side", "bottom")])
         ]
         df = pd.DataFrame(array)
         df = (df.style.set_table_styles(styles))
         display(df)
+
 
 def decode_json(fpath):
     """
@@ -124,7 +133,7 @@ def decode_json(fpath):
     ori_i_j_words = data["list"]
     mask = np.array(data["mask"])
     nwords = data["nwords"]
-    
+
     cell = np.full([height, width], '')
     word_list = ['']*nwords
     for idx, ori_i_j_word in enumerate(ori_i_j_words):
@@ -144,6 +153,7 @@ def decode_json(fpath):
     for key in ("name", "epoch", "nwords", "seed"):
         attrs[key] = data[key]
     return cell, mask, word_list, attrs
+
 
 def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0, dpi=300, answer=False):
     """
@@ -212,7 +222,7 @@ def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0,
         cmap.set_over("#f5efe6", alpha=1)
         cmap.set_under("white", alpha=0)
         ax1.imshow(cell=="", extent=[0,wn,0,wn], cmap=cmap, vmin=0.5, vmax=0.6)
-    
+
     if draw_type == 1:
         for j in range(wn):
             ymin = (wn-1-j+0.05) / wn
@@ -225,9 +235,9 @@ def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0,
             xmin = (i+0.05) / wn
             xmax = (i+1-0.05) / wn
             if cell[i,wn-1] != '':
-                ax1.axhline(y=0, xmin=xmin, xmax=xmax, color='k', ls='-',lw=4, zorder=4)
+                ax1.axhline(y=0, xmin=xmin, xmax=xmax, color='k', ls='-', lw=4, zorder=4)
             if cell[i,0] != '':
-                ax1.axhline(y=wn, xmin=xmin, xmax=xmax, color='k', ls='-',lw=4, zorder=4)
+                ax1.axhline(y=wn, xmin=xmin, xmax=xmax, color='k', ls='-', lw=4, zorder=4)
 
     # Word list creation
     col_num = 3
@@ -273,8 +283,10 @@ def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0,
             row_num_at_col_1 = 20
             row_num_at_col_3 = w_num - 20 - row_num - pene_words_count
 
-    def draw_column(ax, words, row_spacing, label_x=0.02, y_offset=0.97, separate_space=False, label_labelline_spacing=0.01, label_box_spacing=0.027, label_word_spacing=0.06,
-                    label_color="dimgray", box_size=0.015, box_fc="#f5efe6", box_ec="darkgray", box_pad=0.005, labelline_color="lightgray"):
+    def draw_column(ax, words, row_spacing, label_x=0.02, y_offset=0.97, separate_space=False,
+                    label_labelline_spacing=0.01, label_box_spacing=0.027, label_word_spacing=0.06,
+                    label_color="dimgray", box_size=0.015, box_fc="#f5efe6", box_ec="darkgray", box_pad=0.005,
+                    labelline_color="lightgray"):
         """draw a words column on plt.ax"""
         if separate_space:
             ax.axhline(y = y_offset+0.038, color=labelline_color, xmin=label_x-0.02, xmax=0.99, lw=2, ls=':')
@@ -331,7 +343,7 @@ def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0,
     if not answer:
         fig.savefig(oname, dpi=dpi, bbox_inches='tight')
         return
-    
+
     # Answer image (developper's memo: alphabet .35 .25, Hiwagana .15 .25)
     for i in range(wn):
         for j in range(wn):
@@ -349,11 +361,13 @@ def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0,
     fig.savefig(oname, dpi=dpi, bbox_inches='tight')
     return
 
+
 def show_json(fpath):
     cell, mask, _, _ = decode_json(fpath)
     show_2Darray(cell, mask)
 
-def save_json_as_probrem_image(fpath, oname, label="word list", dpi=300):
+
+def save_json_as_problem_image(fpath, oname, label="word list", dpi=300):
     """
     fpath : str
         File path to json
@@ -364,6 +378,7 @@ def save_json_as_probrem_image(fpath, oname, label="word list", dpi=300):
     empty_cell = np.full(cell.shape, "", dtype="unicode")
     save_image(oname, empty_cell, word_list, mask=mask, title=attrs["name"], label=label, dpi=dpi)
 
+
 def save_json_as_answer_image(fpath, oname, label="word list", dpi=300):
     """
     fpath : str
@@ -373,6 +388,7 @@ def save_json_as_answer_image(fpath, oname, label="word list", dpi=300):
     """
     cell, mask, word_list, attrs = decode_json(fpath)
     save_image(oname, cell, word_list, mask=mask, title=attrs["name"], label=label, dpi=dpi)
+
 
 def save_image(fpath, cell, word_list, mask=None, title="", label="word list", dpi=300):
     """
@@ -438,6 +454,7 @@ def save_image(fpath, cell, word_list, mask=None, title="", label="word list", d
     plt.tight_layout()
     plt.savefig(fpath, dpi=dpi)
     plt.close()
+
 
 def get_rect(cell):
     """

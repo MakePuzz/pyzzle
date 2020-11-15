@@ -35,7 +35,7 @@ def tweet_image(text, image_path, twt_id=-1):
     """
     # Create a media ID list to post images
     media_ids = ''
-    for image_path in image_path:   
+    for image in image_path:   
         image = {'media':open(image_path, 'rb')}
         # Upload a image
         request = requests.post(url_media, files=image, auth=twitter_oauth)

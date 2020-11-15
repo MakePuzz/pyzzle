@@ -157,41 +157,119 @@ def decode_json(fpath):
 
 def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0, dpi=300, answer=False):
     """
-    Export a puzzle image. This can be used for square puzzles only.
-
+    export the image of puzzle boards
+    this fuction can be used when the board is square
     Parameters
     ----------
-    cell : numpy ndarray
-        Puzzle board.
+    puzzle : ndarray
+        Array of words in the puzzle board
     words : ndarray
-        Word list.
+        The list of words in this puzzle
     title : str, default ""
-        Puzzle name.
+        The name of this puzzle
     wn : int, default 15
-        Square side length of the board.
+        Square side length of the board
     oname : str, "problem.png"
-        Output file name.
+        The name of output file
     draw_type : int, default 0
-        Draw type (0: empty filling and outer frame  1:no filling and no outer frame).
+        The type of drawing (0:gray filling and outer frame  1:no filling and no outer frame)
     dpi : int, default 300
-        Dot per Inch.
+        The number of dpi
     answer : bool, default False
-        If True, export with the answer.
+        Output the answer sheet or problem sheet (True:answer sheet  False:problem sheet)
     """
     import japanize_matplotlib
     words = np.array(sorted(words, key=lambda word: (len(word), word)))
     w_lens = np.vectorize(len)(words)
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7.5), gridspec_kw=dict(width_ratios=[9,7], wspace=-0.1))
+
+    def cal_char_num_per_row(w_lens, row_num, col_num):
+        if col_num == 2:
+            char_num_per_row = w_lens[row_num-1] + w_lens[w_num-1] + 2
+        if col_num == 3:
+            char_num_per_row = w_lens[row_num-1] + w_lens[2*row_num-1] + w_lens[w_num-1] + 2 + 4
+        return char_num_per_row
+
+    def check_penetrate(row_num, col_num, char_num_per_row, char_max_per_row):
+        pene_words_count = 0
+        peneall = False
+        if char_num_per_row > char_max_per_row:
+            if col_num == 2:
+                peneall = True
+                while char_num_per_row > char_max_per_row:
+                    pene_words_count += 1
+                    char_num_per_row = w_lens[row_num-1] + w_lens[w_num-1-pene_words_count] + 2
+            if col_num == 3:
+                char_num_at_row_2to3 = (char_max_per_row - 2 - w_lens[row_num-1]) # Subtract the left column from the whole
+                peneall = bool(char_num_at_row_2to3 < w_lens[w_num-1])
+                while char_num_per_row > char_max_per_row:
+                    pene_words_count += 1
+                    char_num_per_row = w_lens[row_num-1] + w_lens[2*row_num-1] + w_lens[w_num-1-pene_words_count] + 2 + 4
+        return pene_words_count, peneall
+
+    # # define col_num and penetration
+    # Word list creation
+    char_max_per_row = 21
+    w_num = len(words)
+    if w_num <= 40:
+        col_num = 2
+    if w_num > 40 :
+        col_num = 3
+    row_num = np.ceil(w_num/col_num).astype(int) 
+    char_num_per_row = cal_char_num_per_row(w_lens, row_num, col_num)
+    # penetrate check
+    pene_words_count, peneall = check_penetrate(row_num, col_num, char_num_per_row, char_max_per_row)
+    # overflow because of 2 columns and many penetration
+    if col_num == 2 and (w_num/2 + pene_words_count) > 18:
+        col_num = 3
+        row_num = np.ceil(w_num/col_num).astype(int) 
+        char_num_per_row = cal_char_num_per_row(w_lens, row_num, col_num)
+        pene_words_count, peneall = check_penetrate(row_num, col_num, char_num_per_row, char_max_per_row)
+
+    # # define row space
+    # no penetration
+    if pene_words_count == 0:
+        # row spacing
+        if row_num <= 10:
+            row_spacing = 0.05 + 0.05
+        if row_num <= 15:
+            row_spacing = 0.015 + 0.05
+        if row_num > 15:
+            row_spacing = 0.05
+        row_num_at_col_1 = row_num
+        row_num_at_col_3 = w_num - 2 * row_num
+    # penetration
+    if pene_words_count > 0:
+        if peneall: # all penetration
+            # row spacing
+            row_num_plus_pene_num = row_num + pene_words_count
+            if row_num_plus_pene_num <= 10:
+                row_spacing = 0.05 + 0.05
+            if row_num_plus_pene_num <= 15:
+                row_spacing = 0.015 + 0.05
+            if row_num_plus_pene_num > 15:
+                row_spacing = 0.05
+            
+            if pene_words_count > (20-row_num): # row_num adjust
+                row_num = 20 - pene_words_count
+            row_num_at_col_1 = row_num
+            row_num_at_col_3 = w_num - 2 * row_num - pene_words_count
+        if not peneall: # Penetration appears in the right two columns
+            row_spacing = 0.05
+            if pene_words_count > (20-row_num):
+                row_num = 20 - pene_words_count # row_num adjust
+            row_num_at_col_1 = 20
+            row_num_at_col_3 = w_num - 20 - row_num - pene_words_count
+
+    # # draw fields
+    if col_num == 3:
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7.5), gridspec_kw=dict(width_ratios=[9,7], wspace=-0.1))
+    if col_num == 2:
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 7.5), gridspec_kw=dict(width_ratios=[9,3], wspace=-0.1))
+        ax2.set_xlim(0, 1.0/7.0*3.0)
     ax1.axis("off")
     ax1.set(aspect="equal", xlim=(0,wn), ylim=(0,wn))
     ax2.axis("off")
-
-    # puzzle title and copyright
-    w_num = len(words)
-    ax1.text(0.1, 15.2, f'{title}', size=16, ha='left', color='#1a1a1a')
-    ax1.text(15, 15.1, f'{w_num}語', size=12, ha='right', color='#1a1a1a')
-    ax2.text(0.95, -0.01, '© MakePuzz', size=18, ha='right', fontname='Yu Gothic', alpha=0.5, fontweight='bold')
 
     # Board creation
     # draw inner lines
@@ -217,71 +295,29 @@ def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0,
     ax1.plot([bold_hline_x,bold_hline_x+1], [bold_hline_y,bold_hline_y], color="k", ls="-", lw=1, zorder=4)
 
     if draw_type == 0:
+        # Outer lines
         ax1.plot([0, 0, wn, wn, 0], [0, wn, wn, 0, 0], color='k', ls='-', lw=4, zorder=4)
+        # Fill empty cells
         cmap = plt.cm.viridis
         cmap.set_over("#f5efe6", alpha=1)
         cmap.set_under("white", alpha=0)
-        ax1.imshow(cell=="", extent=[0,wn,0,wn], cmap=cmap, vmin=0.5, vmax=0.6)
-
+        ax1.imshow(puzzle=="", extent=[0,wn,0,wn], cmap=cmap, vmin=0.5, vmax=0.6)
+    
     if draw_type == 1:
         for j in range(wn):
             ymin = (wn-1-j+0.05) / wn
             ymax = (wn-1-j+1-0.05) / wn
-            if cell[0,j] != '':
+            if puzzle[0,j] != '':
                 ax1.axvline(x=0, ymin=ymin, ymax=ymax, color='k', ls='-', lw=4, zorder=4)
-            if cell[wn-1,j] != '':
+            if puzzle[wn-1,j] != '':
                 ax1.axvline(x=wn, ymin=ymin, ymax=ymax, color='k', ls='-', lw=4, zorder=4)
         for i in range(wn):
             xmin = (i+0.05) / wn
             xmax = (i+1-0.05) / wn
-            if cell[i,wn-1] != '':
-                ax1.axhline(y=0, xmin=xmin, xmax=xmax, color='k', ls='-', lw=4, zorder=4)
-            if cell[i,0] != '':
-                ax1.axhline(y=wn, xmin=xmin, xmax=xmax, color='k', ls='-', lw=4, zorder=4)
-
-    # Word list creation
-    col_num = 3
-    char_max_per_row = 21
-    row_num = np.ceil(w_num/col_num).astype(int) # row_num = np.ceil(w_num/20)
-    char_num_per_row = w_lens[row_num-1] + w_lens[2*row_num-1] + w_lens[w_num-1] + 2 + 4
-    # check penetration
-    pene_words_count = 0
-    if char_num_per_row > char_max_per_row:
-        char_num_at_row_2to3 = (char_max_per_row - 2 - w_lens[row_num-1]) # Subtract the left column from the whole
-        peneall = bool(char_num_at_row_2to3 < w_lens[w_num-1])
-        while char_num_per_row > char_max_per_row:
-            pene_words_count += 1
-            char_num_per_row = w_lens[row_num-1] + w_lens[2*row_num-1] + w_lens[w_num-1-pene_words_count] + 2 + 4
-
-    # no penetration
-    if row_num <= 10:
-        row_spacing = 0.05 + 0.05
-    if row_num <= 15:
-        row_spacing = 0.015 + 0.05
-    if row_num > 15:
-        row_spacing = 0.05
-    row_num_at_col_1 = row_num
-    row_num_at_col_3 = w_num - 2 * row_num
-    # penetration
-    if pene_words_count > 0:
-        if peneall:  # all penetration
-            row_num_plus_pene_num = row_num + pene_words_count
-            if row_num_plus_pene_num <= 10:
-                row_spacing = 0.05 + 0.05
-            if row_num_plus_pene_num <= 15:
-                row_spacing = 0.015 + 0.05
-            if row_num_plus_pene_num > 15:
-                row_spacing = 0.05
-            if pene_words_count > (20-row_num): # row_num adjust
-                row_num = 20 - pene_words_count
-            row_num_at_col_1 = row_num
-            row_num_at_col_3 = w_num - 2 * row_num - pene_words_count
-        if not peneall:  # Penetration appears in the right two columns
-            row_spacing = 0.05
-            if pene_words_count > (20-row_num):
-                row_num = 20 - pene_words_count # row_num adjust
-            row_num_at_col_1 = 20
-            row_num_at_col_3 = w_num - 20 - row_num - pene_words_count
+            if puzzle[i,wn-1] != '':
+                ax1.axhline(y=0, xmin=xmin, xmax=xmax, color='k', ls='-',lw=4, zorder=4)
+            if puzzle[i,0] != '':
+                ax1.axhline(y=wn, xmin=xmin, xmax=xmax, color='k', ls='-',lw=4, zorder=4)
 
     def draw_column(ax, words, row_spacing, label_x=0.02, y_offset=0.97, separate_space=False,
                     label_labelline_spacing=0.01, label_box_spacing=0.027, label_word_spacing=0.06,
@@ -319,45 +355,67 @@ def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0,
     # 1st column
     first_w = 0
     last_w = row_num_at_col_1
-    ax2 = draw_column(ax2, words[first_w:last_w], row_spacing)
-    # 2nd column
-    first_w = row_num_at_col_1
-    last_w = row_num_at_col_1 + row_num
-    col_spacing = (w_lens[row_num_at_col_1]-3) * 0.05
-    ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.25+col_spacing)
-    # 3rd column
-    first_w = row_num_at_col_1 + row_num
-    last_w = row_num_at_col_1 + row_num + row_num_at_col_3
-    col_spacing = (w_lens[row_num_at_col_1+row_num]-5) * 0.05
-    ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.57+col_spacing)
-    # penetrating column
-    if pene_words_count > 0:
-        first_w = row_num_at_col_1 + row_num + row_num_at_col_3
-        last_w = row_num_at_col_1 + row_num + row_num_at_col_3 + pene_words_count
-        if peneall:
-            ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.02, y_offset=0.97-row_spacing*(row_num)-0.025, separate_space=True)
-        if not peneall:
-            col_spacing = (w_lens[row_num_at_col_1]-3) * 0.05
-            ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.25+col_spacing, y_offset=0.97-row_spacing*(row_num)-0.025, separate_space=True)
+    col_spacing = 0.02
+    ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x = col_spacing)
+    if col_num == 2:
+        # 2nd column
+        first_w = row_num_at_col_1
+        last_w = w_num - pene_words_count
+        col_spacing = 0.25 + (w_lens[row_num_at_col_1]-3) * 0.05
+        ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x = col_spacing)
+        # penetrating column
+        if pene_words_count > 0 and peneall:
+            first_w = w_num - pene_words_count
+            last_w = w_num
+            ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.02, y_offset=0.97-row_spacing*(row_num)-0.025)
+    if col_num == 3:
+        # 2nd column
+        first_w = row_num_at_col_1
+        last_w = row_num_at_col_1 + row_num
+        col_spacing = (w_lens[row_num_at_col_1]-3) * 0.05
+        ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.25+col_spacing)
+        # 3rd column
+        first_w = row_num_at_col_1 + row_num
+        last_w = row_num_at_col_1 + row_num + row_num_at_col_3
+        col_spacing = (w_lens[row_num_at_col_1+row_num]-5) * 0.05
+        ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.57+col_spacing)
+        # penetrating column
+        if pene_words_count > 0:
+            first_w = row_num_at_col_1 + row_num + row_num_at_col_3
+            last_w = row_num_at_col_1 + row_num + row_num_at_col_3 + pene_words_count
+            if peneall:
+                ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.02, y_offset=0.97-row_spacing*(row_num)-0.025, separate_space=True)
+            if not peneall:
+                col_spacing = (w_lens[row_num_at_col_1]-3) * 0.05
+                ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.25+col_spacing, y_offset=0.97-row_spacing*(row_num)-0.025, separate_space=True)
 
+    # puzzle title and copyright
+    ax1.text(0.1, 15.2, f'{title}', size=16, ha='left', color='#1a1a1a')
+    ax1.text(15, 15.1, f'{w_num}語', size=12, ha='right', color='#1a1a1a')
+    if col_num == 3:
+        x_text = 0.95
+    elif col_num == 2 and not peneall:
+        x_text = 0.25 + (w_lens[row_num_at_col_1]-3) * 0.05 + (w_lens[w_num-1] + 1) * 0.05
+    elif col_num == 2 and peneall:
+        x_text = (w_lens[w_num-1]) * 0.05
+    ax2.text(x_text, -0.01, '© MakePuzz', size=18, ha='right', fontname='Yu Gothic', alpha=0.5, fontweight='bold')
+  
     if not answer:
         fig.savefig(oname, dpi=dpi, bbox_inches='tight')
         return
-
+    
     # Answer image (developper's memo: alphabet .35 .25, Hiwagana .15 .25)
     for i in range(wn):
         for j in range(wn):
-            if cell[i,j] == "":
-                continue
             x = j + 0.5
             y = wn - i - 0.6
             rotation = 0
             # The rotation process for vertical long tones
-            if cell[i,j] == 'ー' and j >= 1 and cell[i,j-1] == '':
+            if puzzle[i,j] == 'ー' and j >= 1 and puzzle[i,j-1] == '':
                 x += 0.01
                 y += 0.15
                 rotation = 90
-            ax1.text(x, y, cell[i,j], size=18, ha="center", va="center", rotation=rotation)
+            ax1.text(x, y, puzzle[i,j], size=18, ha="center", va="center", rotation=rotation)
     fig.savefig(oname, dpi=dpi, bbox_inches='tight')
     return
 

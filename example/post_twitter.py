@@ -107,22 +107,20 @@ if __name__ == '__main__':
                                                             # Access Token, Access Token Secert.
     if operation == 'tweet':
         # Tweet
-        status_code = tweet_image(text+': problem', image_path_list)
+        status_code = tweet_image(text, image_path_list)
         if status_code == 200:
             print('Posted!😊')
         else:
             print('Error😩: code = '+status_code)
-            sys.exit(1)
     elif operation == 'reply':
         # Get latest tweet id
         latest_tweet = get_my_latest_tweet()
         
         # Reply to my latest tweet
-        status_code = tweet_image(text+": answer", image_path_list, latest_tweet['id'])
+        status_code = tweet_image(text, image_path_list, latest_tweet['id'])
         if status_code == 200:
             print('Posted!😊')
         else:
             print('Error😩: code = '+status_code)
-            sys.exit(1)
     else:
         print('Error: Check the -m option')

@@ -372,13 +372,13 @@ def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0,
         # 2nd column
         first_w = row_num_at_col_1
         last_w = row_num_at_col_1 + row_num
-        col_spacing = (w_lens[row_num_at_col_1]-3) * 0.05
-        ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.25+col_spacing)
+        col_spacing = 0.25 + (w_lens[row_num_at_col_1]-3) * 0.05
+        ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x = col_spacing)
         # 3rd column
         first_w = row_num_at_col_1 + row_num
         last_w = row_num_at_col_1 + row_num + row_num_at_col_3
-        col_spacing = (w_lens[row_num_at_col_1+row_num]-5) * 0.05
-        ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.57+col_spacing)
+        col_spacing += (w_lens[row_num_at_col_1+row_num]) * 0.05 + 0.08
+        ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x = col_spacing)
         # penetrating column
         if pene_words_count > 0:
             first_w = row_num_at_col_1 + row_num + row_num_at_col_3
@@ -388,7 +388,8 @@ def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0,
             if not peneall:
                 col_spacing = (w_lens[row_num_at_col_1]-3) * 0.05
                 ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.25+col_spacing, y_offset=0.97-row_spacing*(row_num)-0.025, separate_space=True)
-
+    
+   
     # puzzle title and copyright
     ax1.text(0.1, 15.2, f'{title}', size=16, ha='left', color='#1a1a1a')
     ax1.text(15, 15.1, f'{w_num}語', size=12, ha='right', color='#1a1a1a')

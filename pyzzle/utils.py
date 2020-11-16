@@ -263,9 +263,9 @@ def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0,
 
     # # draw fields
     if col_num == 3:
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7.5), gridspec_kw=dict(width_ratios=[9,7], wspace=-0.1))
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7.5), gridspec_kw=dict(width_ratios=[9,7], wspace=-0.1), facecolor = 'white')
     if col_num == 2:
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 7.5), gridspec_kw=dict(width_ratios=[9,3], wspace=-0.1))
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 7.5), gridspec_kw=dict(width_ratios=[9,3], wspace=-0.1), facecolor = 'white')
         ax2.set_xlim(0, 1.0/7.0*3.0)
     ax1.axis("off")
     ax1.set(aspect="equal", xlim=(0,wn), ylim=(0,wn))

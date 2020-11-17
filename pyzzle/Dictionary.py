@@ -110,7 +110,7 @@ class Dictionary:
                     self.word.append(Word(wo, we))
 
     def read(self, dict_specifier):
-        with open(dict_specifier, 'r', encoding='utf-8') as f:
+        with open(dict_specifier, 'r', encoding='utf-8-sig') as f:
             data = f.readlines()
         data = [l for l in data if l != os.linesep]
 

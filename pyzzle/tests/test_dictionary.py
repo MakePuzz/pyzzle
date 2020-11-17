@@ -1,8 +1,7 @@
 import unittest
-
-import numpy as np
-
+from pathlib import PurePath
 from pyzzle import Dictionary
+
 
 class TestDictionary(unittest.TestCase):
     """Test the Dictionary class."""
@@ -58,3 +57,8 @@ class TestDictionary(unittest.TestCase):
     def test_w_len_property(self):
         d = Dictionary(word="word1")
         self.assertTrue([5], d.w_len)
+
+    def test_delete_bom(self):
+        dict_dir = str(PurePath(__file__).parent / PurePath("data"))
+        d = Dictionary(f"{dict_dir}/dict_with_bom.txt")
+        self.assertEqual(["word1", "word2"], d.word)

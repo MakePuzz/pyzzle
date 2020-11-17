@@ -70,6 +70,17 @@ class Dictionary:
             new_dict.add(other["word"], other["weight"])
         return new_dict
 
+    def __sub__(self, other):
+        new_dict = copy.deepcopy(self)
+        if isinstance(other, Dictionary):
+            for wo in other:
+                new_dict.remove(wo)
+        if isinstance(other, str):
+            new_dict.remove(other)
+        if isinstance(other, list):
+            new_dict.remove(other)
+        return new_dict
+
     def __iter__(self):
         return self
 
@@ -108,6 +119,17 @@ class Dictionary:
                     self.word[self.word.index(wo)].weight = we
                 else:
                     self.word.append(Word(wo, we))
+
+    def remove(self, word=None):
+        if word is None:
+            raise ValueError("'word' must be specified")
+        if isinstance(word, str):
+            word = [word]
+        for wo in word:
+            if self.include(wo):  # replace the weight
+                index = self.word.index(wo)
+                del self.word[index]
+                del self.weight[index]
 
     def read(self, dict_specifier):
         with open(dict_specifier, 'r', encoding='utf-8-sig') as f:

@@ -39,6 +39,33 @@ class TestDictionary(unittest.TestCase):
         self.assertEqual(["word1"], d.word)
         self.assertEqual([1], d.weight)
 
+    def test_sub(self):
+        d = Dictionary()
+        d.add(["word1", "word2"])
+        d -= "word1"
+        self.assertEqual(["word2"], d.word)
+        self.assertEqual([0], d.weight)
+
+    def test_sub_with_dictionary(self):
+        d = Dictionary(word=["word1", "word2", "word3"])
+        d -= Dictionary(word=["word1", "word2"])
+        self.assertEqual(["word3"], d.word)
+        self.assertEqual([0], d.weight)
+
+    def test_remove_word(self):
+        d = Dictionary()
+        d.add(["word1", "word2"])
+        d.remove("word1")
+        self.assertEqual(["word2"], d.word)
+        self.assertEqual([0], d.weight)
+
+    def test_remove_multiple_words(self):
+        d = Dictionary()
+        d.add(["word1", "word2", "word3"])
+        d.remove(["word1", "word2"])
+        self.assertEqual(["word3"], d.word)
+        self.assertEqual([0], d.weight)
+
     def test_iter(self):
         d = Dictionary()
         d.add(["word1", "word2", "word3"], [0, 1, 2])

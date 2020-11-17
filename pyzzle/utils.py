@@ -157,26 +157,25 @@ def decode_json(fpath):
 
 def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0, dpi=300, answer=False):
     """
-    export the image of puzzle boards
-    this fuction can be used when the board is square
+    Export a puzzle image. This can be used for square puzzles only.
     Parameters
     ----------
-    puzzle : ndarray
-        Array of words in the puzzle board
+    cell : numpy ndarray
+        Puzzle board.
     words : ndarray
-        The list of words in this puzzle
+        Word list.
     title : str, default ""
-        The name of this puzzle
+        Puzzle name.
     wn : int, default 15
-        Square side length of the board
+        Square side length of the board.
     oname : str, "problem.png"
-        The name of output file
+        Output file name.
     draw_type : int, default 0
-        The type of drawing (0:gray filling and outer frame  1:no filling and no outer frame)
+        Draw type (0: empty filling and outer frame  1:no filling and no outer frame).
     dpi : int, default 300
-        The number of dpi
+        Dot per Inch.
     answer : bool, default False
-        Output the answer sheet or problem sheet (True:answer sheet  False:problem sheet)
+        If True, export with the answer.
     """
     import japanize_matplotlib
     words = np.array(sorted(words, key=lambda word: (len(word), word)))
@@ -263,9 +262,9 @@ def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0,
 
     # # draw fields
     if col_num == 3:
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7.5), gridspec_kw=dict(width_ratios=[9,7], wspace=-0.1), facecolor = 'white')
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7.5), gridspec_kw=dict(width_ratios=[9,7], wspace=-0.1) )
     if col_num == 2:
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 7.5), gridspec_kw=dict(width_ratios=[9,3], wspace=-0.1), facecolor = 'white')
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 7.5), gridspec_kw=dict(width_ratios=[9,3], wspace=-0.1) )
         ax2.set_xlim(0, 1.0/7.0*3.0)
     ax1.axis("off")
     ax1.set(aspect="equal", xlim=(0,wn), ylim=(0,wn))
@@ -301,22 +300,22 @@ def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0,
         cmap = plt.cm.viridis
         cmap.set_over("#f5efe6", alpha=1)
         cmap.set_under("white", alpha=0)
-        ax1.imshow(puzzle=="", extent=[0,wn,0,wn], cmap=cmap, vmin=0.5, vmax=0.6)
+        ax1.imshow(cell=="", extent=[0,wn,0,wn], cmap=cmap, vmin=0.5, vmax=0.6)
     
     if draw_type == 1:
         for j in range(wn):
             ymin = (wn-1-j+0.05) / wn
             ymax = (wn-1-j+1-0.05) / wn
-            if puzzle[0,j] != '':
+            if cell[0,j] != '':
                 ax1.axvline(x=0, ymin=ymin, ymax=ymax, color='k', ls='-', lw=4, zorder=4)
-            if puzzle[wn-1,j] != '':
+            if cell[wn-1,j] != '':
                 ax1.axvline(x=wn, ymin=ymin, ymax=ymax, color='k', ls='-', lw=4, zorder=4)
         for i in range(wn):
             xmin = (i+0.05) / wn
             xmax = (i+1-0.05) / wn
-            if puzzle[i,wn-1] != '':
+            if cell[i,wn-1] != '':
                 ax1.axhline(y=0, xmin=xmin, xmax=xmax, color='k', ls='-',lw=4, zorder=4)
-            if puzzle[i,0] != '':
+            if cell[i,0] != '':
                 ax1.axhline(y=wn, xmin=xmin, xmax=xmax, color='k', ls='-',lw=4, zorder=4)
 
     def draw_column(ax, words, row_spacing, label_x=0.02, y_offset=0.97, separate_space=False,
@@ -388,8 +387,7 @@ def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0,
             if not peneall:
                 col_spacing = (w_lens[row_num_at_col_1]-3) * 0.05
                 ax2 = draw_column(ax2, words[first_w:last_w], row_spacing, label_x=0.25+col_spacing, y_offset=0.97-row_spacing*(row_num)-0.025, separate_space=True)
-    
-   
+
     # puzzle title and copyright
     ax1.text(0.1, 15.2, f'{title}', size=16, ha='left', color='#1a1a1a')
     ax1.text(15, 15.1, f'{w_num}語', size=12, ha='right', color='#1a1a1a')
@@ -405,18 +403,19 @@ def export_image(cell, words, title="", wn=15, oname='problem.png', draw_type=0,
         fig.savefig(oname, dpi=dpi, bbox_inches='tight')
         return
     
-    # Answer image (developper's memo: alphabet .35 .25, Hiwagana .15 .25)
+    # Answer image
+    # alphabet .35 .25, Hiwagana .15 .25
     for i in range(wn):
         for j in range(wn):
             x = j + 0.5
             y = wn - i - 0.6
             rotation = 0
             # The rotation process for vertical long tones
-            if puzzle[i,j] == 'ー' and j >= 1 and puzzle[i,j-1] == '':
+            if cell[i,j] == 'ー' and j >= 1 and cell[i,j-1] == '':
                 x += 0.01
                 y += 0.15
                 rotation = 90
-            ax1.text(x, y, puzzle[i,j], size=18, ha="center", va="center", rotation=rotation)
+            ax1.text(x, y, cell[i,j], size=18, ha="center", va="center", rotation=rotation)
     fig.savefig(oname, dpi=dpi, bbox_inches='tight')
     return
 

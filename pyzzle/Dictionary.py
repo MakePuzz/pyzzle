@@ -1,4 +1,5 @@
 import os
+import re
 import copy
 from glob import glob
 from pathlib import PurePath
@@ -99,7 +100,6 @@ class Dictionary:
         return word in self.word
 
     def add(self, word=None, weight=None, dict_specifier=None):
-        import re
         if (word, dict_specifier) == (None, None):
             raise ValueError("'word' or 'dict_specifier' must be specified")
         if word is dict_specifier is not None:
@@ -116,7 +116,6 @@ class Dictionary:
             if len(word) != len(weight):
                 raise ValueError(f"'word' and 'weight' must be same size")
             for wo, we in zip(word, weight):
-                wo = re.sub("[\r\n]+$", "", wo)
                 if self.include(wo):  # replace the weight
                     self.word[self.word.index(wo)].weight = we
                 else:
@@ -136,7 +135,7 @@ class Dictionary:
     def read(self, dict_specifier):
         with open(dict_specifier, 'r', encoding='utf-8-sig') as f:
             data = f.readlines()
-        data = [l for l in data if l != os.linesep]
+        data = [re.sub("[\r\n]+$", "", l) for l in data if l != os.linesep]
         # Remove new_line_code
         def removed_new_line_code(word):
             line = word.rstrip(os.linesep).split(" ")

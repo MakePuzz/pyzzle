@@ -95,11 +95,12 @@ class Optimizer:
         for _n in range(n):
             if time_limit is not None:
                 performance_time = time.time() - start_time
+                time_offset = performance_time + time_offset
                 if performance_time >= time_limit:
                     break
             LOG.info(f"> Node: {_n+1}")
             _puzzle = copy.deepcopy(puzzle)
-            _puzzle = _puzzle.solve(epoch=epoch, optimizer="local_search", time_limit=time_limit, time_offset=performance_time+time_offset, show=show, use_f=use_f)
+            _puzzle = _puzzle.solve(epoch=epoch, optimizer="local_search", time_limit=time_limit, time_offset=time_offset, show=show, use_f=use_f)
             puzzles.append(_puzzle)
         for i, _puzzle in enumerate(puzzles):
             if i == 0:

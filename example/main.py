@@ -14,9 +14,9 @@ width = 15
 height = 15
 mask = None # Mask.donut_s # 不要ならNone
 gravity = None # 不要ならNone
-dic = Dictionary.dataset["animals"]
+dic = Dictionary("../../dictionaries/test_bom_crlf.txt")
 name = "Pyzzle"
-epoch = 3
+epoch = 30
 
 seed = 0
 np.random.seed(seed=seed)
@@ -25,7 +25,7 @@ np.random.seed(seed=seed)
 puzzle = Puzzle(width=width, height=height, mask=mask, name=name) #, gravity=gravity
 
 # In[]
-puzzle.replace_dict(dic)
+puzzle.import_dict(dic)
 
 # In[]
 obj_func = [
@@ -39,6 +39,7 @@ utils.logging_off()
 # In[]
 # puzzle.solve(epoch=300, optimizer="local_search", of=obj_func, show=False, use_f=True)
 # In[]
+puzzle.show()
 print(f"component should be 1: {puzzle.component}")
 print(f"unique solution: {puzzle.is_unique}")
 
@@ -62,21 +63,18 @@ puzzle.show_log()
 plt.savefig(f"{base_dir}/fig/{oname}_log.png")
 
 # %%
-puzzle.show()
-
-# %%
 # from pyzzle import PyzzleAPI
 # api = PyzzleAPI()
 # a = api.get_all_puzzles()
 # a.text
 
 
-# %%
-from pyzzle import Puzzle
-puzzle = Puzzle.from_json(f"{base_dir}/json/{oname}.json")
+# # %%
+# from pyzzle import Puzzle
+# puzzle = Puzzle.from_json(f"{base_dir}/json/{oname}.json")
 
-# %%
-puzzle.show()
+# # %%
+# puzzle.show()
 
 # %%
 # from pyzzle import Puzzle, utils

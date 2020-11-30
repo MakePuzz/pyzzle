@@ -139,15 +139,13 @@ class Dictionary:
         with open(dict_specifier, 'r', encoding='utf-8-sig') as f:
             data = f.read().splitlines()
         data = [l for l in data if l != ""]
-        # Remove new_line_code
-        def removed_new_line_code(word):
-            line = word.rstrip(os.linesep).split(" ")
-            if len(line) == 1:
-                line.append(0)  # weight = 0
-            line[1] = int(line[1])
-            return line
+        def get_word_and_weight(line):
+            wo_we = line.split(" ")
+            if len(wo_we) == 1:
+                return wo_we[0], 0
+            return wo_we[0], int(wo_we[1])
 
-        dic_list = list(map(removed_new_line_code, data))
+        dic_list = list(map(get_word_and_weight, data))
         word = [d[0] for d in dic_list]
         weight = [d[1] for d in dic_list]
         self.add(word, weight)

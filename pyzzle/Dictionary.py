@@ -51,6 +51,9 @@ class Dictionary:
     def __getitem__(self, key):
         return {'word': self.word[key], 'weight': self.word[key].weight, 'len': self.w_len[key]}
 
+    def __repr__(self):
+        return str({"words": self.word, "weight": self.weight})
+
     def __str__(self):
         return str({"words": self.word, "weight": self.weight})
 

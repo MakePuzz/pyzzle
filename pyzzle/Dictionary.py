@@ -137,8 +137,8 @@ class Dictionary:
 
     def read(self, dict_specifier):
         with open(dict_specifier, 'r', encoding='utf-8-sig') as f:
-            data = f.readlines()
-        data = [l for l in data if l != os.linesep]
+            data = f.read().splitlines()
+        data = [l for l in data if l != ""]
         # Remove new_line_code
         def removed_new_line_code(word):
             line = word.rstrip(os.linesep).split(" ")

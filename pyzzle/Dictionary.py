@@ -118,7 +118,8 @@ class Dictionary:
             if len(word) != len(weight):
                 raise ValueError(f"'word' and 'weight' must be same size")
             for wo, we in zip(word, weight):
-                if self.include(wo):  # replace the weight
+                wo = wo.stlip()
+                if self.include(wo): # replace the weight
                     self.word[self.word.index(wo)].weight = we
                 else:
                     self.word.append(Word(wo, we))
@@ -129,7 +130,7 @@ class Dictionary:
         if isinstance(word, str):
             word = [word]
         for wo in word:
-            if self.include(wo):  # replace the weight
+            if self.include(wo):
                 index = self.word.index(wo)
                 del self.word[index]
                 del self.weight[index]

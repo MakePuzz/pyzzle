@@ -103,7 +103,7 @@ class Puzzle:
         self.name = name
         self.nwords = 0
         self.epoch = 0
-        self.seed = None
+        self.seed = 0
         self.width = width
         self.height = height
         self.mask = mask
@@ -129,11 +129,13 @@ class Puzzle:
 
     def __str__(self):
         """Return the puzzle's name."""
-        return self.name
+        string = f"Name: {self.name}\nWidth: {self.width}\nHeight: {self.height}\nUnique: {self.is_unique}"
+        return string
     
     def __repr__(self):
-        print(self.name)
-        puzzle.show()
+        self.show()
+        string = f"Name: {self.name}\nWidth: {self.width}\nHeight: {self.height}\nUnique: {self.is_unique}"
+        return string
 
     def __lt__(self, other):
         if not isinstance(other, Puzzle):
@@ -823,7 +825,6 @@ class Puzzle:
         cell = np.array(cell)
         uori, ui, uj, uwords = Puzzle.get_word_properties(cell)
         puzzle = Puzzle(width=cell.shape[1], height=cell.shape[0], mask=mask, gravity=gravity, name=name)
-        
         nwords = 0
         while(nwords < len(uwords)):
             for ori, i, j, word in zip(uori, ui, uj, uwords):

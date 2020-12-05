@@ -1,4 +1,5 @@
 import os
+import sys
 import copy
 from glob import glob
 from pathlib import PurePath
@@ -35,6 +36,9 @@ class Dictionary:
             self.read(dict_specifier)
         if word is not None:
             self.add(word, weight)
+
+    def __sizeof__(self):
+        return sys.getsizeof(self.word) + sys.getsizeof(self.removed_words)
 
     @property
     def size(self):

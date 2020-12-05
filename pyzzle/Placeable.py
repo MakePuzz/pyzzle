@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 from collections import Counter
 
@@ -23,6 +25,11 @@ class Placeable:
         if words is not None:
             self.add(words, mask=mask)
 
+    def __sizeof__(self):
+        size = sys.getsizeof(self.ori) + sys.getsizeof(self.i) + sys.getsizeof(self.j) + sys.getsizeof(self.k) + sys.getsizeof(self.word)
+        size += sys.getsizeof(self.width) + sys.getsizeof(self.height) + sys.getsizeof(self.mask)
+        return size
+    
     def add(self, word, mask=None, base_k=0):
         if isinstance(word, str):
             word = [word]

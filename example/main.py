@@ -14,9 +14,9 @@ width = 15
 height = 15
 mask = None # Mask.donut_s # 不要ならNone
 gravity = None # 不要ならNone
-dic = Dictionary("../../dictionaries/test_bom_crlf.txt")
+dic = Dictionary("../../dictionaries/pokemon.txt")
 name = "Pyzzle"
-epoch = 30
+epoch = 3
 
 seed = 0
 np.random.seed(seed=seed)
@@ -29,13 +29,14 @@ puzzle.import_dict(dic)
 
 # In[]
 obj_func = [
-    "uniqueness", "weight", "nwords", "ease_r"
+    "uniqueness", "weight", "nwords", "area_rect", "ease_r"
 ]
 
 # In[]
 utils.debug_on()
 puzzle = puzzle.solve(epoch=epoch, time_limit=None, n=1, optimizer="multi_start", of=obj_func, show=False, use_f=True)
 utils.logging_off()
+
 # In[]
 # puzzle.solve(epoch=300, optimizer="local_search", of=obj_func, show=False, use_f=True)
 # In[]

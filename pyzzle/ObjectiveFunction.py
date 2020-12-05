@@ -15,6 +15,7 @@ class ObjectiveFunction:
         "circulation",
         "gravity",
         "uniqueness",
+        "area_rect",
         "weight_r",
         "nwords_r",
         "cross_count_r",
@@ -26,6 +27,7 @@ class ObjectiveFunction:
         "circulation_r",
         "gravity_r",
         "uniqueness_r",
+        "area_rect_r",
     ]
 
     def __init__(self, objective_function=["nwords"]):
@@ -93,6 +95,10 @@ class ObjectiveFunction:
     @classmethod
     def uniqueness(self, puzzle):
         return int(puzzle.is_unique)
+    
+    @classmethod
+    def area_rect(self, puzzle):
+        return puzzle.cell.size - puzzle.rect.size
 
     @classmethod
     def nwords_r(self, puzzle):
@@ -143,6 +149,10 @@ class ObjectiveFunction:
     @classmethod
     def uniqueness_r(self, puzzle):
         return -ObjectiveFunction.uniqueness(puzzle)
+
+    @classmethod
+    def area_rect_r(self, puzzle):
+        return -ObjectiveFunction.area_rect(puzzle)
 
     def register(self, func_names):
         """

@@ -1050,6 +1050,13 @@ class Puzzle:
         name = name or f"{now}_{self.width}_{self.height}_{self.seed}_{self.epoch}.pickle"
         with open(name, mode="wb") as f:
             pickle.dump(self, f)
+        
+    @property
+    def rect(self):
+        r_min, r_max, c_min, c_max = utils.get_rect(self.cover)
+        if r_min == -1:
+            return np.array([[],[]])
+        return self.cell[r_min:r_max+1, c_min:c_max+1]
 
     def move(self, direction, n=0, limit=False):
         """
@@ -1070,6 +1077,8 @@ class Puzzle:
             If True, move as much as possible in the specified direction.
         """
         r_min, r_max, c_min, c_max = utils.get_rect(self.cover)
+        if r_min == -1:
+            return
         str2int = {'U': 1, 'D': 2, 'R': 3, 'L': 4}
         if isinstance(direction, str) and direction.upper() in ('U', 'D', 'R', 'L'):
             direction = str2int[direction.upper()]

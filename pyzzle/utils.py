@@ -513,9 +513,9 @@ def save_image(fpath, cell, word_list, mask=None, title="", label="word list", d
     plt.close()
 
 
-def get_rect(cell):
+def get_rect(cover, blank=""):
     """
-    Return coordinates of rectangular region
+    Return coordinates of rectangular region from cover.
 
     Returns
     -------
@@ -528,8 +528,10 @@ def get_rect(cell):
     c_min : int
        Maximum number of cols
     """
-    rows = np.any(cell, axis=1)
-    cols = np.any(cell, axis=0)
+    if not np.any(cover):
+        return -1, -1, -1, -1
+    rows = np.any(cover, axis=1)
+    cols = np.any(cover, axis=0)
     r_min, r_max = np.where(rows)[0][[0, -1]]
     c_min, c_max = np.where(cols)[0][[0, -1]]
     return r_min, r_max, c_min, c_max

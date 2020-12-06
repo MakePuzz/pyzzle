@@ -3,11 +3,12 @@ from unittest import mock
 
 import numpy as np
 
+from pyzzle import Puzzle
+
 
 class TestPuzzle(unittest.TestCase):
     """Test the Puzzle class."""
     def test_add(self, *mocks):
-        from pyzzle import Puzzle
         puzzle = Puzzle(5, 5)
         added_cell = np.array([
             ['T', '', 'S', '', ''],
@@ -46,7 +47,7 @@ class TestPuzzle(unittest.TestCase):
                 self.assertTrue(np.all(puzzle.uwords[:puzzle.nwords] == ["TEST", "ESTA", "STEM", "ME", "ET"]))
 
     def test_drop(self, *mocks):
-        from pyzzle import Puzzle, Word
+        from pyzzle import Word
         puzzle = Puzzle(5, 5)
         puzzle.nwords = 5
         puzzle.cell = np.array([
@@ -108,7 +109,6 @@ class TestPuzzle(unittest.TestCase):
 
     def test_move(self, *mocks):
         import copy
-        from pyzzle import Puzzle
         puzzle = Puzzle(5, 5)
         puzzle.nwords = 5
         puzzle.cell = np.array([
@@ -186,7 +186,6 @@ class TestPuzzle(unittest.TestCase):
         self.assertTrue(np.all(puzzle.uj[:puzzle.nwords] == [1, 1, 3, 3, 4]))
     
     def test_get_cover(self, *mocks):
-        from pyzzle import Puzzle
         cell = np.array([
             ['T', '', 'S', '', ''],
             ['E', 'S', 'T', 'A', ''],
@@ -204,7 +203,6 @@ class TestPuzzle(unittest.TestCase):
         self.assertTrue(np.all(Puzzle.get_cover(cell) == cover))
         
     def test_get_enable(self, *mocks):
-        from pyzzle import Puzzle
         cell = np.array([
             ['T', '', 'S', '', ''],
             ['E', 'S', 'T', 'A', ''],
@@ -222,7 +220,7 @@ class TestPuzzle(unittest.TestCase):
         self.assertTrue(np.all(Puzzle.get_enable(cell) == enable))
 
     def test_get_uwords(self, *mocks):
-        from pyzzle import Puzzle, Word
+        from pyzzle import Word
         cell = np.array([
             ['T', '', 'S', '', ''],
             ['E', 'S', 'T', 'A', ''],
@@ -234,8 +232,6 @@ class TestPuzzle(unittest.TestCase):
         self.assertTrue(np.all(sorted(Puzzle.get_uwords(cell)) == sorted(uwords)))
 
     def test_is_unique(self, *mocks):
-        from pyzzle import Puzzle
-        puzzle = Puzzle(5, 5)
         cell = np.array([
             ['T', '', 'S', '', ''],
             ['E', 'S', 'T', 'A', ''],
@@ -254,6 +250,17 @@ class TestPuzzle(unittest.TestCase):
         ])
         puzzle = Puzzle.from_cell(cell)
         self.assertFalse(puzzle.is_unique)
+    
+    def test_rect(self, *mocks):
+        cell = np.array([
+            ['', '', 'S', '', ''],
+            ['', 'S', 'T', 'A', ''],
+            ['', '', 'E', '', ''],
+            ['', '', 'M', '', ''],
+            ['', '', '', '', '']
+        ])
+        puzzle = Puzzle.from_cell(cell)
+        self.assertEqual(puzzle.rect.tolist(), cell[:4, 1:4].tolist())            
 
 if __name__ == '__main__':
     unittest.main()

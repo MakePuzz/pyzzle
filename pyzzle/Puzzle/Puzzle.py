@@ -17,6 +17,7 @@ from pyzzle.ObjectiveFunction import ObjectiveFunction
 from pyzzle.Judgement import Judgement
 from pyzzle.History import History
 from pyzzle import utils
+from pyzzle.Exception import ZeroSizePuzzleException
 
 rcParams['font.family'] = 'sans-serif'
 rcParams['font.sans-serif'] = ['Hiragino Maru Gothic Pro', 'Yu Gothic', 'Meiryo',
@@ -1053,8 +1054,9 @@ class Puzzle:
         
     @property
     def rect(self):
-        r_min, r_max, c_min, c_max = utils.get_rect(self.cover)
-        if r_min == -1:
+        try:
+            r_min, r_max, c_min, c_max = utils.get_rect(self.cover)
+        except ZeroSizePuzzleException:
             return np.array([[],[]])
         return self.cell[r_min:r_max+1, c_min:c_max+1]
 

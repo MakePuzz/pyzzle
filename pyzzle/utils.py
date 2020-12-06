@@ -513,7 +513,7 @@ def save_image(fpath, cell, word_list, mask=None, title="", label="word list", d
     plt.close()
 
 
-def get_rect(cover, blank=""):
+def get_rect(cover):
     """
     Return coordinates of rectangular region from cover.
 
@@ -529,7 +529,8 @@ def get_rect(cover, blank=""):
        Maximum number of cols
     """
     if not np.any(cover):
-        return -1, -1, -1, -1
+        from pyzzle.Exception import ZeroSizePuzzleException
+        raise ZeroSizePuzzleException("The puzzle has no contents.")
     rows = np.any(cover, axis=1)
     cols = np.any(cover, axis=0)
     r_min, r_max = np.where(rows)[0][[0, -1]]

@@ -6,11 +6,8 @@ import os
 import subprocess
 from setuptools import find_packages
 
-try:
-    from numpy.distutils.core import setup, Extension
-except:
-    res = subprocess.check_call("pip install numpy")
-    from numpy.distutils.core import setup, Extension
+res = subprocess.check_call("pip install numpy")
+from numpy.distutils.core import setup, Extension
 
 try:
     with open("README.md") as f:

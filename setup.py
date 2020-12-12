@@ -3,10 +3,12 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 import os
-import subprocess
 from setuptools import find_packages
 
-res = subprocess.check_call("pip install numpy")
+
+import pip, site, importlib
+pip.main(["install", "numpy"])  # pip install --user modelx を実行
+importlib.reload(site)          # sys.pathをリフレッシュする
 from numpy.distutils.core import setup, Extension
 
 try:

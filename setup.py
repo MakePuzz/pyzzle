@@ -4,9 +4,12 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 import os
 from setuptools import find_packages
-from numpy.distutils.core import setup, Extension
 
-
+try:
+    from numpy.distutils.core import setup, Extension
+except:
+    exec("pip install numpy")
+    from numpy.distutils.core import setup, Extension
 
 try:
     with open("README.md") as f:

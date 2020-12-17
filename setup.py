@@ -5,25 +5,16 @@ from __future__ import unicode_literals
 import os
 from setuptools import find_packages
 
-
-import pip, site, importlib
-pip.main(["install", "numpy"])  # pip install --user modelx を実行
-importlib.reload(site)          # sys.pathをリフレッシュする
-from numpy.distutils.core import setup, Extension
-
 try:
     with open("README.md") as f:
         readme = f.read()
 except IOError:
     readme = ""
 
+
 def _requires_from_file(filename):
     return open(filename).read().splitlines()
 
-extensions = []
-extensions.append(
-    Extension(name="pyzzle.Puzzle.add_to_limit",
-              sources=["pyzzle/Puzzle/add_to_limit.f90"])) #f2py_options=["--opt='-O3'"]
 
 setup(
     name="pyzzle",
@@ -36,7 +27,6 @@ setup(
     description="A Python library to automatically generate intelligent and beautifull puzzles",
     long_description=readme,
     packages=find_packages(),
-    ext_modules=extensions,
     install_requires=_requires_from_file("requirements.txt"),
     license="MIT",
     python_requires=">=3.6",

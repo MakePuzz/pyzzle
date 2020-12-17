@@ -1,0 +1,17 @@
+steps:
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: [
+      "alpha",
+      "builds",
+      "triggers",
+      "run",
+      "deploy-auto-puzzle-generator"
+    ]
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: [
+      "alpha",
+      "builds",
+      "triggers",
+      "run",
+      "deploy-slack-bot"
+    ]

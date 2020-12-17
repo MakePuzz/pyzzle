@@ -4,6 +4,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 import os
 from setuptools import find_packages
+from distutils.core import setup
 
 try:
     with open("README.md") as f:

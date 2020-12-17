@@ -5,6 +5,8 @@ steps:
       "builds",
       "triggers",
       "run",
+      "--branch",
+      "master",
       "deploy-auto-puzzle-generator"
     ]
   - name: 'gcr.io/cloud-builders/gcloud'
@@ -13,5 +15,7 @@ steps:
       "builds",
       "triggers",
       "run",
+      "--branch",
+      "master",
       "deploy-slack-bot"
     ]

@@ -86,7 +86,7 @@ class Puzzle:
         puzzle.export_json("example.json")
     """
 
-    def __init__(self, width=None, height=None, mask=None, gravity=None, name="Criss Cross"):
+    def __init__(self, width=None, height=None, mask=None, gravity=None, name="Criss Cross", seed=0):
         """
         Initialize the puzzle object.
 
@@ -100,11 +100,13 @@ class Puzzle:
             Mask of the puzzle.
         name : str, default "Criss Cross"
             Title of the puzzle.
+        seed : int
+            Random Seed
         """
         self.name = name
         self.nwords = 0
         self.epoch = 0
-        self.seed = 0
+        self.seed = seed
         self.width = width
         self.height = height
         self.mask = mask

@@ -888,8 +888,9 @@ class Puzzle:
             self.optimizer = optimizer
         if objective_function is of is not None:
             raise ValueError("'objective_function' and 'of' must not both be specified")
+        objective_function = objective_function or of
         if objective_function is None:
-            objective_function = of
+            objective_function = ["nwords"]
         if isinstance(objective_function, (list, tuple, set)):
             self.obj_func = ObjectiveFunction(objective_function)
         if isinstance(objective_function, ObjectiveFunction):

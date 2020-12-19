@@ -107,6 +107,7 @@ class Puzzle:
         self.nwords = 0
         self.epoch = 0
         self.seed = seed
+        np.random.seed(seed=seed)
         self.width = width
         self.height = height
         self.mask = mask
@@ -305,7 +306,7 @@ class Puzzle:
     @property
     def component(self):
         return ndimage.label(self.cover)[1]
-
+    
     def import_dict(self, dic):
         """
         Import the Dictionary, and generate the Placeable internally.

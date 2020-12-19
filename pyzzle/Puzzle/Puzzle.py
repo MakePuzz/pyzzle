@@ -25,6 +25,8 @@ rcParams['font.sans-serif'] = ['Hiragino Maru Gothic Pro', 'Yu Gothic', 'Meiryo'
 
 LOG = logging.getLogger(__name__)
 BLANK = Word("", weight=0)
+USED_DTYPE = np.uint16
+EMPTY = np.iinfo(USED_DTYPE).max
 
 
 class Puzzle:
@@ -119,12 +121,12 @@ class Puzzle:
             gravity = np.zeros([self.height, self.width])
         self.gravity = np.array(gravity)
         self.cell = np.full([self.height, self.width], BLANK, dtype="unicode")
-        self.cover = np.zeros(self.cell.shape, dtype=np.int32)
-        self.enable = np.ones(self.cell.shape, dtype="bool")
-        self.uori = np.full(self.width * self.height, -1, dtype=np.int32)
-        self.ui = np.full(self.uori.size, -1, dtype=np.int32)
-        self.uj = np.full(self.uori.size, -1, dtype=np.int32)
-        self.uwords = np.full(self.uori.size, BLANK, dtype=object)
+        self.cover = np.zeros_like(self.cell, dtype=np.uint8)
+        self.enable = np.ones_like(self.cell, dtype=bool)
+        self.uori = np.full(self.size//2, EMPTY, dtype=USED_DTYPE)
+        self.ui = np.full_like(self.uori, EMPTY, dtype=USED_DTYPE)
+        self.uj = np.full_like(self.uori, EMPTY, dtype=USED_DTYPE)
+        self.uwords = np.full_like(self.uori, BLANK, dtype=object)
         self.log = None
         self.history = []
         self.base_history = []
@@ -176,6 +178,10 @@ class Puzzle:
 
     def __ge__(self, other):
         return not self.__lt__(other)
+    
+    @property
+    def size(self):
+        return self.width * self.height
     
     @property
     def weight(self):
@@ -641,11 +647,11 @@ class Puzzle:
             self.cell[i_all, j + where] = BLANK
         # Update        
         self.uori[drop_idx:-1] = self.uori[drop_idx+1:]
-        self.uori[-1] = -1
+        self.uori[-1] = EMPTY
         self.ui[drop_idx:-1] = self.ui[drop_idx+1:]
-        self.ui[-1] = -1
+        self.ui[-1] = EMPTY
         self.uj[drop_idx:-1] = self.uj[drop_idx+1:]
-        self.uj[-1] = -1
+        self.uj[-1] = EMPTY
         self.uwords[drop_idx:-1] = self.uwords[drop_idx+1:]
         self.uwords[-1] = BLANK
         self.nwords -= 1

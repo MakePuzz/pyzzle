@@ -62,9 +62,5 @@ odata = validate_seed(odata)
 odata = validate_evalution(odata)
 #%%
 with open(f"json/MakePuzz_Season{season}.json", "w") as f:
-    json.dump(odata, f)
-# %%
-sum(odata['zatch-bell_w15_h15_s964054825_e278']["evaluation"].values())
-# %%
-len(odata)
+    json.dump(odata, f, sort_keys=True, ensure_ascii=False)
 # %%

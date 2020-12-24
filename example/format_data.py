@@ -47,10 +47,24 @@ def validate_seed(data):
             print("seed replaced: ", fname)
     return new_data
 
+def validate_evalution(data):
+    from copy import deepcopy
+    new_data = deepcopy(data)
+    for fname in data:
+        if sum(data[fname]["evaluation"].values()) < 4:
+            new_data.pop(fname)
+            print("evaluation.sum() < 4: ", fname)
+    return new_data
+
 # %%
 odata = remove_bug(data)
 odata = validate_seed(odata)
+odata = validate_evalution(odata)
 #%%
 with open(f"json/MakePuzz_Season{season}.json", "w") as f:
     json.dump(odata, f)
+# %%
+sum(odata['zatch-bell_w15_h15_s964054825_e278']["evaluation"].values())
+# %%
+len(odata)
 # %%

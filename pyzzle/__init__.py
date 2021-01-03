@@ -1,3 +1,5 @@
+__version__ = "0.0.2"
+
 from pyzzle.Puzzle import Puzzle
 from pyzzle.Word import Word
 from pyzzle.Dictionary import Dictionary

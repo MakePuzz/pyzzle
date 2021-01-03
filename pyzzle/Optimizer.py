@@ -100,7 +100,7 @@ class Optimizer:
                     break
             LOG.info(f"> Node: {_n+1}")
             _puzzle = copy.deepcopy(puzzle)
-            _puzzle = _puzzle.solve(epoch=epoch, optimizer="local_search", time_limit=time_limit, time_offset=time_offset, show=show, use_f=use_f)
+            _puzzle = _puzzle.solve(epoch=epoch, optimizer="local_search", time_limit=time_limit, of=_puzzle.obj_func, time_offset=time_offset, show=show, use_f=use_f)
             puzzles.append(_puzzle)
         for i, _puzzle in enumerate(puzzles):
             if i == 0:

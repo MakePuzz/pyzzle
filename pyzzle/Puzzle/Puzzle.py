@@ -130,6 +130,7 @@ class Puzzle:
         self.log = None
         self.history = []
         self.base_history = []
+        self.obj_func = ObjectiveFunction(["nwords", "weight"])
         self._dic = Dictionary()
         self._plc = Placeable(width=self.width, height=self.height)
 
@@ -890,7 +891,7 @@ class Puzzle:
             raise ValueError("'objective_function' and 'of' must not both be specified")
         objective_function = objective_function or of
         if objective_function is None:
-            objective_function = ["nwords"]
+            objective_function = self.obj_func
         if isinstance(objective_function, (list, tuple, set)):
             self.obj_func = ObjectiveFunction(objective_function)
         if isinstance(objective_function, ObjectiveFunction):

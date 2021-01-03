@@ -905,9 +905,7 @@ class Puzzle:
         if epoch <= 0:
             raise ValueError("'epoch' must be lather than 0")
         if isinstance(optimizer, str):
-            self.optimizer = Optimizer(optimizer)
-        if isinstance(optimizer, Optimizer):
-            self.optimizer = optimizer
+            optimizer = Optimizer(optimizer)
         if objective_function is of is not None:
             raise ValueError("'objective_function' and 'of' must not both be specified")
         objective_function = objective_function or of
@@ -917,10 +915,10 @@ class Puzzle:
             self.obj_func = ObjectiveFunction(objective_function)
         if isinstance(objective_function, ObjectiveFunction):
             self.obj_func = objective_function
-        if self.optimizer.method == "local_search":
-            return self.optimizer.optimize(self, epoch, time_limit=time_limit, time_offset=time_offset, show=show, use_f=use_f)
-        if self.optimizer.method == "multi_start":
-            return self.optimizer.optimize(self, epoch, time_limit=time_limit, time_offset=time_offset, n=n, show=show, use_f=use_f)
+        if optimizer.method == "local_search":
+            return optimizer.optimize(self, epoch, time_limit=time_limit, time_offset=time_offset, show=show, use_f=use_f)
+        if optimizer.method == "multi_start":
+            return optimizer.optimize(self, epoch, time_limit=time_limit, time_offset=time_offset, n=n, show=show, use_f=use_f)
 
     def show_log(self, name="Objective Function's epoch series", grid=True, figsize=None, **kwargs):
         """
@@ -1005,7 +1003,6 @@ class Puzzle:
             self.width, self.height, self.mask, self.name)
         jumped_puzzle._dic = copy.deepcopy(self._dic)
         jumped_puzzle._plc = Placeable(self.width, self.height, jumped_puzzle._dic, self.mask)
-        jumped_puzzle.optimizer = copy.deepcopy(self.optimizer)
         jumped_puzzle.obj_func = copy.deepcopy(self.obj_func)
         jumped_puzzle.base_history = copy.deepcopy(self.base_history)
 

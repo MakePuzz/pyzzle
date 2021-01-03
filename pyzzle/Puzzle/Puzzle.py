@@ -788,14 +788,16 @@ class Puzzle:
         json_dict : dict
             The json dictionary
         """
-        word_list = []
+        words = []
         for ori, i, j, word in zip(self.uori[:self.nwords], self.ui[:self.nwords], self.uj[:self.nwords], self.uwords[:self.nwords]):
-            word_list.append({"i": int(i), "j": int(j), "ori": int(ori), "word": word})
+            words.append({"i": int(i), "j": int(j), "ori": int(ori), "word": word})
         mask = self.mask
         if mask is None:
             mask = np.full(self.cell.shape, True)
+        import pyzzle
+        version = pyzzle.__version__
         json_dict = {
-            "list": word_list,
+            "words": words,
             "mask": mask.tolist(),
             "name": self.name,
             "width": self.width,
@@ -803,6 +805,7 @@ class Puzzle:
             "nwords": self.nwords,
             "seed": int(self.seed),
             "epoch": self.epoch,
+            "version": version
         }
         return json_dict
 

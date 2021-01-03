@@ -312,14 +312,17 @@ class Puzzle:
     
     @property
     def component(self):
+        """Connected component labels."""
         return ndimage.label(self.cover)[1]
     
     @property
     def stability(self):
+        """Number of epochs since the solution was no longer improved."""
         if self.log is None:
             return 0
         _filter = np.all(self.log.values == self.log.tail(1).values, axis=1)
-        return np.where(_filter)[0][-1] - np.where(_filter)[0][0]
+        stability = int(np.where(_filter)[0][-1] - np.where(_filter)[0][0])
+        return stability
     
     def import_dict(self, dic):
         """

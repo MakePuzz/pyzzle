@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class History(Enum):
+class HistoryCode(Enum):
     """
     Enumeration of the history.
 
@@ -17,6 +17,21 @@ class History(Enum):
     MOVE = 4
 
 
-# class History(list):
-#     def log(self, ori, i, j, k, code):
-#         self.append()
+class HistoryItem(list):
+    def __init__(self, code, ori, i, j, word):
+        super().__init__([code, ori, i, j, word])
+    @property
+    def code(self):
+        return self[0]
+    @property
+    def ori(self):
+        return self[1]
+    @property
+    def i(self):
+        return self[2]
+    @property
+    def j(self):
+        return self[3]
+    @property
+    def word(self):
+        return self[4]

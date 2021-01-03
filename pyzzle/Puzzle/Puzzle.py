@@ -15,7 +15,7 @@ from pyzzle.Dictionary import Dictionary
 from pyzzle.Optimizer import Optimizer
 from pyzzle.ObjectiveFunction import ObjectiveFunction
 from pyzzle.Judgement import Judgement
-from pyzzle.History import History
+from pyzzle.History import HistoryItem, HistoryCode
 from pyzzle import utils
 from pyzzle.Exception import ZeroSizePuzzleException
 
@@ -506,7 +506,7 @@ class Puzzle:
         self.uj[self.nwords] = j
         self.uwords[self.nwords] = word
         self.nwords += 1
-        self.history.append((History.ADD, ori, i, j, word))
+        self.history.append(HistoryItem(HistoryCode.ADD, ori, i, j, word))
         return code
 
     def add(self, ori, i, j, word, weight=0):
@@ -667,8 +667,8 @@ class Puzzle:
         self.uwords[-1] = BLANK
         self.nwords -= 1
         # Insert data to history
-        code = History.DROP_KICK if is_kick else History.DROP
-        self.history.append((code, ori, i, j, word))
+        code = HistoryCode.DROP_KICK if is_kick else HistoryCode.DROP
+        self.history.append(HistoryItem(code, ori, i, j, word))
         # Update enable cells
         remove_flag = True
         if ori == 0:
@@ -999,8 +999,7 @@ class Puzzle:
         jumped_puzzle : Puzzle
             Jumped Puzzle
         """
-        jumped_puzzle = self.__class__(
-            self.width, self.height, self.mask, self.name)
+        jumped_puzzle = self.__class__(self.width, self.height, self.mask, self.name)
         jumped_puzzle._dic = copy.deepcopy(self._dic)
         jumped_puzzle._plc = Placeable(self.width, self.height, jumped_puzzle._dic, self.mask)
         jumped_puzzle.obj_func = copy.deepcopy(self.obj_func)
@@ -1013,13 +1012,13 @@ class Puzzle:
                 raise RuntimeError('This puzzle is up to date')
 
         for hist in jumped_puzzle.base_history[:idx]:
-            if hist[0] == History.ADD:
-                jumped_puzzle._add(hist[1], hist[2], hist[3], hist[4])
-            elif hist[0] == History.DROP:
-                jumped_puzzle._drop(hist[1], hist[2], hist[3], hist[4], is_kick=False)
-            elif hist[0] == History.DROP_KICK:
-                jumped_puzzle._drop(hist[1], hist[2], hist[3], hist[4], is_kick=True)
-            elif hist[0] == History.MOVE:
+            if hist.code == HistoryCode.ADD:
+                jumped_puzzle._add(hist.ori, hist.i, hist.j, hist.word)
+            elif hist.code == HistoryCode.DROP:
+                jumped_puzzle._drop(hist.ori, hist.i, hist.j, hist.word, is_kick=False)
+            elif hist.code == HistoryCode.DROP_KICK:
+                jumped_puzzle._drop(hist.ori, hist.i, hist.j, hist.word, is_kick=True)
+            elif hist.code == HistoryCode.MOVE:
                 jumped_puzzle.move(direction=hist[1], n=hist[2])
         return jumped_puzzle
 
@@ -1154,7 +1153,7 @@ class Puzzle:
             self.cover = np.roll(self.cover, sum(di_dj), axis=axis)
             self.ui += di_dj[0]
             self.uj += di_dj[1]
-            self.history.append((History.MOVE, direction, 1, None, None))
+            self.history.append(HistoryItem(HistoryCode.MOVE, direction, 1, None, None))
         self.enable = self.get_enable(self.cell)
         return
 

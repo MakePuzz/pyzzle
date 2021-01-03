@@ -112,7 +112,7 @@ class Optimizer:
                     prime_puzzle = _puzzle
         return prime_puzzle
 
-    def set_method(self, method_name):
+    def set_method(self, method_name="local_search"):
         """
         This method sets the optimization method on the instance
         """

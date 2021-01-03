@@ -202,13 +202,13 @@ class Puzzle:
         """
         rtn_bool = True
         nw = self.nwords
-        # Get word1
+        # Get 1st word
         for s, (ori1, i1, j1, word1) in enumerate(zip(self.uori[:nw], self.ui[:nw], self.uj[:nw], self.uwords[:nw])):
             if ori1 == 0:
                 cross_idx1 = np.where(self.cover[i1:i1 + len(word1), j1] == 2)[0]
             elif ori1 == 1:
                 cross_idx1 = np.where(self.cover[i1, j1:j1 + len(word1)] == 2)[0]
-            # Get word2
+            # Get 2nd word
             for ori2, i2, j2, word2 in zip(self.uori[s+1:nw], self.ui[s+1:nw], self.uj[s+1:nw], self.uwords[s+1:nw]):
                 # If word1 and word2 have different lengths, they can not be replaced
                 if len(word1) != len(word2):
@@ -858,6 +858,11 @@ class Puzzle:
                 puzzle.add(ori, i, j, word)
             nwords = puzzle.nwords
         return puzzle
+    
+    def copy(self, deep=True):
+        if deep:
+            return copy.deepcopy(self)
+        return copy.copy(self)
 
     def kick(self):
         """

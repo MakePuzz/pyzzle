@@ -21,7 +21,7 @@ class Optimizer:
         This method gets the neighborhood solution
         """
         # Copy the puzzle
-        _puzzle = copy.deepcopy(puzzle)
+        _puzzle = puzzle.copy(deep=True)
         if _puzzle.nwords >= 1:
             # Drop words until connectivity collapse
             _puzzle.collapse()
@@ -42,7 +42,7 @@ class Optimizer:
         if puzzle.epoch == 0:
             puzzle.logging()
         # Copy
-        _puzzle = copy.deepcopy(puzzle)
+        _puzzle = puzzle.copy(deep=True)
         if show:
             LOG.info(">>> Interim solution")
             _puzzle.show()
@@ -71,7 +71,7 @@ class Optimizer:
                 if new_score > prev_score:
                     LOG.info(f"- Improved: {_puzzle.obj_func.get_score(_puzzle, all=True)}")
                     LOG.info(f"        --> {new_puzzle.obj_func.get_score(new_puzzle, all=True)}")
-                    _puzzle = copy.deepcopy(new_puzzle)
+                    _puzzle = new_puzzle.copy(deep=True)
                     _puzzle.logging()
                     if show:
                         _puzzle.show()
@@ -81,7 +81,7 @@ class Optimizer:
                     LOG.info(f"- Stayed: {_puzzle.obj_func.get_score(_puzzle, all=True)}")
                     break
             else:
-                _puzzle = copy.deepcopy(new_puzzle)
+                _puzzle = new_puzzle.copy(deep=True)
                 _puzzle.logging()
                 LOG.info(f"- Replaced: {_puzzle.obj_func.get_score(_puzzle, all=True)}")
                 if show:
@@ -99,7 +99,7 @@ class Optimizer:
                 if performance_time >= time_limit:
                     break
             LOG.info(f"> Node: {_n+1}")
-            _puzzle = copy.deepcopy(puzzle)
+            _puzzle = puzzle.copy(deep=True)
             _puzzle = _puzzle.solve(epoch=epoch, optimizer="local_search", time_limit=time_limit, of=_puzzle.obj_func, time_offset=time_offset, show=show, use_f=use_f)
             puzzles.append(_puzzle)
         for i, _puzzle in enumerate(puzzles):

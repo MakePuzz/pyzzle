@@ -788,24 +788,26 @@ class Puzzle:
         json_dict : dict
             The json dictionary
         """
+        import pyzzle
         words = []
         for ori, i, j, word in zip(self.uori[:self.nwords], self.ui[:self.nwords], self.uj[:self.nwords], self.uwords[:self.nwords]):
             words.append({"i": int(i), "j": int(j), "ori": int(ori), "word": word})
         mask = self.mask
         if mask is None:
             mask = np.full(self.cell.shape, True)
-        import pyzzle
-        version = pyzzle.__version__
+        of = self.obj_func.get_score(self, all=True)
+        of.update({"uniqueness": self.is_unique, "nwords": self.nwords})
         json_dict = {
-            "words": words,
-            "mask": mask.tolist(),
             "name": self.name,
+            "version":  pyzzle.__version__,
+            "created_at": pd.Timestamp.now(tz="UTC").strftime("%Y-%m-%d %H:%M:%S UTC"),
             "width": self.width,
             "height": self.height,
-            "nwords": self.nwords,
             "seed": int(self.seed),
             "epoch": self.epoch,
-            "version": version
+            "objective_functions": of,
+            "words": words,
+            "mask": mask.tolist(),
         }
         return json_dict
 
@@ -821,7 +823,7 @@ class Puzzle:
             The indent in json output
         """
         with open(name, "w", encoding="utf-8") as f:
-            json.dump(self.to_json(), f, sort_keys=True, indent=indent, ensure_ascii=False)
+            json.dump(self.to_json(), f, sort_keys=False, indent=indent, ensure_ascii=False)
 
     @staticmethod
     def from_json(name):

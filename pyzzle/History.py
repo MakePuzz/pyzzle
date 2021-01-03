@@ -35,3 +35,19 @@ class HistoryItem(list):
     @property
     def word(self):
         return self[4]
+
+
+class HistoryItemMove(HistoryItem):
+    def __init__(self, code, direction, n):
+        if code != HistoryCode.MOVE:
+            raise ValueError("'code' must be HistoryCode.Move")
+        super().__init__(code, direction, n, None, None)
+    @property
+    def code(self):
+        return self[0]
+    @property
+    def direction(self):
+        return self[1]
+    @property
+    def n(self):
+        return self[2]

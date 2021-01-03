@@ -15,7 +15,7 @@ from pyzzle.Dictionary import Dictionary
 from pyzzle.Optimizer import Optimizer
 from pyzzle.ObjectiveFunction import ObjectiveFunction
 from pyzzle.Judgement import Judgement
-from pyzzle.History import HistoryItem, HistoryCode
+from pyzzle.History import HistoryItem, HistoryItemMove, HistoryCode
 from pyzzle import utils
 from pyzzle.Exception import ZeroSizePuzzleException
 
@@ -1019,7 +1019,7 @@ class Puzzle:
             elif hist.code == HistoryCode.DROP_KICK:
                 jumped_puzzle._drop(hist.ori, hist.i, hist.j, hist.word, is_kick=True)
             elif hist.code == HistoryCode.MOVE:
-                jumped_puzzle.move(direction=hist[1], n=hist[2])
+                jumped_puzzle.move(direction=hist.direction, n=hist.n)
         return jumped_puzzle
 
     def get_prev(self, n=1):
@@ -1153,7 +1153,7 @@ class Puzzle:
             self.cover = np.roll(self.cover, sum(di_dj), axis=axis)
             self.ui += di_dj[0]
             self.uj += di_dj[1]
-            self.history.append(HistoryItem(HistoryCode.MOVE, direction, 1, None, None))
+            self.history.append(HistoryItemMove(HistoryCode.MOVE, direction, 1))
         self.enable = self.get_enable(self.cell)
         return
 

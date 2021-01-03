@@ -314,6 +314,13 @@ class Puzzle:
     def component(self):
         return ndimage.label(self.cover)[1]
     
+    @property
+    def stability(self):
+        if self.log is None:
+            return 0
+        _filter = np.all(self.log.values == self.log.tail(1).values, axis=1)
+        return np.where(_filter)[0][-1] - np.where(_filter)[0][0]
+    
     def import_dict(self, dic):
         """
         Import the Dictionary, and generate the Placeable internally.

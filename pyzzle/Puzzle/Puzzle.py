@@ -807,14 +807,15 @@ class Puzzle:
         json_dict = {
             "name": self.name,
             "version":  pyzzle.__version__,
-            "created_at": pd.Timestamp.now(tz="UTC").strftime("%Y-%m-%d %H:%M:%S UTC"),
             "width": self.width,
             "height": self.height,
             "seed": int(self.seed),
             "epoch": self.epoch,
             "objective_functions": of,
+            "stability": self.stability,
             "words": words,
             "mask": mask.tolist(),
+            "created_at": pd.Timestamp.now(tz="UTC").strftime("%Y-%m-%d %H:%M:%S UTC"),
         }
         return json_dict
 

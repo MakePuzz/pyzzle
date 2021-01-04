@@ -805,16 +805,16 @@ class Puzzle:
         mask = self.mask
         if mask is None:
             mask = np.full(self.cell.shape, True)
-        of = self.obj_func.get_score(self, all=True)
-        of.update({"uniqueness": self.is_unique, "nwords": self.nwords})
         json_dict = {
             "name": self.name,
-            "version":  pyzzle.__version__,
+            "version": pyzzle.__version__,
             "width": self.width,
             "height": self.height,
             "seed": int(self.seed),
             "epoch": self.epoch,
-            "objective_functions": of,
+            "nwords": int(self.nwords),
+            "uniqueness": self.is_unique,
+            "objective_functions": self.obj_func.get_score(self, all=True)
             "stability": self.stability,
             "words": words,
             "mask": mask.tolist(),

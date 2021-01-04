@@ -842,7 +842,7 @@ class Puzzle:
             data = json.load(f)
         puzzle = Puzzle(width=data["width"], height=data["height"], mask=data["mask"], name=data["name"])
         puzzle.seed = data["seed"]
-        word_list = data["list"]
+        word_list = data["words"]
         for word_dict in word_list:
             puzzle.add(word_dict["ori"], word_dict["i"], word_dict["j"], word_dict["word"])
         return puzzle

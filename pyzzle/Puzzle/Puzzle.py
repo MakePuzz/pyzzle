@@ -814,7 +814,7 @@ class Puzzle:
             "epoch": self.epoch,
             "nwords": int(self.nwords),
             "uniqueness": self.is_unique,
-            "objective_functions": self.obj_func.get_score(self, all=True)
+            "objective_functions": self.obj_func.get_score(self, all=True),
             "stability": self.stability,
             "words": words,
             "mask": mask.tolist(),

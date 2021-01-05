@@ -1,4 +1,4 @@
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 from pyzzle.Puzzle import Puzzle
 from pyzzle.Word import Word

@@ -64,7 +64,7 @@ class ObjectiveFunction:
     @classmethod
     def weight(self, puzzle):
         """This method returns the sum of the word weights used for the solution."""
-        return puzzle.weight
+        return float(puzzle.weight)
 
     @classmethod
     def max_connected_empties(self, puzzle):
@@ -78,15 +78,15 @@ class ObjectiveFunction:
 
     @classmethod
     def difficulty(self, puzzle):
-        return puzzle.difficulty
+        return float(puzzle.difficulty)
 
     @classmethod
     def ease(self, puzzle):
-        return 1 - puzzle.difficulty
+        return float(1 - puzzle.difficulty)
 
     @classmethod
     def circulation(self, puzzle):
-        return puzzle.circulation
+        return int(puzzle.circulation)
 
     @classmethod
     def gravity(self, puzzle):

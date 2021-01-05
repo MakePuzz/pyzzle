@@ -49,7 +49,7 @@ class ObjectiveFunction:
     @classmethod
     def cross_count(self, puzzle):
         """This method returns the number of crosses of a word."""
-        return np.sum(puzzle.cover == 2)
+        return int(np.sum(puzzle.cover == 2))
 
     @classmethod
     def cross_rate(self, puzzle):
@@ -59,7 +59,7 @@ class ObjectiveFunction:
     @classmethod
     def fill_count(self, puzzle):
         """This method returns the number of character cells in the puzzle."""
-        return np.sum(puzzle.cover >= 1)
+        return int(np.sum(puzzle.cover >= 1))
 
     @classmethod
     def weight(self, puzzle):
@@ -74,7 +74,7 @@ class ObjectiveFunction:
         mask = zero_label > 0
         sizes = ndimage.sum(mask, zero_label, range(n_label+1))
         score = puzzle.width*puzzle.height - sizes.max()
-        return score
+        return int(score)
 
     @classmethod
     def difficulty(self, puzzle):
@@ -90,7 +90,7 @@ class ObjectiveFunction:
 
     @classmethod
     def gravity(self, puzzle):
-        return puzzle.gravity[puzzle.cover != 0].sum()
+        return float(puzzle.gravity[puzzle.cover != 0].sum())
 
     @classmethod
     def uniqueness(self, puzzle):
@@ -98,7 +98,7 @@ class ObjectiveFunction:
     
     @classmethod
     def area_rect(self, puzzle):
-        return puzzle.cell.size - puzzle.rect.size
+        return int(puzzle.cell.size - puzzle.rect.size)
 
     @classmethod
     def nwords_r(self, puzzle):

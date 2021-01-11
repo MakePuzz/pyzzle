@@ -1310,6 +1310,21 @@ class Puzzle:
     
     @classmethod
     def get_word_compositions(self, cover):
+        """
+        Returns the orientations and positions of the first character based on 
+        the cover array as a dictionary keyed by the length of the word.
+
+        Parameters
+        ----------
+        cover : numpy ndarray
+            Cover array.
+        
+        Returns
+        -------
+        compositions : dict
+            A dictionary that stores the orientations and positions of the 
+            first character using the length of the word as keys.
+        """
         vertical = ndi.binary_opening(cover, structure=[[1],[1]]).astype(int)
         lbl, nlbl = ndi.label(vertical, structure=[[0,1,0],[0,1,0],[0,1,0]])
         lens = ndi.labeled_comprehension(vertical, lbl, np.arange(1, nlbl+1), np.sum, int, 0)

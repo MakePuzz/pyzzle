@@ -6,7 +6,7 @@ import logging
 
 import numpy as np
 import pandas as pd
-from scipy import ndimage
+from scipy import ndimage as ndi
 from matplotlib import rcParams
 
 from pyzzle.Word import Word
@@ -284,7 +284,7 @@ class Puzzle:
             return 0
         empties = np.zeros([self.height+2, self.width+2], dtype="int")
         empties[1:-1, 1:-1] = self.cover
-        label, nlabel = ndimage.label(empties == False, structure=ndimage.generate_binary_structure(2, 2))
+        label, nlabel = ndi.label(empties == False, structure=ndi.generate_binary_structure(2, 2))
         if nlabel <= 2:
             return 0
         circulation = 0
@@ -307,13 +307,13 @@ class Puzzle:
             return False
         mask = np.zeros([self.height+2, self.width+2], dtype=bool)
         mask[1:-1, 1:-1] = self.mask
-        mask_component = ndimage.label(mask == True)[1]
+        mask_component = ndi.label(mask == True)[1]
         return mask_component - 1 == self.circulation
     
     @property
     def component(self):
         """Connected component labels."""
-        return ndimage.label(self.cover)[1]
+        return ndi.label(self.cover)[1]
     
     @property
     def stability(self):
@@ -871,8 +871,8 @@ class Puzzle:
         if self.nwords == 0:
             return
         mask = self.cover > 0
-        label, nlabel = ndimage.label(mask)
-        sizes = ndimage.sum(mask, label, range(nlabel + 1))
+        label, nlabel = ndi.label(mask)
+        sizes = ndi.sum(mask, label, range(nlabel + 1))
         largest_ccl = sizes.argmax()
         # Erase elements except largest component.
         # In self._drop ux will shrink, so pass prev_ux in reverse order.
@@ -1307,6 +1307,33 @@ class Puzzle:
         uj = np.concatenate([indices["vertical"][1], indices["horizontal"][1]])
         uwords = self.get_uwords(cell)
         return uori, ui, uj, uwords
+    
+    @classmethod
+    def get_word_compositions(self, cover):
+        vertical = ndi.binary_opening(cover, structure=[[1],[1]]).astype(int)
+        lbl, nlbl = ndi.label(vertical, structure=[[0,1,0],[0,1,0],[0,1,0]])
+        lens = ndi.labeled_comprehension(vertical, lbl, np.arange(1, nlbl+1), np.sum, int, 0)
+        compositions = {}
+        for l in lens:
+            compositions[l] = []
+        ori = 0
+        for n in range(1, nlbl+1):
+            i = np.where(lbl == n)[0][0]
+            j = np.where(lbl == n)[1][0]
+            compositions[lens[n-1]].append((ori, i, j))
+            
+        horizontal = ndi.binary_opening(cover, structure=[[1, 1]]).astype(int)
+        lbl, nlbl = ndi.label(horizontal, structure=[[0,0,0],[1,1,1],[0,0,0]])
+        lens = ndi.labeled_comprehension(horizontal, lbl, np.arange(1, nlbl+1), np.sum, int, 0)
+        for l in lens:
+            if l not in compositions.keys():
+                compositions[l] = []
+        ori = 1
+        for n in range(1, nlbl+1):
+            i = np.where(lbl == n)[0][0]
+            j = np.where(lbl == n)[1][0]
+            compositions[lens[n-1]].append((ori, i, j))
+        return compositions
 
 
     def update_board(self, cell=None):

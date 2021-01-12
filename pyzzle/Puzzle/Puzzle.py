@@ -804,7 +804,7 @@ class Puzzle:
             words.append({"ori": int(ori), "i": int(i), "j": int(j), "word": word})
         mask = self.mask
         if mask is None:
-            mask = np.full(self.cell.shape, True)
+            mask = np.full(self.cell.shape, False)
         json_dict = {
             "name": self.name,
             "version": pyzzle.__version__,

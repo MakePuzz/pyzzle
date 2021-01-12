@@ -801,7 +801,7 @@ class Puzzle:
         import pyzzle
         words = []
         for ori, i, j, word in zip(self.uori[:self.nwords], self.ui[:self.nwords], self.uj[:self.nwords], self.uwords[:self.nwords]):
-            words.append({"i": int(i), "j": int(j), "ori": int(ori), "word": word})
+            words.append({"ori": int(ori), "i": int(i), "j": int(j), "word": word})
         mask = self.mask
         if mask is None:
             mask = np.full(self.cell.shape, True)
@@ -817,6 +817,7 @@ class Puzzle:
             "objective_functions": self.obj_func.get_score(self, all=True),
             "stability": self.stability,
             "words": words,
+            "cell": self.cell.tolist(),
             "mask": mask.tolist(),
             "created_at": pd.Timestamp.now(tz="UTC").strftime("%Y-%m-%d %H:%M:%S UTC"),
         }

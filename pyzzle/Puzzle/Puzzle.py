@@ -478,9 +478,9 @@ class Puzzle:
 
         # Put the word to puzzle
         if ori == 0:
-            self.cell[i:i + w_len, j] = list(word)[0:w_len]
+            self.cell[i:i + w_len, j] = list(word)
         if ori == 1:
-            self.cell[i, j:j + w_len] = list(word)[0:w_len]
+            self.cell[i, j:j + w_len] = list(word)
 
         # Set the prohibited cell before and after placed word
         if ori == 0:

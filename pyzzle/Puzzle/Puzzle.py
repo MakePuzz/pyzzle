@@ -844,7 +844,7 @@ class Puzzle:
         puzzle = Puzzle(width=data["width"], height=data["height"], mask=data["mask"], name=data["name"])
         puzzle.seed = data["seed"]
         nwords = 0
-        for _ in data["nwords"]:
+        for _ in range(data["nwords"]):
             for word_dict in data["words"]:
                 puzzle.add(word_dict["ori"], word_dict["i"], word_dict["j"], word_dict["word"])
             if puzzle.nwords == data["nwords"]:
@@ -856,7 +856,7 @@ class Puzzle:
         cell = np.array(cell)
         uori, ui, uj, uwords = Puzzle.get_word_properties(cell)
         puzzle = Puzzle(width=cell.shape[1], height=cell.shape[0], mask=mask, gravity=gravity, name=name)
-        for _ in data["nwords"]:
+        for _ in range(data["nwords"]):
             for ori, i, j, word in zip(uori, ui, uj, uwords):
                 puzzle.add(ori, i, j, word)
             if puzzle.nwords == data["nwords"]:

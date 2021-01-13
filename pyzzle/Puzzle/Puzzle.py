@@ -843,8 +843,12 @@ class Puzzle:
             data = json.load(f)
         puzzle = Puzzle(width=data["width"], height=data["height"], mask=data["mask"], name=data["name"])
         puzzle.seed = data["seed"]
-        for word_dict in data["words"]:
-            puzzle.add(word_dict["ori"], word_dict["i"], word_dict["j"], word_dict["word"])
+        nwords = 0
+        for _ in data["nwords"]:
+            for word_dict in data["words"]:
+                puzzle.add(word_dict["ori"], word_dict["i"], word_dict["j"], word_dict["word"])
+            if puzzle.nwords == data["nwords"]:
+                break
         return puzzle
 
     @staticmethod
@@ -852,11 +856,11 @@ class Puzzle:
         cell = np.array(cell)
         uori, ui, uj, uwords = Puzzle.get_word_properties(cell)
         puzzle = Puzzle(width=cell.shape[1], height=cell.shape[0], mask=mask, gravity=gravity, name=name)
-        nwords = 0
-        while(nwords < len(uwords)):
+        for _ in data["nwords"]:
             for ori, i, j, word in zip(uori, ui, uj, uwords):
                 puzzle.add(ori, i, j, word)
-            nwords = puzzle.nwords
+            if puzzle.nwords == data["nwords"]:
+                break
         return puzzle
     
     def copy(self, deep=True):

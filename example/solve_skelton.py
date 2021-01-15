@@ -121,6 +121,7 @@ class SkeltonSolver:
         cells : numpy ndarray
             Array containing the solutions.
         """
+        self.i = 0
         print("========================================================")
         start_words = self.get_starting_words()
         comps = Puzzle.get_word_compositions(puzzle.cover)
@@ -149,60 +150,97 @@ class SkeltonSolver:
         return [x for x in seq if x not in seen and not seen.append(x)]
         
     def grow_tree(self, tree):
-        if tree.is_completed:
-            print("Finish.")
-            return tree
-        for branch in tree[::-1]:
-            # print(f"|==== Grow branch (completed: {branch.is_completed})")
-            if branch.is_completed:
-                continue
-            if branch.depth == self.nwords:
-                branch.completed = True
-                print("Solved: ", branch)
-                continue
-            tmp_words = copy.deepcopy(self.words)
-            for uword in branch.word:
-                tmp_words = np.delete(tmp_words, np.where(tmp_words == uword)[0])
-            for i in range(self.nwords-branch.depth):
-                cell = self.construct_cell_from_branch(branch)
-                tmp_wlens = np.array(list(map(len, tmp_words)))
-
-                # get an edge
-                edges = self.find_edges(cell, self.cover)
-                if len(edges) == 0:
+        while(not tree.is_completed):
+            if self.i % 1000 == 0:
+                print("Growing tree: ", self.i)
+            self.i += 1
+            # if tree.is_completed:
+            #     print("Finish.")
+            #     return tree
+            for branch in tree:
+                # print(f"|==== Grow branch (completed: {branch.is_completed})")
+                if branch.is_completed:
+                    continue
+                if branch.depth == self.nwords:
                     branch.completed = True
-                    tree.remove(branch)
-                    # print("Break. エッジが存在しない")
-                    break
-                edge = edges[0]
+                    print("Solved: ", branch)
+                    continue
+                tmp_words = copy.deepcopy(self.words)
+                for uword in branch.word:
+                    tmp_words = np.delete(tmp_words, np.where(tmp_words == uword)[0])
+                for _ in range(self.nwords-branch.depth):
+                    cell = self.construct_cell_from_branch(branch)
+                    tmp_wlens = np.array(list(map(len, tmp_words)))
 
-                # get useable_words
-                useable_words = []
-                for potential_word in tmp_words[tmp_wlens == edge["len"]]:
-                    use_this = True
-                    for ind, char in edge["cross"].items():
-                        if char != "" and potential_word[ind] != char:
-                            use_this = False
-                            break
-                    if use_this:
-                        useable_words.append(potential_word)
-                if useable_words == []:
-                    branch.completed = True
-                    tree.remove(branch)
-                    # print("Break. エッジはあるがマッチするワードが存在しない")
-                    break
-                org_branch = copy.deepcopy(branch)
-                for k, useable_word in enumerate(useable_words):
-                    pt = BranchPoint([edge["ori"], edge["i"], edge["j"], useable_word])
-                    if k == 0:
-                        tmp_words = np.delete(tmp_words, np.where(tmp_words == useable_word)[0])
-                        branch.append(pt)
-                    else:
-                        new_branch = copy.deepcopy(org_branch)
-                        new_branch.append(pt)
-                        tree.append(new_branch)
-        tree = self.grow_tree(tree)
+                    # get an edge
+                    edges = self.find_any_edge(cell, self.cover)
+                    if len(edges) == 0:
+                        # branch.completed = True
+                        tree.remove(branch)
+                        # print("Break. エッジが存在しない")
+                        break
+                    edge = edges[0]
+                    # get useable_words
+                    useable_words = []
+                    for potential_word in tmp_words[tmp_wlens == edge["len"]]:
+                        use_this = True
+                        for ind, char in edge["cross"].items():
+                            if char != "" and potential_word[ind] != char:
+                                use_this = False
+                                break
+                        if use_this:
+                            useable_words.append(potential_word)
+                    if len(useable_words) == 0:
+                        # branch.completed = True
+                        tree.remove(branch)
+                        break
+                    org_branch = copy.deepcopy(branch)
+                    for k, useable_word in enumerate(useable_words):
+                        pt = BranchPoint([edge["ori"], edge["i"], edge["j"], useable_word])
+                        if k == 0:
+                            tmp_words = np.delete(tmp_words, np.where(tmp_words == useable_word)[0])
+                            branch.append(pt)
+                        else:
+                            new_branch = copy.deepcopy(org_branch)
+                            new_branch.append(pt)
+                            tree.insert(0, new_branch) #末尾から2番目に挿入
+                break
+        # tree = self.grow_tree(tree)
         return tree
+
+    def find_any_edge(self, cell, cover):
+        crosses = np.where((cell != "") * (cover == 2))
+        cell = np.pad(cell, 1, mode="constant", constant_values="P")
+        cover = np.pad(cover, 1, mode="constant", constant_values=0)
+        edges = []
+        for ci, cj in zip(crosses[0], crosses[1]):
+            ci += 1 # +1 because padding
+            cj += 1 # +1 because padding
+            composition = {"ori": None, "i": None, "j": None, "len": None, "cross":{}}
+            upper = (cell[ci-1, cj] == "") * (cover[ci-1, cj] >= 1)
+            under = (cell[ci+1, cj] == "") * (cover[ci+1, cj] >= 1)
+            connect_vertically = upper + under
+            left = (cell[ci, cj-1] == "") * (cover[ci, cj-1] >= 1)
+            right = (cell[ci, cj+1] == "") * (cover[ci, cj+1] >= 1)
+            connect_horizontally = left + right
+            if not connect_vertically and not connect_horizontally:
+                continue
+            if connect_vertically:
+                composition["ori"] = 0
+                word_indices = np.where(self.vertical_lbl == self.vertical_lbl[ci-1, cj-1])
+            if connect_horizontally:
+                composition["ori"] = 1
+                word_indices = np.where(self.horizontal_lbl == self.horizontal_lbl[ci-1, cj-1])
+            composition["i"] = word_indices[0][0]
+            composition["j"] = word_indices[1][0]
+            composition["len"] = word_indices[0].size
+            is_cross = (cover[word_indices[0]+1, word_indices[1]+1] == 2)
+            cross_char = cell[word_indices[0]+1, word_indices[1]+1][is_cross]
+            for ind, char in zip(np.where(is_cross)[0], cross_char):
+                composition["cross"][ind] = char
+            edges.append(composition)
+            break
+        return edges
         
     def find_edges(self, cell, cover):
         """
@@ -279,7 +317,6 @@ class SkeltonSolver:
 #%%
 from pyzzle import Puzzle
 puzzle = Puzzle.from_json("json/elements_35.json")
-
 #%%
 solver = SkeltonSolver(puzzle.cover, puzzle.uwords[:puzzle.nwords])
 

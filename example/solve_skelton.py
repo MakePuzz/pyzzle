@@ -150,15 +150,16 @@ class SkeltonSolver:
         
     def grow_tree(self, tree):
         if tree.is_completed:
-            print("Growed")
+            print("Finish.")
             return tree
-        for branch in tree:
+        for branch in tree[::-1]:
             # print(f"|==== Grow branch (completed: {branch.is_completed})")
             if branch.is_completed:
                 continue
             if branch.depth == self.nwords:
                 branch.completed = True
-                break
+                print("Solved: ", branch)
+                continue
             tmp_words = copy.deepcopy(self.words)
             for uword in branch.word:
                 tmp_words = np.delete(tmp_words, np.where(tmp_words == uword)[0])
@@ -170,6 +171,7 @@ class SkeltonSolver:
                 edges = self.find_edges(cell, self.cover)
                 if len(edges) == 0:
                     branch.completed = True
+                    tree.remove(branch)
                     # print("Break. エッジが存在しない")
                     break
                 edge = edges[0]
@@ -186,6 +188,7 @@ class SkeltonSolver:
                         useable_words.append(potential_word)
                 if useable_words == []:
                     branch.completed = True
+                    tree.remove(branch)
                     # print("Break. エッジはあるがマッチするワードが存在しない")
                     break
                 org_branch = copy.deepcopy(branch)
@@ -275,7 +278,7 @@ class SkeltonSolver:
 
 #%%
 from pyzzle import Puzzle
-puzzle = Puzzle.from_json("json/v005sample.json")
+puzzle = Puzzle.from_json("json/elements_35.json")
 
 #%%
 solver = SkeltonSolver(puzzle.cover, puzzle.uwords[:puzzle.nwords])
@@ -295,3 +298,7 @@ puzzle
 trees
 # %%
 np.all(solved_cell.cell == puzzle.cell)
+
+# %%
+trees
+# %%

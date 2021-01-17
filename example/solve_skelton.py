@@ -151,8 +151,11 @@ class SkeltonSolver:
         
     def grow_tree(self, tree):
         while(not tree.is_completed):
-            if self.i % 1000 == 0:
+            if self.i % 100000 == 0:
                 print("Growing tree: ", self.i)
+                print(len(tree))
+                print(len(tree[0]))
+                print(tree[0])
             self.i += 1
             # if tree.is_completed:
             #     print("Finish.")
@@ -239,7 +242,11 @@ class SkeltonSolver:
             for ind, char in zip(np.where(is_cross)[0], cross_char):
                 composition["cross"][ind] = char
             edges.append(composition)
-            break
+            if len(composition["cross"]) >= 2 and "ウ" not in composition["cross"].values() and "ム" not in composition["cross"].values():
+                return [composition]
+        for edge in edges:
+            if len(edge["cross"]) >= 2:
+                return [edge]
         return edges
         
     def find_edges(self, cell, cover):

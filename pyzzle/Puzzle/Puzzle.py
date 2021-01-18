@@ -1091,6 +1091,12 @@ class Puzzle:
         except ZeroSizePuzzleException:
             return np.array([[],[]])
         return self.cell[r_min:r_max+1, c_min:c_max+1]
+    
+    def shrink(self):
+        """Shrink puzzle by cutting margins."""
+        new_puzzle = Puzzle.from_cell(self.rect)
+        new_puzzle.import_dict(puzzle.dic)
+        return new_puzzle
 
     def move(self, direction, n=0, limit=False):
         """

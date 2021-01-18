@@ -34,7 +34,7 @@ class Optimizer:
             _puzzle.add_to_limit()
         return _puzzle
 
-    def local_search(self, puzzle, epoch, time_limit=None, time_offset=0, show=True, move=False, use_f=False):
+    def local_search(self, puzzle, epoch, time_limit=None, time_offset=0, show=True, shrink=False, move=False, use_f=False):
         """
         This method performs a local search
         """
@@ -86,9 +86,11 @@ class Optimizer:
                 LOG.info(f"- Replaced: {_puzzle.obj_func.get_score(_puzzle, all=True)}")
                 if show:
                     _puzzle.show()
+            if shrink:
+                _puzzle = _puzzle.shrink()
         return _puzzle
 
-    def multi_start(self, puzzle, epoch, time_limit=None, time_offset=0, n=1, unique=False, show=True, use_f=False):
+    def multi_start(self, puzzle, epoch, time_limit=None, time_offset=0, n=1, unique=False, show=True, shrink=False, use_f=False):
         puzzles = []
         if time_limit is not None:
             start_time = time.time()
@@ -100,7 +102,7 @@ class Optimizer:
                     break
             LOG.info(f"> Node: {_n+1}")
             _puzzle = puzzle.copy(deep=True)
-            _puzzle = _puzzle.solve(epoch=epoch, optimizer="local_search", time_limit=time_limit, of=_puzzle.obj_func, time_offset=time_offset, show=show, use_f=use_f)
+            _puzzle = _puzzle.solve(epoch=epoch, optimizer="local_search", time_limit=time_limit, of=_puzzle.obj_func, time_offset=time_offset, show=show, shrink=shrink, use_f=use_f)
             puzzles.append(_puzzle)
         for i, _puzzle in enumerate(puzzles):
             if i == 0:

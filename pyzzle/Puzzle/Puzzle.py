@@ -200,6 +200,8 @@ class Puzzle:
         """
         This method deter_mines whether it is the unique solution
         """
+        if self.nwords == 0:
+            return False
         rtn_bool = True
         nw = self.nwords
         # Get 1st word
@@ -499,6 +501,9 @@ class Puzzle:
             self.cover[i:i + w_len, j] += 1
         if ori == 1:
             self.cover[i, j:j + w_len] += 1
+        
+        if not isinstance(word, Word):
+            word = Word(word)
 
         # Update properties
         self.uori[self.nwords] = ori
@@ -856,9 +861,10 @@ class Puzzle:
         cell = np.array(cell)
         uori, ui, uj, uwords = Puzzle.get_word_properties(cell)
         puzzle = Puzzle(width=cell.shape[1], height=cell.shape[0], mask=mask, gravity=gravity, name=name)
+        puzzle.import_dict(Dictionary(uwords))
         for _ in range(len(uwords)):
             for ori, i, j, word in zip(uori, ui, uj, uwords):
-                puzzle.add(ori, i, j, word)
+                puzzle._add(ori, i, j, word)
             if puzzle.nwords == len(uwords):
                 break
         return puzzle
@@ -890,7 +896,7 @@ class Puzzle:
                 self._drop(ori, i, j, word, is_kick=True)
         return
 
-    def solve(self, epoch, optimizer="local_search", objective_function=None, of=None, time_limit=None, time_offset=0, n=None, show=True, use_f=False):
+    def solve(self, epoch, optimizer="local_search", objective_function=None, of=None, time_limit=None, time_offset=0, n=None, show=True, shrink=False, use_f=False):
         """
         This method repeats the solution improvement by the specified number of epoch.
 
@@ -920,9 +926,9 @@ class Puzzle:
         if isinstance(objective_function, ObjectiveFunction):
             self.obj_func = objective_function
         if optimizer.method == "local_search":
-            return optimizer.optimize(self, epoch, time_limit=time_limit, time_offset=time_offset, show=show, use_f=use_f)
+            return optimizer.optimize(self, epoch, time_limit=time_limit, time_offset=time_offset, show=show, shrink=shrink, use_f=use_f)
         if optimizer.method == "multi_start":
-            return optimizer.optimize(self, epoch, time_limit=time_limit, time_offset=time_offset, n=n, show=show, use_f=use_f)
+            return optimizer.optimize(self, epoch, time_limit=time_limit, time_offset=time_offset, n=n, show=show, shrink=shrink, use_f=use_f)
 
     def show_log(self, name="Objective Function's epoch series", grid=True, figsize=None, **kwargs):
         """
@@ -1095,7 +1101,13 @@ class Puzzle:
     def shrink(self):
         """Shrink puzzle by cutting margins."""
         new_puzzle = Puzzle.from_cell(self.rect)
-        new_puzzle.import_dict(puzzle.dic)
+        new_puzzle.import_dict(self.dic)
+        new_puzzle.name = self.name
+        new_puzzle.mask = self.mask
+        new_puzzle.epoch = self.epoch
+        new_puzzle.seed = self.seed
+        new_puzzle.log = self.log
+        new_puzzle.obj_func = self.obj_func
         return new_puzzle
 
     def move(self, direction, n=0, limit=False):

@@ -848,10 +848,11 @@ class Puzzle:
             data = json.load(f)
         puzzle = Puzzle(width=data["width"], height=data["height"], mask=data["mask"], name=data["name"])
         puzzle.seed = data["seed"]
+        puzzle.import_dict(Dictionary(data["uwords"]))
         nwords = 0
         for _ in range(data["nwords"]):
             for word_dict in data["words"]:
-                puzzle.add(word_dict["ori"], word_dict["i"], word_dict["j"], word_dict["word"])
+                puzzle._add(word_dict["ori"], word_dict["i"], word_dict["j"], word_dict["word"])
             if puzzle.nwords == data["nwords"]:
                 break
         return puzzle

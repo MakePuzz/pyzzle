@@ -28,7 +28,7 @@ setup(
     author_email="puzzle.hokkaido@gmail.com",
     maintainer="The MakePuzz team",
     maintainer_email="puzzle.hokkaido@gmail.com",
-    description="A Python library to automatically generate intelligent and beautifull puzzles",
+    description="A Python library to automatically generate intelligent and beautiful puzzles",
     long_description=readme,
     packages=find_packages(),
     ext_modules=extensions,

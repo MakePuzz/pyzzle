@@ -71,3 +71,6 @@ htmlcov
 # setuptools_scm files
 # this should be generated automatically when installed
 pyzzle/version.py
+
+# pytest-benchmark
+.benchmarks

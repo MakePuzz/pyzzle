@@ -5,7 +5,7 @@ from pathlib import PurePath
 import numpy as np
 import matplotlib.pyplot as plt
 
-from pyzzle import Puzzle, Dictionary, Mask, Gravity
+from pyzzle import Puzzle, Dictionary, Mask, Gravity, Optimizer
 from pyzzle import utils
 
 width = 15
@@ -22,10 +22,14 @@ obj_func = [
 # In[]
 puzzle = Puzzle(width=width, height=height, mask=mask, name=name, seed=seed) #, gravity=gravity
 puzzle.import_dict(dic)
+
 # In[]
 utils.debug_on()
-puzzle = puzzle.solve(epoch=epoch, time_limit=None, n=1, optimizer="multi_start", of=obj_func, show=False, use_f=True)
-utils.logging_off()
+
+optimizer = Optimizer.MultiStart(n=2, show=False, shrink=False, use_f=True)
+puzzle = puzzle.solve(epoch=epoch, optimizer=optimizer, of=obj_func, time_limit=None)
+
+# utils.logging_off()
 # In[]
 puzzle.show()
 print(f"Component: {puzzle.component==1}")

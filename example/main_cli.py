@@ -68,7 +68,8 @@ else:
     obj_func = ["nwords"]
 
 puzzle.import_dict(dic)
-puzzle = puzzle.solve(epoch=epoch, optimizer="local_search", of=obj_func, use_f=False)
+optimizer = Optimizer.LocalSearch(show=False, shrink=False, use_f=False)
+puzzle = puzzle.solve(epoch=epoch, optimizer=optimizer, of=obj_func)
 puzzle.export_json(f"json/{puzzle.name}_w{width}_h{height}_r{seed}.json")
 if width == height == 15:
     if name.isalnum(): # 英数字ならTrue

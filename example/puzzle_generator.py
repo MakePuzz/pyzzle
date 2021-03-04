@@ -37,8 +37,7 @@ def get(fpath, width, height, seed, epoch, name, with_weight, output):
     # Make instances
     puzzle = Puzzle(width, height)
     dic = Dictionary(fpath)
-    obj_func = ObjectiveFunction()
-    optimizer = Optimizer()
+    puzzle.import_dict(dic)
 
     if name is None:
         name = f"{dic.name}_w{width}_h{height}_r{seed}_ep{epoch}"
@@ -46,18 +45,15 @@ def get(fpath, width, height, seed, epoch, name, with_weight, output):
     if output is None:
         output = name + ".png"
 
-    puzzle.import_dict(dic)
     # Register and set method and compile
     if with_weight:
-        obj_func.register(["weight","nwords", "cross_count", "fill_count", "max_connected_empties"])
+        obj_func = ["weight","nwords", "cross_count", "fill_count", "max_connected_empties"]
     else:
-        obj_func.register(["nwords", "cross_count", "fill_count", "max_connected_empties"])
-    optimizer.set_method("local_search")
-    puzzle.compile(obj_func=obj_func, optimizer=optimizer)
+        obj_func = ["nwords", "cross_count", "fill_count", "max_connected_empties"]
 
     # Solve
-    puzzle.first_solve()
-    puzzle.solve(epoch=epoch)
+    optimizer = Optimizer.LocalSearch(show=False, shrink=False, use_f=False)
+    puzzle.solve(epoch, optimizer, of=obj_func)
     is_unique = puzzle.is_unique
     pass_answer = f"fig/{output}_answer.png"
     pass_problem = f"fig/{output}_problem.png"

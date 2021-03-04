@@ -897,7 +897,7 @@ class Puzzle:
                 self._drop(ori, i, j, word, is_kick=True)
         return
 
-    def solve(self, epoch, optimizer="local_search", objective_function=None, of=None, time_limit=None, time_offset=0, n=None, show=True, shrink=False, use_f=False):
+    def solve(self, epoch, optimizer, objective_function=None, of=None, time_limit=None, time_offset=0):
         """
         This method repeats the solution improvement by the specified number of epoch.
 
@@ -905,18 +905,20 @@ class Puzzle:
         ----------
         epoch : int
             The number of epoch
-        optimizer : str or Optimizer
-            Optimizer
+        optimizer : Optimizer
+            Optimizer instance
         objective_function or of : list or ObjectiveFunction
             ObjectiveFunction
+        time_limit : int or float
+            Time limit [s]
+        time_offset : int or float
+            Time offset [s]
         """
         # Save initial seed number
         if self.seed == None:
             self.seed = np.random.get_state()[1][0]
         if epoch <= 0:
             raise ValueError("'epoch' must be lather than 0")
-        if isinstance(optimizer, str):
-            optimizer = Optimizer(optimizer)
         if objective_function is of is not None:
             raise ValueError("'objective_function' and 'of' must not both be specified")
         objective_function = objective_function or of
@@ -926,11 +928,8 @@ class Puzzle:
             self.obj_func = ObjectiveFunction(objective_function)
         if isinstance(objective_function, ObjectiveFunction):
             self.obj_func = objective_function
-        if optimizer.method == "local_search":
-            return optimizer.optimize(self, epoch, time_limit=time_limit, time_offset=time_offset, show=show, shrink=shrink, use_f=use_f)
-        if optimizer.method == "multi_start":
-            return optimizer.optimize(self, epoch, time_limit=time_limit, time_offset=time_offset, n=n, show=show, shrink=shrink, use_f=use_f)
-
+        return optimizer.optimize(self, epoch, time_limit=time_limit, time_offset=time_offset)
+        
     def show_log(self, name="Objective Function's epoch series", grid=True, figsize=None, **kwargs):
         """
         Show the epoch series for each objective function.

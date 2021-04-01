@@ -15,6 +15,7 @@ class Optimizer(metaclass=ABCMeta):
     def optimize(self):
         pass
 
+
 class LocalSearch(Optimizer):
     def __init__(self, show=True, shrink=False, move=False, use_f=False):
         self.show = show
@@ -95,6 +96,7 @@ class LocalSearch(Optimizer):
         else:
             _puzzle.add_to_limit()
         return _puzzle
+
 
 class MultiStart(Optimizer):
     def __init__(self, n, show=True, shrink=False, move=False, use_f=False):

@@ -1,5 +1,6 @@
 import unittest
 from pathlib import PurePath
+
 from pyzzle import Dictionary
 
 

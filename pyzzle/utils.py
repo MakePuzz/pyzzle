@@ -130,7 +130,7 @@ def decode_json(fpath):
         data = json.load(f)
     width = data["width"]
     height = data["height"]
-    ori_i_j_words = data["list"]
+    ori_i_j_words = data["words"]
     mask = np.array(data["mask"])
     nwords = data["nwords"]
 

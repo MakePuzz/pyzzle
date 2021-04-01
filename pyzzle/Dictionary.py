@@ -106,7 +106,7 @@ class Dictionary:
         return word in self.word
 
     def add(self, word=None, weight=None, dict_specifier=None):
-        if (word, dict_specifier) == (None, None):
+        if word is None and dict_specifier is None:
             raise ValueError("'word' or 'dict_specifier' must be specified")
         if word is dict_specifier is not None:
             raise ValueError("'word' or 'dict_specifier' must be specified")

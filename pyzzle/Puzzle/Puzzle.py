@@ -6,7 +6,7 @@ import logging
 
 import numpy as np
 import pandas as pd
-from scipy import ndimage
+from scipy import ndimage as ndi
 from matplotlib import rcParams
 
 from pyzzle.Word import Word
@@ -15,7 +15,7 @@ from pyzzle.Dictionary import Dictionary
 from pyzzle.Optimizer import Optimizer
 from pyzzle.ObjectiveFunction import ObjectiveFunction
 from pyzzle.Judgement import Judgement
-from pyzzle.History import History
+from pyzzle.History import HistoryItem, HistoryItemMove, HistoryCode
 from pyzzle import utils
 from pyzzle.Exception import ZeroSizePuzzleException
 
@@ -25,6 +25,8 @@ rcParams['font.sans-serif'] = ['Hiragino Maru Gothic Pro', 'Yu Gothic', 'Meiryo'
 
 LOG = logging.getLogger(__name__)
 BLANK = Word("", weight=0)
+USED_DTYPE = np.uint16
+EMPTY = np.iinfo(USED_DTYPE).max
 
 
 class Puzzle:
@@ -107,6 +109,7 @@ class Puzzle:
         self.nwords = 0
         self.epoch = 0
         self.seed = seed
+        np.random.seed(seed=seed)
         self.width = width
         self.height = height
         self.mask = mask
@@ -118,15 +121,16 @@ class Puzzle:
             gravity = np.zeros([self.height, self.width])
         self.gravity = np.array(gravity)
         self.cell = np.full([self.height, self.width], BLANK, dtype="unicode")
-        self.cover = np.zeros(self.cell.shape, dtype=np.int32)
-        self.enable = np.ones(self.cell.shape, dtype="bool")
-        self.uori = np.full(self.width * self.height, -1, dtype=np.int32)
-        self.ui = np.full(self.uori.size, -1, dtype=np.int32)
-        self.uj = np.full(self.uori.size, -1, dtype=np.int32)
-        self.uwords = np.full(self.uori.size, BLANK, dtype=object)
+        self.cover = np.zeros_like(self.cell, dtype=np.uint8)
+        self.enable = np.ones_like(self.cell, dtype=bool)
+        self.uori = np.full(self.size//2, EMPTY, dtype=USED_DTYPE)
+        self.ui = np.full_like(self.uori, EMPTY, dtype=USED_DTYPE)
+        self.uj = np.full_like(self.uori, EMPTY, dtype=USED_DTYPE)
+        self.uwords = np.full_like(self.uori, BLANK, dtype=object)
         self.log = None
         self.history = []
         self.base_history = []
+        self.obj_func = ObjectiveFunction(["nwords", "weight"])
         self._dic = Dictionary()
         self._plc = Placeable(width=self.width, height=self.height)
 
@@ -177,6 +181,10 @@ class Puzzle:
         return not self.__lt__(other)
     
     @property
+    def size(self):
+        return self.width * self.height
+    
+    @property
     def weight(self):
         weight = 0
         for uw in self.uwords[self.uwords!=BLANK]:
@@ -192,15 +200,17 @@ class Puzzle:
         """
         This method deter_mines whether it is the unique solution
         """
+        if self.nwords == 0:
+            return False
         rtn_bool = True
         nw = self.nwords
-        # Get word1
+        # Get 1st word
         for s, (ori1, i1, j1, word1) in enumerate(zip(self.uori[:nw], self.ui[:nw], self.uj[:nw], self.uwords[:nw])):
             if ori1 == 0:
                 cross_idx1 = np.where(self.cover[i1:i1 + len(word1), j1] == 2)[0]
             elif ori1 == 1:
                 cross_idx1 = np.where(self.cover[i1, j1:j1 + len(word1)] == 2)[0]
-            # Get word2
+            # Get 2nd word
             for ori2, i2, j2, word2 in zip(self.uori[s+1:nw], self.ui[s+1:nw], self.uj[s+1:nw], self.uwords[s+1:nw]):
                 # If word1 and word2 have different lengths, they can not be replaced
                 if len(word1) != len(word2):
@@ -276,7 +286,7 @@ class Puzzle:
             return 0
         empties = np.zeros([self.height+2, self.width+2], dtype="int")
         empties[1:-1, 1:-1] = self.cover
-        label, nlabel = ndimage.label(empties == False, structure=ndimage.generate_binary_structure(2, 2))
+        label, nlabel = ndi.label(empties == False, structure=ndi.generate_binary_structure(2, 2))
         if nlabel <= 2:
             return 0
         circulation = 0
@@ -299,13 +309,23 @@ class Puzzle:
             return False
         mask = np.zeros([self.height+2, self.width+2], dtype=bool)
         mask[1:-1, 1:-1] = self.mask
-        mask_component = ndimage.label(mask == True)[1]
+        mask_component = ndi.label(mask == True)[1]
         return mask_component - 1 == self.circulation
     
     @property
     def component(self):
-        return ndimage.label(self.cover)[1]
-
+        """Connected component labels."""
+        return ndi.label(self.cover)[1]
+    
+    @property
+    def stability(self):
+        """Number of epochs since the solution was no longer improved."""
+        if self.log is None:
+            return 0
+        _filter = np.all(self.log.values == self.log.tail(1).values, axis=1)
+        stability = int(np.where(_filter)[0][-1] - np.where(_filter)[0][0])
+        return stability
+    
     def import_dict(self, dic):
         """
         Import the Dictionary, and generate the Placeable internally.
@@ -460,9 +480,9 @@ class Puzzle:
 
         # Put the word to puzzle
         if ori == 0:
-            self.cell[i:i + w_len, j] = list(word)[0:w_len]
+            self.cell[i:i + w_len, j] = list(word)
         if ori == 1:
-            self.cell[i, j:j + w_len] = list(word)[0:w_len]
+            self.cell[i, j:j + w_len] = list(word)
 
         # Set the prohibited cell before and after placed word
         if ori == 0:
@@ -481,6 +501,9 @@ class Puzzle:
             self.cover[i:i + w_len, j] += 1
         if ori == 1:
             self.cover[i, j:j + w_len] += 1
+        
+        if not isinstance(word, Word):
+            word = Word(word)
 
         # Update properties
         self.uori[self.nwords] = ori
@@ -488,7 +511,7 @@ class Puzzle:
         self.uj[self.nwords] = j
         self.uwords[self.nwords] = word
         self.nwords += 1
-        self.history.append((History.ADD, ori, i, j, word))
+        self.history.append(HistoryItem(HistoryCode.ADD, ori, i, j, word))
         return code
 
     def add(self, ori, i, j, word, weight=0):
@@ -640,17 +663,17 @@ class Puzzle:
             self.cell[i_all, j + where] = BLANK
         # Update        
         self.uori[drop_idx:-1] = self.uori[drop_idx+1:]
-        self.uori[-1] = -1
+        self.uori[-1] = EMPTY
         self.ui[drop_idx:-1] = self.ui[drop_idx+1:]
-        self.ui[-1] = -1
+        self.ui[-1] = EMPTY
         self.uj[drop_idx:-1] = self.uj[drop_idx+1:]
-        self.uj[-1] = -1
+        self.uj[-1] = EMPTY
         self.uwords[drop_idx:-1] = self.uwords[drop_idx+1:]
         self.uwords[-1] = BLANK
         self.nwords -= 1
         # Insert data to history
-        code = History.DROP_KICK if is_kick else History.DROP
-        self.history.append((code, ori, i, j, word))
+        code = HistoryCode.DROP_KICK if is_kick else HistoryCode.DROP
+        self.history.append(HistoryItem(code, ori, i, j, word))
         # Update enable cells
         remove_flag = True
         if ori == 0:
@@ -780,21 +803,28 @@ class Puzzle:
         json_dict : dict
             The json dictionary
         """
-        word_list = []
+        import pyzzle
+        words = []
         for ori, i, j, word in zip(self.uori[:self.nwords], self.ui[:self.nwords], self.uj[:self.nwords], self.uwords[:self.nwords]):
-            word_list.append({"i": int(i), "j": int(j), "ori": int(ori), "word": word})
+            words.append({"ori": int(ori), "i": int(i), "j": int(j), "word": word})
         mask = self.mask
         if mask is None:
-            mask = np.full(self.cell.shape, True)
+            mask = np.full(self.cell.shape, False)
         json_dict = {
-            "list": word_list,
-            "mask": mask.tolist(),
             "name": self.name,
+            "version": pyzzle.__version__,
             "width": self.width,
             "height": self.height,
-            "nwords": self.nwords,
             "seed": int(self.seed),
             "epoch": self.epoch,
+            "nwords": int(self.nwords),
+            "uniqueness": self.is_unique,
+            "objective_functions": self.obj_func.get_score(self, all=True),
+            "stability": self.stability,
+            "words": words,
+            "cell": self.cell.tolist(),
+            "mask": mask.tolist(),
+            "created_at": pd.Timestamp.now(tz="UTC").strftime("%Y-%m-%d %H:%M:%S UTC"),
         }
         return json_dict
 
@@ -810,7 +840,7 @@ class Puzzle:
             The indent in json output
         """
         with open(name, "w", encoding="utf-8") as f:
-            json.dump(self.to_json(), f, sort_keys=True, indent=indent, ensure_ascii=False)
+            json.dump(self.to_json(), f, sort_keys=False, indent=indent, ensure_ascii=False)
 
     @staticmethod
     def from_json(name):
@@ -818,9 +848,13 @@ class Puzzle:
             data = json.load(f)
         puzzle = Puzzle(width=data["width"], height=data["height"], mask=data["mask"], name=data["name"])
         puzzle.seed = data["seed"]
-        word_list = data["list"]
-        for word_dict in word_list:
-            puzzle.add(word_dict["ori"], word_dict["i"], word_dict["j"], word_dict["word"])
+        # puzzle.import_dict(Dictionary(data["uwords"]))
+        nwords = 0
+        for _ in range(data["nwords"]):
+            for word_dict in data["words"]:
+                puzzle._add(word_dict["ori"], word_dict["i"], word_dict["j"], word_dict["word"])
+            if puzzle.nwords == data["nwords"]:
+                break
         return puzzle
 
     @staticmethod
@@ -828,12 +862,18 @@ class Puzzle:
         cell = np.array(cell)
         uori, ui, uj, uwords = Puzzle.get_word_properties(cell)
         puzzle = Puzzle(width=cell.shape[1], height=cell.shape[0], mask=mask, gravity=gravity, name=name)
-        nwords = 0
-        while(nwords < len(uwords)):
+        puzzle.import_dict(Dictionary(uwords))
+        for _ in range(len(uwords)):
             for ori, i, j, word in zip(uori, ui, uj, uwords):
-                puzzle.add(ori, i, j, word)
-            nwords = puzzle.nwords
+                puzzle._add(ori, i, j, word)
+            if puzzle.nwords == len(uwords):
+                break
         return puzzle
+    
+    def copy(self, deep=True):
+        if deep:
+            return copy.deepcopy(self)
+        return copy.copy(self)
 
     def kick(self):
         """
@@ -843,8 +883,8 @@ class Puzzle:
         if self.nwords == 0:
             return
         mask = self.cover > 0
-        label, nlabel = ndimage.label(mask)
-        sizes = ndimage.sum(mask, label, range(nlabel + 1))
+        label, nlabel = ndi.label(mask)
+        sizes = ndi.sum(mask, label, range(nlabel + 1))
         largest_ccl = sizes.argmax()
         # Erase elements except largest component.
         # In self._drop ux will shrink, so pass prev_ux in reverse order.
@@ -857,7 +897,7 @@ class Puzzle:
                 self._drop(ori, i, j, word, is_kick=True)
         return
 
-    def solve(self, epoch, optimizer="local_search", objective_function=None, of=None, time_limit=None, time_offset=0, n=None, show=True, use_f=False):
+    def solve(self, epoch, optimizer, objective_function=None, of=None, time_limit=None, time_offset=0):
         """
         This method repeats the solution improvement by the specified number of epoch.
 
@@ -865,33 +905,31 @@ class Puzzle:
         ----------
         epoch : int
             The number of epoch
-        optimizer : str or Optimizer
-            Optimizer
+        optimizer : Optimizer
+            Optimizer instance
         objective_function or of : list or ObjectiveFunction
             ObjectiveFunction
+        time_limit : int or float
+            Time limit [s]
+        time_offset : int or float
+            Time offset [s]
         """
         # Save initial seed number
         if self.seed == None:
             self.seed = np.random.get_state()[1][0]
         if epoch <= 0:
             raise ValueError("'epoch' must be lather than 0")
-        if isinstance(optimizer, str):
-            self.optimizer = Optimizer(optimizer)
-        if isinstance(optimizer, Optimizer):
-            self.optimizer = optimizer
         if objective_function is of is not None:
             raise ValueError("'objective_function' and 'of' must not both be specified")
+        objective_function = objective_function or of
         if objective_function is None:
-            objective_function = of
+            objective_function = self.obj_func
         if isinstance(objective_function, (list, tuple, set)):
             self.obj_func = ObjectiveFunction(objective_function)
         if isinstance(objective_function, ObjectiveFunction):
             self.obj_func = objective_function
-        if self.optimizer.method == "local_search":
-            return self.optimizer.optimize(self, epoch, time_limit=time_limit, time_offset=time_offset, show=show, use_f=use_f)
-        if self.optimizer.method == "multi_start":
-            return self.optimizer.optimize(self, epoch, time_limit=time_limit, time_offset=time_offset, n=n, show=show, use_f=use_f)
-
+        return optimizer.optimize(self, epoch, time_limit=time_limit, time_offset=time_offset)
+        
     def show_log(self, name="Objective Function's epoch series", grid=True, figsize=None, **kwargs):
         """
         Show the epoch series for each objective function.
@@ -971,11 +1009,9 @@ class Puzzle:
         jumped_puzzle : Puzzle
             Jumped Puzzle
         """
-        jumped_puzzle = self.__class__(
-            self.width, self.height, self.mask, self.name)
+        jumped_puzzle = self.__class__(self.width, self.height, self.mask, self.name)
         jumped_puzzle._dic = copy.deepcopy(self._dic)
         jumped_puzzle._plc = Placeable(self.width, self.height, jumped_puzzle._dic, self.mask)
-        jumped_puzzle.optimizer = copy.deepcopy(self.optimizer)
         jumped_puzzle.obj_func = copy.deepcopy(self.obj_func)
         jumped_puzzle.base_history = copy.deepcopy(self.base_history)
 
@@ -986,14 +1022,14 @@ class Puzzle:
                 raise RuntimeError('This puzzle is up to date')
 
         for hist in jumped_puzzle.base_history[:idx]:
-            if hist[0] == History.ADD:
-                jumped_puzzle._add(hist[1], hist[2], hist[3], hist[4])
-            elif hist[0] == History.DROP:
-                jumped_puzzle._drop(hist[1], hist[2], hist[3], hist[4], is_kick=False)
-            elif hist[0] == History.DROP_KICK:
-                jumped_puzzle._drop(hist[1], hist[2], hist[3], hist[4], is_kick=True)
-            elif hist[0] == History.MOVE:
-                jumped_puzzle.move(direction=hist[1], n=hist[2])
+            if hist.code == HistoryCode.ADD:
+                jumped_puzzle._add(hist.ori, hist.i, hist.j, hist.word)
+            elif hist.code == HistoryCode.DROP:
+                jumped_puzzle._drop(hist.ori, hist.i, hist.j, hist.word, is_kick=False)
+            elif hist.code == HistoryCode.DROP_KICK:
+                jumped_puzzle._drop(hist.ori, hist.i, hist.j, hist.word, is_kick=True)
+            elif hist.code == HistoryCode.MOVE:
+                jumped_puzzle.move(direction=hist.direction, n=hist.n)
         return jumped_puzzle
 
     def get_prev(self, n=1):
@@ -1061,6 +1097,18 @@ class Puzzle:
         except ZeroSizePuzzleException:
             return np.array([[],[]])
         return self.cell[r_min:r_max+1, c_min:c_max+1]
+    
+    def shrink(self):
+        """Shrink puzzle by cutting margins."""
+        new_puzzle = Puzzle.from_cell(self.rect)
+        new_puzzle.import_dict(self.dic)
+        new_puzzle.name = self.name
+        new_puzzle.mask = self.mask
+        new_puzzle.epoch = self.epoch
+        new_puzzle.seed = self.seed
+        new_puzzle.log = self.log
+        new_puzzle.obj_func = self.obj_func
+        return new_puzzle
 
     def move(self, direction, n=0, limit=False):
         """
@@ -1127,7 +1175,7 @@ class Puzzle:
             self.cover = np.roll(self.cover, sum(di_dj), axis=axis)
             self.ui += di_dj[0]
             self.uj += di_dj[1]
-            self.history.append((History.MOVE, direction, 1, None, None))
+            self.history.append(HistoryItemMove(HistoryCode.MOVE, direction, 1))
         self.enable = self.get_enable(self.cell)
         return
 
@@ -1282,6 +1330,48 @@ class Puzzle:
         uj = np.concatenate([indices["vertical"][1], indices["horizontal"][1]])
         uwords = self.get_uwords(cell)
         return uori, ui, uj, uwords
+    
+    @classmethod
+    def get_word_compositions(self, cover):
+        """
+        Returns the orientations and positions of the first character based on 
+        the cover array as a dictionary keyed by the length of the word.
+
+        Parameters
+        ----------
+        cover : numpy ndarray
+            Cover array.
+        
+        Returns
+        -------
+        compositions : dict
+            A dictionary that stores the orientations and positions of the 
+            first character using the length of the word as keys.
+        """
+        vertical = ndi.binary_opening(cover, structure=[[1],[1]]).astype(int)
+        lbl, nlbl = ndi.label(vertical, structure=[[0,1,0],[0,1,0],[0,1,0]])
+        lens = ndi.labeled_comprehension(vertical, lbl, np.arange(1, nlbl+1), np.sum, int, 0)
+        compositions = {}
+        for l in lens:
+            compositions[l] = []
+        ori = 0
+        for n in range(1, nlbl+1):
+            i = np.where(lbl == n)[0][0]
+            j = np.where(lbl == n)[1][0]
+            compositions[lens[n-1]].append((ori, i, j))
+            
+        horizontal = ndi.binary_opening(cover, structure=[[1, 1]]).astype(int)
+        lbl, nlbl = ndi.label(horizontal, structure=[[0,0,0],[1,1,1],[0,0,0]])
+        lens = ndi.labeled_comprehension(horizontal, lbl, np.arange(1, nlbl+1), np.sum, int, 0)
+        for l in lens:
+            if l not in compositions.keys():
+                compositions[l] = []
+        ori = 1
+        for n in range(1, nlbl+1):
+            i = np.where(lbl == n)[0][0]
+            j = np.where(lbl == n)[1][0]
+            compositions[lens[n-1]].append((ori, i, j))
+        return compositions
 
 
     def update_board(self, cell=None):

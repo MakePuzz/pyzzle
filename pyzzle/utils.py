@@ -155,7 +155,7 @@ def decode_json(fpath):
     return cell, mask, word_list, attrs
 
 
-def export_image(axl, axr, cell, words, title="", oname=None, dpi=300, answer=False):
+def export_image(fig, axl, axr, cell, words, width, height, title="", fontsize=18, oname=None, dpi=300, answer=False):
     """
     Export a puzzle image. This can be used for square puzzles only.
     Parameters
@@ -168,6 +168,10 @@ def export_image(axl, axr, cell, words, title="", oname=None, dpi=300, answer=Fa
         Puzzle board.
     words : ndarray
         Word list.
+    width : int
+        the width of puzzle.
+    height : int
+        the height of puzzle.
     title : str, default ""
         Puzzle name.
     oname : str
@@ -181,12 +185,11 @@ def export_image(axl, axr, cell, words, title="", oname=None, dpi=300, answer=Fa
     import matplotlib.pyplot as plt
     import numpy as np
 
-    sys.path.append("../")
     from PuzzleImage import SkeltonImage
 
     si = SkeltonImage(blank="")
     axl = si.get_board(axl, cell, title=title, w_count=len(words), is_answer=answer)
-    axr = si.get_wordlist(axr, words)
+    axr = si.get_wordlist(axr, words, width, height, fontsize)
 
     if oname is None:
         plt.show()

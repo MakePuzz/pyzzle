@@ -48,11 +48,11 @@ if width == height == 15:
     else:
         title = f"テーマ：{name}"
 
-    height = 7
-    width = 6
+    height_inch = 7
+    width_inch = 6
     plt.rcParams.update({"figure.subplot.left": 0, "figure.subplot.bottom": 0, "figure.subplot.right": 1, "figure.subplot.top": 1})
-    fig, [axl, axr] = plt.subplots(1, 2, figsize=(9*height/7.5+width, height), gridspec_kw=dict(width_ratios=[9*height/7.5,width], wspace=-0.08))
-    utils.export_image(axl, axr, puzzle.cell, puzzle.uwords[puzzle.uwords!=""], title=title, oname=f"{base_dir}/fig/twitter_answer_{oname}.png", answer=True)
+    fig, [axl, axr] = plt.subplots(1, 2, figsize=(9*height_inch/7.5+width_inch, height_inch))
+    utils.export_image(fig, axl, axr, puzzle.cell, puzzle.uwords[puzzle.uwords!=""], width, height, title=title, fontsize=18, oname=f"{base_dir}/fig/twitter_answer_{oname}.png", answer=True)
 # puzzle.to_pickle(f"pickle/{oname}.pickle")
 
 

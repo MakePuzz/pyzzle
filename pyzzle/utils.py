@@ -184,6 +184,7 @@ def export_image(axl, axr, cell, words, title="", oname=None, dpi=300, answer=Fa
     sys.path.append("../")
     from PuzzleImage import SkeltonImage
 
+    si = SkeltonImage(blank="")
     axl = si.get_board(axl, cell, title=title, w_count=len(words), is_answer=answer)
     axr = si.get_wordlist(axr, words)
 

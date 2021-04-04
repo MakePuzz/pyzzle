@@ -26,7 +26,7 @@ puzzle.import_dict(dic)
 # In[]
 utils.debug_on()
 
-optimizer = Optimizer.MultiStart(n=2, show=False, shrink=False, use_f=True)
+optimizer = Optimizer.MultiStart(n=2, show=False, shrink=False, use_f=False)
 puzzle = puzzle.solve(epoch=epoch, optimizer=optimizer, of=obj_func, time_limit=None)
 
 # utils.logging_off()
@@ -50,8 +50,8 @@ else:
 height_inch = 7
 width_inch = 6
 plt.rcParams.update({"figure.subplot.left": 0, "figure.subplot.bottom": 0, "figure.subplot.right": 1, "figure.subplot.top": 1})
-fig, [axl, axr] = plt.subplots(1, 2, figsize=(9*height_inch/7.5+width_inch, height_inch), gridspec_kw=dict(width_ratios=[9*height/7.5,width], wspace=-0.01))
-utils.export_image(fig, axl, axr, puzzle.cell, puzzle.uwords[puzzle.uwords!=""], width, height, title=title, fontsize=18, oname=f"{base_dir}/fig/twitter_answer_{oname}.png", answer=True)
+fig, [axl, axr] = plt.subplots(1, 2, figsize=(9*height_inch/7.5+width_inch, height_inch), gridspec_kw=dict(width_ratios=[9*height_inch/7.5,width_inch], wspace=-0.01))
+utils.export_image(fig, axl, axr, puzzle.cell, puzzle.uwords[puzzle.uwords!=""], width_inch, height_inch, title=title, fontsize=18, oname=f"{base_dir}/fig/twitter_answer_{oname}.png", answer=True)
 # puzzle.to_pickle(f"pickle/{oname}.pickle")
 
 

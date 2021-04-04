@@ -42,17 +42,16 @@ puzzle.save_answer_image(f"{base_dir}/fig/{oname}_answer.png")
 puzzle.save_problem_image(f"{base_dir}/fig/{oname}_problem.png")
 puzzle.export_json(f"{base_dir}/json/{oname}.json")
 
-if width == height == 15:
-    if name.isalnum(): # 英数字ならTrue
-        title = f"Theme：{name}"
-    else:
-        title = f"テーマ：{name}"
+if name.isalnum(): # 英数字ならTrue
+    title = f"Theme：{name}"
+else:
+    title = f"テーマ：{name}"
 
-    height_inch = 7
-    width_inch = 6
-    plt.rcParams.update({"figure.subplot.left": 0, "figure.subplot.bottom": 0, "figure.subplot.right": 1, "figure.subplot.top": 1})
-    fig, [axl, axr] = plt.subplots(1, 2, figsize=(9*height_inch/7.5+width_inch, height_inch))
-    utils.export_image(fig, axl, axr, puzzle.cell, puzzle.uwords[puzzle.uwords!=""], width, height, title=title, fontsize=18, oname=f"{base_dir}/fig/twitter_answer_{oname}.png", answer=True)
+height_inch = 7
+width_inch = 6
+plt.rcParams.update({"figure.subplot.left": 0, "figure.subplot.bottom": 0, "figure.subplot.right": 1, "figure.subplot.top": 1})
+fig, [axl, axr] = plt.subplots(1, 2, figsize=(9*height_inch/7.5+width_inch, height_inch), gridspec_kw=dict(width_ratios=[9*height/7.5,width], wspace=-0.01))
+utils.export_image(fig, axl, axr, puzzle.cell, puzzle.uwords[puzzle.uwords!=""], width, height, title=title, fontsize=18, oname=f"{base_dir}/fig/twitter_answer_{oname}.png", answer=True)
 # puzzle.to_pickle(f"pickle/{oname}.pickle")
 
 

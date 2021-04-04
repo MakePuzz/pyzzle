@@ -4,3 +4,4 @@ pandas
 matplotlib
 requests
 japanize_matplotlib
+puzzleimage

@@ -194,7 +194,7 @@ def export_image(fig, axl, axr, cell, words, width, height, title="", fontsize=1
     if oname is None:
         plt.show()
     else:
-        fig.savefig(oname, dpi=dpi)
+        fig.savefig(oname, dpi=dpi, bbox_inches='tight')
     plt.close()
 
 def show_json(fpath):

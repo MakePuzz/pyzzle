@@ -12,15 +12,15 @@ Crossword Local Search by command line
  7. 重みを考慮するかどうか（-wまたは--weightオプションでフラグとして指定. デフォルトはFalse）
  8. 出力ファイル名（-oまたは--outputオプションで指定. デフォルトは{name}.png）
 実行例：
-python main_cli.py ../pyzzle/dict/pokemon.txt 15 15 -s 1 -e 5
+python main_cli.py ../src/pyzzle/dict/animals.txt 6 6 -s 1 -e 5 --use_f
 """
 # In[]
+import os
 import argparse
 
 import numpy as np
 
-from pyzzle import Puzzle, Dictionary, utils
-
+import pyzzle
 # In[]
 parser = argparse.ArgumentParser(description="make a puzzle with given parameters")
 parser.add_argument("dict_path", type=str,
@@ -39,6 +39,8 @@ parser.add_argument("-w", "--weight", action="store_true",
                     help="flag of consider the weight, default=False")
 parser.add_argument("-o", "--output", type=str,
                     help="name of the output image file")
+parser.add_argument("-f", "--use_f", action="store_true",
+                    help="use Fortran function in local search")
 args = parser.parse_args()
 
 # settings
@@ -54,11 +56,13 @@ output = args.output
 np.random.seed(seed=seed)
 
 # In[]
-puzzle = Puzzle(width, height)
-dic = Dictionary(dict_path)
+puzzle = pyzzle.Puzzle(width, height)
+print(puzzle)
+
+dic = pyzzle.Dictionary(dict_path)
 
 if name is None:
-    name = f"w{width}_h{height}_r{seed}_ep{epoch}"
+    name = os.path.basename(dict_path).split(".")[0]
 puzzle.puzzle_name = name
 if output is None:
     output = name + ".png"
@@ -68,13 +72,28 @@ else:
     obj_func = ["nwords"]
 
 puzzle.import_dict(dic)
-optimizer = Optimizer.LocalSearch(show=False, shrink=False, use_f=False)
+optimizer = pyzzle.Optimizer.LocalSearch(show=False, shrink=False, use_f=args.use_f)
 puzzle = puzzle.solve(epoch=epoch, optimizer=optimizer, of=obj_func)
 puzzle.export_json(f"json/{puzzle.name}_w{width}_h{height}_r{seed}.json")
+
+def is_halfwidth(char):
+    return len(char.encode('utf-8')) <= 1
+
+if is_halfwidth(dic[0]["word"][0]): # 半角ならTrue
+    halfspace = True
+else:
+    halfspace = False
+
 if width == height == 15:
-    if name.isalnum(): # 英数字ならTrue
+    if halfspace: # 英数字ならTrue
         title = f"Theme：{name}"
     else:
         title = f"テーマ：{name}"
-    utils.export_image(puzzle.cell, puzzle.uwords[puzzle.uwords!=""], title=title, oname=f"fig/twitter_problem_{puzzle.name}_w{width}_h{height}_r{seed}.png", dpi=144, answer=False)
-    utils.export_image(puzzle.cell, puzzle.uwords[puzzle.uwords!=""], title=title, oname=f"fig/twitter_answer_{puzzle.name}_w{width}_h{height}_r{seed}.png", dpi=144, answer=True)
+    oname_problem = f"fig/twitter_problem_{puzzle.name}_w{width}_h{height}_r{seed}.png"
+    oname_answer = f"fig/twitter_answer_{puzzle.name}_w{width}_h{height}_r{seed}.png"
+    pyzzle.utils.export_image(puzzle.cell, puzzle.uwords[puzzle.uwords!=""], title=title, oname=oname_problem, dpi=144, answer=False)
+    pyzzle.utils.export_image(puzzle.cell, puzzle.uwords[puzzle.uwords!=""], title=title, oname=oname_answer, dpi=144, answer=True)
+    print(f"Saved as {oname_answer} and {oname_problem}")
+
+
+pyzzle.utils.show_2Darray(puzzle.cell, puzzle.mask, halfspace=halfspace)

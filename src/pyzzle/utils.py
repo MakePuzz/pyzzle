@@ -69,7 +69,7 @@ def logging_off():
     logging.getLogger('').handlers = [logging.NullHandler()]
 
 
-def show_2Darray(cell, mask=None, blank="", stdout=False):
+def show_2Darray(cell, mask=None, blank="", halfspace=True, stdout=False):
     """
     Display the puzzle.
 
@@ -80,13 +80,21 @@ def show_2Darray(cell, mask=None, blank="", stdout=False):
     mask : ndarray, optional
         Numpy.ndarray for mask
     blank : str
+        Blank character
+    halfspace : bool
+        If True, use half space
     stdout: bool
+        If True, display on stdout
     """
     array = copy.deepcopy(cell)
     if mask is not None:
         array[mask == True] = "■"
+    if halfspace:
+        blank_display = " "
+    else:
+        blank_display = "  "
     if stdout or not in_ipynb():
-        array = np.where(array == blank, " ", array)
+        array = np.where(array == blank, blank_display, array)
         print(array)
     else:
         from IPython.display import display

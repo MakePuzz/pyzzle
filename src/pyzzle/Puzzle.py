@@ -323,7 +323,10 @@ class Puzzle:
         if self.log is None:
             return 0
         _filter = np.all(self.log.values == self.log.tail(1).values, axis=1)
-        stability = int(np.where(_filter)[0][-1] - np.where(_filter)[0][0])
+        improved_indices = np.where(_filter)[0]
+        if len(improved_indices) == 0:
+            return 0
+        stability = int(improved_indices[-1] - improved_indices[0])
         return stability
     
     def import_dict(self, dic):
@@ -562,12 +565,6 @@ class Puzzle:
         """
         Adds the words as much as possible.
         """
-        try:
-            from pyzzle.Puzzle.add_to_limit import add_to_limit as _add_to_limit
-        except(ImportError) as err:
-            LOG.debug(str(err))
-            raise ImportError("Puzzle.add_to_limit is not installed.\
-                            After installing GCC and GFortran, you need to reinstall pyzzle.")
         # Make a random index of plc
         not_uwords_idx = np.ones(len(self._plc), dtype=bool)
         plc_words = np.array(self._plc.word, dtype=object)
@@ -597,8 +594,15 @@ class Puzzle:
         padding = lambda x: x + [0] * (w_len_max - len(x))
         words_int = np.asfortranarray(np.array(list(map(padding, words_int)), dtype=np.int32))
         enable = np.asfortranarray(self.enable.astype(np.int32))
-        uidx = _add_to_limit(self.height, self.width, n, w_len_max, ord(blank),
-                                ori_s, i_s, j_s, k_s, words_int, w_lens, cell, enable)
+
+        try:
+            from pyzzle import futils
+            uidx = futils.add_to_limit(self.height, self.width, n, w_len_max, ord(blank),
+                                    ori_s, i_s, j_s, k_s, words_int, w_lens, cell, enable)
+        except(ImportError) as err:
+            LOG.info(str(err))
+            raise ImportError("Puzzle.add_to_limit is not installed.\nAfter installing GCC and GFortran, you need to reinstall pyzzle.")
+
         for p in uidx[uidx != -1]-1:
             self._add(ori_s[p], i_s[p] - 1, j_s[p] - 1, Word(plc_words[p], plc_words[p].weight))
         return
@@ -620,7 +624,7 @@ class Puzzle:
             self.log = pd.DataFrame(columns=self.obj_func.get_funcs())
             self.log.index.name = "epoch"
         tmp_series = pd.Series(self.obj_func.get_score(self, all=True), index=self.obj_func.get_funcs())
-        self.log = self.log.append(tmp_series, ignore_index=True)
+        self.log = pd.concat([self.log, tmp_series], ignore_index=True)
 
     def _drop(self, ori, i, j, word, is_kick=False):
         """

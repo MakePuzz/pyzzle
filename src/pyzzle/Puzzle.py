@@ -339,7 +339,7 @@ class Puzzle:
             Dictionary object imported to Puzzle
         """
         self._dic += dic
-        self._plc = Placeable(self.width, self.height, self._dic.word, self.mask)
+        self._plc = Placeable(self.width, self.height, self._dic.words, self.mask)
         LOG.info(f"Dictionary imported")
 
     def replace_dict(self, dic):
@@ -352,7 +352,7 @@ class Puzzle:
             Dictionary object replaced in Puzzle
         """
         self._dic = dic
-        self._plc = Placeable(self.width, self.height, self._dic.word, self.mask)
+        self._plc = Placeable(self.width, self.height, self._dic.words, self.mask)
         LOG.info(f"Dictionary replaced")
 
     def is_placeable(self, ori, i, j, word, w_len):

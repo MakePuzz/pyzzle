@@ -25,41 +25,41 @@ class Dictionary:
 
     dataset = Dataset()
 
-    def __init__(self, dict_specifier=None, word=None, weight=None):
+    def __init__(self, dict_specifier=None, words=None, weight=None):
         self.dict_specifier = dict_specifier
-        self.word = []
+        self.words = []
         self.removed_words = []
         self._i = 0
         if isinstance(dict_specifier, (list, np.ndarray)):
             self.add(dict_specifier)
         if isinstance(dict_specifier, str):
             self.read(dict_specifier)
-        if word is not None:
-            self.add(word, weight)
+        if words is not None:
+            self.add(words, weight)
 
     def __sizeof__(self):
-        return sys.getsizeof(self.word) + sys.getsizeof(self.removed_words)
+        return sys.getsizeof(self.words) + sys.getsizeof(self.removed_words)
 
     @property
     def size(self):
-        return len(self.word)
+        return len(self.words)
 
     @property
     def weight(self):
-        return list(map(lambda x: x.weight, self.word))
+        return list(map(lambda x: x.weight, self.words))
 
     @property
     def w_len(self):
-        return list(map(len, self.word))
+        return list(map(len, self.words))
 
     def __getitem__(self, key):
-        return {'word': self.word[key], 'weight': self.word[key].weight, 'len': self.w_len[key]}
+        return {'word': self.words[key], 'weight': self.words[key].weight, 'len': self.w_len[key]}
 
     def __repr__(self):
-        return str({"words": self.word, "weight": self.weight})
+        return str({"words": self.words, "weight": self.weight})
 
     def __str__(self):
-        return str({"words": self.word, "weight": self.weight})
+        return str({"words": self.words, "weight": self.weight})
 
     def __len__(self):
         return self.size
@@ -95,48 +95,48 @@ class Dictionary:
         if self._i == self.size:
             self._i = 0
             raise StopIteration()
-        word = self.word[self._i]
+        word = self.words[self._i]
         self._i += 1
         return word, word.weight
 
     def get_k(self, word):
-        return np.where(self.word == word)[0][0]
+        return np.where(self.words == word)[0][0]
 
     def include(self, word):
-        return word in self.word
+        return word in self.words
 
-    def add(self, word=None, weight=None, dict_specifier=None):
-        if word is None and dict_specifier is None:
-            raise ValueError("'word' or 'dict_specifier' must be specified")
-        if word is dict_specifier is not None:
-            raise ValueError("'word' or 'dict_specifier' must be specified")
+    def add(self, words=None, weight=None, dict_specifier=None):
+        if words is None and dict_specifier is None:
+            raise ValueError("'words' or 'dict_specifier' must be specified")
+        if words is dict_specifier is not None:
+            raise ValueError("'words' or 'dict_specifier' must be specified")
         if dict_specifier is not None:
             self.read(dict_specifier)
-        if word is not None:
-            if isinstance(word, str):
-                word = [word]
+        if words is not None:
+            if isinstance(words, str):
+                words = [words]
             if weight is None:
-                weight = [0]*len(word)
+                weight = [0]*len(words)
             if isinstance(weight, (int, float)):
                 weight = [weight]
-            if len(word) != len(weight):
-                raise ValueError(f"'word' and 'weight' must be same size")
-            for wo, we in zip(word, weight):
+            if len(words) != len(weight):
+                raise ValueError(f"'words' and 'weight' must be same size")
+            for wo, we in zip(words, weight):
                 wo = wo.strip()
                 if self.include(wo): # replace the weight
-                    self.word[self.word.index(wo)].weight = we
+                    self.words[self.words.index(wo)].weight = we
                 else:
-                    self.word.append(Word(wo, we))
+                    self.words.append(Word(wo, we))
 
-    def remove(self, word=None):
-        if word is None:
-            raise ValueError("'word' must be specified")
-        if isinstance(word, str):
-            word = [word]
-        for wo in word:
+    def remove(self, words=None):
+        if words is None:
+            raise ValueError("'words' must be specified")
+        if isinstance(words, str):
+            words = [words]
+        for wo in words:
             if self.include(wo):
-                index = self.word.index(wo)
-                del self.word[index]
+                index = self.words.index(wo)
+                del self.words[index]
                 del self.weight[index]
 
     def read(self, dict_specifier):
@@ -158,23 +158,23 @@ class Dictionary:
         """
         This method checks words in the dictionary and erases words that can not cross any other words.
         """
-        merged_words = "".join(self.word)
+        merged_words = "".join(self.words)
         counts = collections.Counter(merged_words)
-        for i, w in enumerate(self.word[:]):
+        for i, w in enumerate(self.words[:]):
             char_value = 0
             for char in set(w):
                 char_value += counts[char]
             if char_value == len(w):
                 self.removed_words.append(w)
-                del self.word[i]
+                del self.words[i]
 
     def calc_weight(self):
         """
         Calculate word weights in the dictionary.
         """
-        merged_words = "".join(self.word)
+        merged_words = "".join(self.words)
         counts = collections.Counter(merged_words)
 
-        for i, w in enumerate(self.word):
+        for i, w in enumerate(self.words):
             for char in w:
-                self.word[i].weight += counts[char]
+                self.words[i].weight += counts[char]

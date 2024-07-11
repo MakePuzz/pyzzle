@@ -5,7 +5,7 @@ import logging
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
+
 
 _is_logging_on = False
 TRACE_LEVEL = 5

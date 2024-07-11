@@ -197,7 +197,7 @@ def export_image(fig, axl, axr, cell, words, width, height, title="", fontsize=1
 
     si = SkeltonImage(blank="")
     axl = si.get_board(axl, cell, title=title, w_count=len(words), is_answer=answer)
-    axr = si.get_wordlist(axr, words, width, height, fontsize)
+    axr = si.get_wordlist(axr, words=words, width=width, height=height, fontsize=fontsize, draw_copyright=True)
 
     if oname is None:
         plt.show()

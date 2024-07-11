@@ -89,11 +89,11 @@ oname_answer = f"{basedir}/fig/answer_{puzzle.name}_w{width}_h{height}_r{seed}.p
 
 height_inch = 7
 width_inch = 6
-fig, [axl, axr] = plt.subplots(1, 2, figsize=(9*height_inch/7.5+width_inch, height_inch), gridspec_kw=dict(width_ratios=[9*height_inch/7.5,width_inch], wspace=-0.01))
+fig, [axl, axr] = plt.subplots(1, 2, figsize=(8*height_inch/7.5+width_inch, height_inch), gridspec_kw=dict(width_ratios=[8*height_inch/7.5,width_inch], wspace=-0.01))
 pyzzle.utils.export_image(fig, axl, axr, puzzle.cell, puzzle.uwords[puzzle.uwords!=""], width_inch, height_inch, title=title, fontsize=18, oname=oname_answer, answer=True)
 plt.close()
 
-fig, [axl, axr] = plt.subplots(1, 2, figsize=(9*height_inch/7.5+width_inch, height_inch), gridspec_kw=dict(width_ratios=[9*height_inch/7.5,width_inch], wspace=-0.01))
+fig, [axl, axr] = plt.subplots(1, 2, figsize=(8*height_inch/7.5+width_inch, height_inch), gridspec_kw=dict(width_ratios=[8*height_inch/7.5,width_inch], wspace=-0.01))
 pyzzle.utils.export_image(fig, axl, axr, puzzle.cell, puzzle.uwords[puzzle.uwords!=""], width_inch, height_inch, title=title, fontsize=18, oname=oname_problem, answer=False)
 plt.close()
 

@@ -1,3 +1,4 @@
+!! -*- coding: utf-8 -*-
 subroutine add_to_limit(height, width, n, w_len_max, blank, oris, is, js, ks, words, w_lens, puzzle, enable, used_index)
     implicit none
     integer, intent(in) :: height, width

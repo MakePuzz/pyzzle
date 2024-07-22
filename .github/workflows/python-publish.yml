@@ -37,6 +37,7 @@ jobs:
       uses: BSFishy/meson-build@v1.0.3
       with:
         action: test
+        directory: dist
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
       with:

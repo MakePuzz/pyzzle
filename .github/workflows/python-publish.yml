@@ -28,7 +28,10 @@ jobs:
         python-version: '3.x'
     - name: Install dependencies
       run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc gfortran
         python -m pip install --upgrade pip
+        pip install numpy meson-python ninja
         pip install build
     - name: Build package
       run: python -m build

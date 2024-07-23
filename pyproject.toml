@@ -4,19 +4,19 @@ requires = [
 	"wheel",
 	"meson-python>=0.15.0",
 	"setuptools<60.0",  # Do not increase, 60.0 enables vendored distutils
-	"oldest-supported-numpy; python_version>'3.9'",
-	"numpy; python_version<='3.9'"
+	"oldest-supported-numpy; python_version<'3.9'",
+	"numpy==2.0; python_version>='3.9'"
 ]
 
 [project]
 name = "pyzzle"
-version = "2024.1.0"
+version = "2024.1.1"
 license = {file = "LICENSE"}
 description = "A Python library to automatically generate intelligent and beautiful puzzles"
 maintainers = [
     {name = "The MakePuzz team", email = "puzzle.hokkaido@gmail.com"},
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 dependencies = [
     # TODO: update to "pin-compatible" once possible, see
     # https://github.com/FFY00/meson-python/issues/29

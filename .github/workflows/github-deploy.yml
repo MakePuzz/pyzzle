@@ -17,16 +17,14 @@ jobs:
     strategy:
       matrix:
         # macos-13 is an intel runner, macos-14 is apple silicon
-        os: [ubuntu-latest, windows-latest, macos-13] #, macos-14]
+        os: [ubuntu-latest, windows-latest, macos-13, macos-14]
 
     steps:
       - name: Provide gfortran (macOS)
         if: runner.os == 'macOS'
         run: |
-          # https://github.com/actions/virtual-environments/issues/2524
-          # https://github.com/cbg-ethz/dce/blob/master/.github/workflows/pkgdown.yaml
-          brew install gcc
-          gfortran --version
+          # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners
+          CIBW_ENVIRONMENT: FC='gcc-14' FC='gfortran-14'
 
       - name: Provide gfortran (Windows)
         if: runner.os == 'Windows'

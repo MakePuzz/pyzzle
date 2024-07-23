@@ -28,7 +28,7 @@ jobs:
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.19.2
-        # env:
+        env:
           CIBW_SKIP: pp*
           # CIBW_BEFORE_BUILD: pip install charset_normalizer
           # CIBW_ENVIRONMENT: FC='gcc-14' FC='gfortran-14' # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners

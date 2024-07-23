@@ -4,8 +4,8 @@ requires = [
 	"wheel",
 	"meson-python>=0.15.0",
 	"setuptools<60.0",  # Do not increase, 60.0 enables vendored distutils
-	"oldest-supported-numpy; python_version<'3.9'",
-	"numpy==2.0; python_version>='3.9'"
+	"oldest-supported-numpy; python_version<='3.9'",
+	"numpy==2.0; python_version>='3.10'"
 ]
 
 [project]
@@ -16,7 +16,7 @@ description = "A Python library to automatically generate intelligent and beauti
 maintainers = [
     {name = "The MakePuzz team", email = "puzzle.hokkaido@gmail.com"},
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     # TODO: update to "pin-compatible" once possible, see
     # https://github.com/FFY00/meson-python/issues/29

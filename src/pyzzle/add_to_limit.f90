@@ -105,7 +105,7 @@ integer function is_placeable(puzzle, enable, height, width, ori, i, j, word, w_
     integer :: a, b
     logical :: is_cross_at_a, at_least_1_cross
     
-    ! ori=0:vertical、ori=1:lateral
+    ! ori=0:vertical, ori=1:lateral
     ! i:number of row
     ! j:number of column
 
